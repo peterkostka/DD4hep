@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 project(DDSegmentation)
- #fg: version number must be the same as DD4hep !!
-set(DDSegmentation_MAJOR_VERSION 0)
-set(DDSegmentation_MINOR_VERSION 16)
-set(DDSegmentation_PATCH_VERSION 0)
-set(DDSegmentation_VERSION "${DDSegmentation_MAJOR_VERSION}.${DDSegmentation_MINOR_VERSION}" )
-set(DDSegmentation_SOVERSION "${DDSegmentation_MAJOR_VERSION}.${DDSegmentation_MINOR_VERSION}")
+ #fg: version number must be the same as dd4hep !!
+set(DDSegmentation_VERSION_MAJOR 1)
+set(DDSegmentation_VERSION_MINOR 5)
+set(DDSegmentation_VERSION_PATCH 0)
+set(DDSegmentation_VERSION "${DDSegmentation_VERSION_MAJOR}.${DDSegmentation_VERSION_MINOR}" )
+set(DDSegmentation_SOVERSION "${DDSegmentation_VERSION_MAJOR}.${DDSegmentation_VERSION_MINOR}")
 
 #------------- set the default installation directory to be the source directory
 
@@ -27,14 +27,8 @@ SET_TARGET_PROPERTIES( DDSegmentation PROPERTIES VERSION ${DDSegmentation_VERSIO
 #if DDSegmentation is build as part of dd4hep
 if( NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR ) 
   SET ( DDSegmentation_LIBRARIES DDSegmentation  PARENT_SCOPE )
-  SET ( DDSegmentation_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/DDSegmentation/include PARENT_SCOPE )
   SET ( DDSEGMENTATION_LIBRARIES DDSegmentation  PARENT_SCOPE )
-  SET ( DDSEGMENTATION_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/DDSegmentation/include PARENT_SCOPE )
 endif()
-
-install(DIRECTORY include/DDSegmentation
-  DESTINATION include
-  PATTERN ".svn" EXCLUDE )
 
 install(TARGETS DDSegmentation
   RUNTIME DESTINATION bin
@@ -50,4 +44,3 @@ install(TARGETS DDSegmentation
 # Create the DDSegmentationConfig.cmake and DDSegmentationConfigVersion files
 configure_file(cmake/DDSegmentationConfig.cmake.in ${CMAKE_INSTALL_PREFIX}/DDSegmentationConfig.cmake)
 
-#install(FILES ${PROJECT_SOURCE_DIR}/DDSegmentationConfig.cmake DESTINATION . )

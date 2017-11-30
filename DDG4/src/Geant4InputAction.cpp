@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -23,8 +22,10 @@
 #include "G4Event.hh"
 
 using namespace std;
-using namespace DD4hep::Simulation;
-typedef DD4hep::ReferenceBitMask<int> PropertyMask;
+using namespace dd4hep::sim;
+typedef dd4hep::detail::ReferenceBitMask<int> PropertyMask;
+typedef Geant4InputAction::Vertices Vertices ;
+
 
 /// Initializing constructor
 Geant4EventReader::Geant4EventReader(const std::string& nam)
@@ -43,14 +44,30 @@ Geant4EventReader::EventReaderStatus Geant4EventReader::skipEvent()  {
     return EVENT_READER_OK;
   }
   std::vector<Particle*> particles;
-  Geant4Vertex vertex;
+  Vertices vertices ;
+  
   ++m_currEvent;
-  EventReaderStatus sc = readParticles(m_currEvent,vertex,particles);
-  for_each(particles.begin(),particles.end(),deleteObject<Particle>);
+  EventReaderStatus sc = readParticles(m_currEvent,vertices,particles);
+  for_each(particles.begin(),particles.end(),detail::deleteObject<Particle>);
   return sc;
 }
 
-/// Move to the indicated event number.
+/// check if all parameters have been consumed by the reader, otherwise throws exception
+void Geant4EventReader::checkParameters(std::map< std::string, std::string > &parameters) {
+
+  if( parameters.empty() ) {
+    return;
+  }
+  for (auto const& pairNV : parameters ) {
+    printout(FATAL,"EventReader::checkParameters","Unknown parameter name: %s with value %s",
+	     pairNV.first.c_str(),
+	     pairNV.second.c_str());
+  }
+  throw std::runtime_error("Unknown parameter for event reader");
+
+}
+
+#if 0
 Geant4EventReader::EventReaderStatus
 Geant4EventReader::moveToEvent(int event_number)   {
   if ( event_number >= INT_MIN )   {
@@ -75,6 +92,13 @@ Geant4EventReader::moveToEvent(int event_number)   {
   }
   return EVENT_READER_ERROR;
 }
+#else
+/// Move to the indicated event number.
+Geant4EventReader::EventReaderStatus
+Geant4EventReader::moveToEvent(int /* event_number */)   {
+  return EVENT_READER_OK;
+}
+#endif
 
 /// Standard constructor
 Geant4InputAction::Geant4InputAction(Geant4Context* ctxt, const string& nam)
@@ -84,6 +108,8 @@ Geant4InputAction::Geant4InputAction(Geant4Context* ctxt, const string& nam)
   declareProperty("Sync",           m_firstEvent=0);
   declareProperty("Mask",           m_mask = 0);
   declareProperty("MomentumScale",  m_momScale = 1.0);
+  declareProperty("HaveAbort",      m_abort = true);
+  declareProperty("Parameters",     m_parameters = {});
   m_needsControl = true;
 }
 
@@ -100,13 +126,13 @@ string Geant4InputAction::issue(int i)  const  {
 
 /// Read an event and return a LCCollection of MCParticles.
 int Geant4InputAction::readParticles(int evt_number,
-                                     Vertex& prim_vertex,
+                                     Vertices& vertices,
                                      std::vector<Particle*>& particles)
 {
   int evid = evt_number + m_firstEvent;
   if ( 0 == m_reader )  {
     if ( m_input.empty() )  {
-      throw runtime_error("InputAction: No input file declared!");
+      except("InputAction: No input file declared!");
     }
     string err;
     TypeName tn = TypeName::split(m_input,"|");
@@ -120,6 +146,8 @@ int Geant4InputAction::readParticles(int evt_number,
                  tn.first.c_str(),tn.second.c_str());
         return Geant4EventReader::EVENT_READER_NO_FACTORY;
       }
+      m_reader->setParameters( m_parameters );
+      m_reader->checkParameters( m_parameters );
     }
     catch(const exception& e)  {
       err = e.what();
@@ -131,13 +159,30 @@ int Geant4InputAction::readParticles(int evt_number,
   }
   int status = m_reader->moveToEvent(evid);
   if ( Geant4EventReader::EVENT_READER_OK != status )  {
-    abortRun(issue(evid)+"Error when moving to event - may be end of file.",
-             "Error when reading file %s",m_input.c_str());
+    string msg = issue(evid)+"Error when moving to event - ";
+    if ( status == Geant4EventReader::EVENT_READER_EOF ) msg += " EOF: [end of file].";
+    else msg += " Unknown error condition";
+    if ( m_abort )  {
+      abortRun(msg,"Error when reading file %s",m_input.c_str());
+      return status;
+    }
+    error(msg.c_str());
+    except("Error when reading file %s.", m_input.c_str());
+    return status;
   }
-  status = m_reader->readParticles(evid, prim_vertex, particles);
+  status = m_reader->readParticles(evid, vertices, particles);
+
+
   if ( Geant4EventReader::EVENT_READER_OK != status )  {
-    abortRun(issue(evid)+"Error when reading file - may be end of file.",
-             "Error when reading file %s",m_input.c_str());
+    string msg = issue(evid)+"Error when moving to event - ";
+    if ( status == Geant4EventReader::EVENT_READER_EOF ) msg += " EOF: [end of file].";
+    else msg += " Unknown error condition";
+    if ( m_abort )  {
+      abortRun(msg,"Error when reading file %s",m_input.c_str());
+      return status;
+    }
+    error(msg.c_str());
+    except("Error when reading file %s.", m_input.c_str());
   }
   return status;
 }
@@ -147,14 +192,10 @@ void Geant4InputAction::operator()(G4Event* event)   {
   vector<Particle*>         primaries;
   Geant4Event&              evt = context()->event();
   Geant4PrimaryEvent*       prim = evt.extension<Geant4PrimaryEvent>();
-  dd4hep_ptr<Geant4Vertex>  vertex(new Geant4Vertex());
+  Vertices                  vertices ;
   int result;
 
-  vertex->x = 0;
-  vertex->y = 0;
-  vertex->z = 0;
-  vertex->time = 0;
-  result = readParticles(m_currentEventNumber, *(vertex.get()), primaries);
+  result = readParticles(m_currentEventNumber, vertices, primaries);
 
   event->SetEventID(m_firstEvent + m_currentEventNumber);
   ++m_currentEventNumber;
@@ -165,13 +206,21 @@ void Geant4InputAction::operator()(G4Event* event)   {
 
   Geant4PrimaryInteraction* inter = new Geant4PrimaryInteraction();
   prim->add(m_mask, inter);
+
   // check if there is at least one particle
   if ( primaries.empty() ) return;
 
-  print("+++ Particle interaction with %d generator particles ++++++++++++++++++++++++",
-        int(primaries.size()));
-  Geant4Vertex* vtx = vertex.get();
-  inter->vertices.insert(make_pair(m_mask,vertex.release())); // Move vertex ownership
+  // check if there is at least one primary vertex
+  if ( vertices.empty() ) return;
+
+  print("+++ Particle interaction with %d generator particles and %d vertices ++++++++++++++++++++++++",
+        int(primaries.size()), int(vertices.size()) );
+  
+
+  for(size_t i=0; i<vertices.size(); ++i )   {
+    inter->vertices[m_mask].push_back( vertices[i] ); 
+  }
+
   // build collection of MCParticles
   for(size_t i=0; i<primaries.size(); ++i )   {
     Geant4ParticleHandle p(primaries[i]);
@@ -181,13 +230,19 @@ void Geant4InputAction::operator()(G4Event* event)   {
     p->psy  = mom_scale*p->psy;
     p->psz  = mom_scale*p->psz;
 
-    if ( p->parents.size() == 0 )  {
-      if ( status.isSet(G4PARTICLE_GEN_EMPTY) || status.isSet(G4PARTICLE_GEN_DOCUMENTATION) )
-        vtx->in.insert(p->id);  // Beam particles and primary quarks etc.
-      else
-        vtx->out.insert(p->id); // Stuff, to be given to Geant4 together with daughters
-    }
+    //FIXME: this needs to be done now in the readers ...
+    // // if ( p->parents.size() == 0 )  {
+    // //   if ( status.isSet(G4PARTICLE_GEN_EMPTY) || status.isSet(G4PARTICLE_GEN_DOCUMENTATION) )
+    // //     vtx->in.insert(p->id);  // Beam particles and primary quarks etc.
+    // //   else
+    // //     vtx->out.insert(p->id); // Stuff, to be given to Geant4 together with daughters
+    // // }
+
+
     inter->particles.insert(make_pair(p->id,p));
     p.dumpWithMomentumAndVertex(outputLevel()-1,name(),"->");
   }
+
+
+
 }

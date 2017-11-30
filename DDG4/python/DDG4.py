@@ -1,6 +1,5 @@
-# $Id: $
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -23,10 +22,15 @@ def loadDDG4():
   gSystem.Load("libglapi")
   ROOT.gErrorIgnoreLevel=orgLevel
 
+  import platform
+  import os
+  if platform.system()=="Darwin":
+    gSystem.SetDynamicPath(os.environ['DD4HEP_LIBRARY_PATH'])
+
   result = gSystem.Load("libDDG4Plugins")
-  if 0 != result:
-    raise Exception('DDG4.py: Failed to load the Geant4 library libDDG4: '+gSystem.GetErrorStr())
-  from ROOT import DD4hep as module
+  if result < 0:
+    raise Exception('DDG4.py: Failed to load the DDG4 library libDDG4Plugins: '+gSystem.GetErrorStr())
+  from ROOT import dd4hep as module
   return module
 
 # We are nearly there ....
@@ -38,32 +42,34 @@ def _import_class(ns,nam):
 #---------------------------------------------------------------------------
 #
 try:
-  DD4hep     = loadDDG4() 
+  dd4hep     = loadDDG4() 
 except Exception as X:
   print '+--%-100s--+'%(100*'-',)
   print '|  %-100s  |'%('Failed to load DDG4 library:',)
   print '|  %-100s  |'%(str(X),)
   print '+--%-100s--+'%(100*'-',)
   exit(1)
+
 from ROOT import CLHEP as CLHEP
-Core       = DD4hep
-Sim        = DD4hep.Simulation
-Simulation = DD4hep.Simulation
+Core       = dd4hep
+Sim        = dd4hep.sim
+Simulation = dd4hep.sim
 Kernel     = Sim.KernelHandle
 Interface  = Sim.Geant4ActionCreation
-LCDD       = Geo.LCDD
+Detector   = Core.Detector
+from DD4hep import std, std_vector, std_list, std_map, std_pair
 
 #---------------------------------------------------------------------------
 def _constant(self,name):
   return self.constantAsString(name)
 
-LCDD.globalVal = _constant
+Detector.globalVal = _constant
 #---------------------------------------------------------------------------
 
 """
-  Import the LCDD constants into the DDG4 namespace
+  Import the Detector constants into the DDG4 namespace
 """
-def importConstants(lcdd,namespace=None,debug=False):
+def importConstants(description,namespace=None,debug=False):
   scope = current
   ns = current
   if namespace is not None and not hasattr(current,namespace):
@@ -71,12 +77,12 @@ def importConstants(lcdd,namespace=None,debug=False):
     m = imp.new_module('DDG4.'+namespace)
     setattr(current,namespace,m)
     ns = m
-  evaluator = DD4hep.g4Evaluator()
+  evaluator = dd4hep.g4Evaluator()
   cnt = 0
   num = 0
   todo = {}
   strings = {}
-  for c in lcdd.constants():
+  for c in description.constants():
     if c.second.dataType == 'string':
       strings[c.first] = c.second.GetTitle()
     else:
@@ -223,6 +229,10 @@ _setup('Geant4DetectorConstructionSequence')
 _setup('Geant4UserInitializationSequence')
 _setup('Geant4Sensitive')
 _setup('Geant4ParticleHandler')
+_import_class('Sim','Geant4Vertex')
+_import_class('Sim','Geant4Particle')
+_import_class('Sim','Geant4VertexVector')
+_import_class('Sim','Geant4ParticleVector')
 _import_class('Sim','Geant4Action')
 _import_class('Sim','Geant4Filter')
 _import_class('Sim','Geant4RunAction')
@@ -321,7 +331,7 @@ class Geant4:
     self._kernel = kernel
     if kernel is None:
       self._kernel = Kernel()
-    self.lcdd = self._kernel.lcdd()
+    self.description = self._kernel.detectorDescription()
     self.sensitive_types = {}
     self.sensitive_types['tracker'] = tracker
     self.sensitive_types['calorimeter'] = calo
@@ -385,9 +395,9 @@ class Geant4:
 
      \author  M.Frank
   """
-  def addDetectorConstruction(self, name_type,
-                              field=None, field_args=None,
-                              geometry=None, geometry_args=None,
+  def addDetectorConstruction(self,            name_type,
+                              field=None,      field_args=None,
+                              geometry=None,   geometry_args=None,
                               sensitives=None, sensitives_args=None,
                               allow_threads=False):
     init_seq = self.master().detectorConstruction(True)
@@ -480,10 +490,10 @@ class Geant4:
 
   def printDetectors(self):
     print '+++  List of sensitive detectors:'
-    for i in self.lcdd.detectors():
+    for i in self.description.detectors():
       #print i.second.ptr().GetName()
       o = DetElement(i.second.ptr())
-      sd = self.lcdd.sensitiveDetector(o.name())
+      sd = self.description.sensitiveDetector(o.name())
       if sd.isValid():
         typ = sd.type()
         sdtyp = 'Unknown'
@@ -514,7 +524,7 @@ class Geant4:
     seq.enableUI()
     acts = []
     if collections is None:
-      sd = self.lcdd.sensitiveDetector(name)
+      sd = self.description.sensitiveDetector(name)
       ro = sd.readout()
       #print dir(ro)
       collections = ro.collectionNames()
@@ -554,13 +564,13 @@ class Geant4:
     return (seq,acts[0])
 
   def setupCalorimeter(self,name,type=None,collections=None):
-    sd = self.lcdd.sensitiveDetector(name)
+    sd = self.description.sensitiveDetector(name)
     sd.setType('calorimeter')
     if type is None: type = self.sensitive_types['calorimeter']
     return self.setupDetector(name,type,collections)
 
   def setupTracker(self,name,type=None,collections=None):
-    sd = self.lcdd.sensitiveDetector(name)
+    sd = self.description.sensitiveDetector(name)
     sd.setType('tracker')
     if type is None: type = self.sensitive_types['tracker']
     return self.setupDetector(name,type,collections)
@@ -604,7 +614,7 @@ class Geant4:
     phys.adopt(opt)
     return opt
   
-  def setupGun(self, name, particle, energy, isotrop=True, multiplicity=1, position=(0.0,0.0,0.0),**args):
+  def setupGun(self, name, particle, energy, isotrop=True, multiplicity=1, position=(0.0,0.0,0.0),register=True, **args):
     gun = GeneratorAction(self.kernel(),"Geant4ParticleGun/"+name,True)
     for i in args.items():
       setattr(gun,i[0],i[1])
@@ -614,7 +624,8 @@ class Geant4:
     gun.position     = position
     gun.isotrop      = isotrop
     gun.enableUI()
-    self.kernel().generatorAction().add(gun)
+    if register:
+      self.kernel().generatorAction().add(gun)
     return gun
 
   """

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -23,12 +22,13 @@ class TGPictureButton;
 class TGLabel;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   // Forward declarations
   class Display;
 
-  /** EventControl  EventControl.h DDEve/EventControl.h
+  /// Event input control for DDEve: Interface class for event I/O
+  /**
    *
    * \author  M.Frank
    * \version 1.0
@@ -51,6 +51,7 @@ namespace DD4hep {
     typedef std::pair<TGCompositeFrame*,Labels> Line;
     typedef std::vector<Line > Lines;
     Lines   m_lines;
+
   public:
     /// Standard constructor
     EventControl(Display* disp, unsigned int width, unsigned int height);
@@ -58,9 +59,9 @@ namespace DD4hep {
     virtual ~EventControl();
 
     /// User callback to add elements to the control
-    virtual void OnBuild();
+    virtual void OnBuild()  override;
     /// Create the frame for this control structure. Default: create horizontal frame
-    TGCompositeFrame* CreateFrame();
+    TGCompositeFrame* CreateFrame()  override;
 
     /// Open a new event data file
     virtual bool Open();
@@ -73,17 +74,13 @@ namespace DD4hep {
 
 
     /// EventConsumer overload: New consumer event data
-    virtual void OnNewEvent(EventHandler* handler);
+    virtual void OnNewEvent(EventHandler& handler)  override;
 
     /// EventConsumer overload: New event data file
-    virtual void OnFileOpen(EventHandler* handler);
+    virtual void OnFileOpen(EventHandler& handler)  override;
 
-    ClassDef(EventControl,0)  // Top level window frame
+    ClassDefOverride(EventControl,0)  // Top level window frame
   };
-
-
-} /* End namespace DD4hep   */
-
-
+}      /* End namespace dd4hep        */
 #endif /* DD4HEP_DDEVE_EVENTCONTROL_H */
 

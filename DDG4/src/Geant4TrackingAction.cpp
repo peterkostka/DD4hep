@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -29,8 +28,8 @@
 #include <stdexcept>
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 class G4Step;
 class G4TouchableHistory;
 namespace {
@@ -123,14 +122,14 @@ void Geant4TrackingAction::mark(const G4Track* track) const    {
 
 /// Standard constructor
 Geant4SharedTrackingAction::Geant4SharedTrackingAction(Geant4Context* ctxt, const string& nam)
-  : Geant4TrackingAction(ctxt, nam)
+  : Geant4TrackingAction(ctxt, nam), m_action(0)
 {
   InstanceCount::increment(this);
 }
 
 /// Default destructor
 Geant4SharedTrackingAction::~Geant4SharedTrackingAction()   {
-  releasePtr(m_action);
+  detail::releasePtr(m_action);
   InstanceCount::decrement(this);
 }
 

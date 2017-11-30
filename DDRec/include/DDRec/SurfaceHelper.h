@@ -1,10 +1,10 @@
-#ifndef DDRec_SurfaceHelper_H_
-#define DDRec_SurfaceHelper_H_
+#ifndef rec_SurfaceHelper_H_
+#define rec_SurfaceHelper_H_
 
 #include "DDRec/Surface.h"
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
 
     /** Surface helper class that allows to access all surfaces
      *  assigned to a DetElement and all its daughters.
@@ -18,25 +18,27 @@ namespace DD4hep {
 
     public:
 
-      SurfaceHelper(const Geometry::DetElement& e);
+      SurfaceHelper(const DetElement& e);
       
       ~SurfaceHelper();
       
       /** Get the list of all surfaces added to this DetElement and all its daughters -
-       *  instantiate SurfaceHelper with lcdd.world() to get all surfaces.
+       *  instantiate SurfaceHelper with description.world() to get all surfaces.
        */
       const SurfaceList& surfaceList() { return _sL ; }
 
     protected :
       SurfaceList  _sL ;
-      const Geometry::DetElement& _det ;
+      const DetElement& _det ;
 
       /// initializes surfaces from VolSurfaces assigned to this DetElement in detector construction
       void initialize() ;
 
     };
 
-  } /* namespace DDRec */
-} /* namespace DD4hep */
+  } /* namespace rec */
+} /* namespace dd4hep */
 
-#endif // DDRec_SurfaceHelper_H_
+
+
+#endif // rec_SurfaceHelper_H_

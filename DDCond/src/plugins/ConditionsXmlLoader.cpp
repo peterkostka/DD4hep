@@ -1,4 +1,4 @@
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,18 +11,18 @@
 //  \version 1.0
 //
 //==========================================================================
-// $Id$
 #ifndef DD4HEP_CONDITIONS_XMLCONDITONSLOADER_H
 #define DD4HEP_CONDITIONS_XMLCONDITONSLOADER_H
 
 // Framework include files
 #include "DDCond/ConditionsDataLoader.h"
+#include "DD4hep/Printout.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Conditions  {
+  /// Namespace for implementation details of the AIDA detector description toolkit
+  namespace cond  {
 
     /// Implementation of a stack of conditions assembled before application
     /** 
@@ -36,41 +36,43 @@ namespace DD4hep {
 
       size_t load_source  (const std::string& nam,
                            key_type key,
-                           const iov_type& req_validity,
+                           const IOV& req_validity,
                            RangeConditions& conditions);
     public:
       /// Default constructor
-      ConditionsXmlLoader(LCDD& lcdd, ConditionsManager mgr, const std::string& nam);
+      ConditionsXmlLoader(Detector& description, ConditionsManager mgr, const std::string& nam);
       /// Default destructor
       virtual ~ConditionsXmlLoader();
       /// Load  a condition set given a Detector Element and the conditions name according to their validity
-      virtual size_t load(key_type key,
-                          const iov_type& req_validity,
-                          RangeConditions& conditions);
+      virtual size_t load_single(key_type key,
+                                 const IOV& req_validity,
+                                 RangeConditions& conditions);
       /// Load  a condition set given a Detector Element and the conditions name according to their validity
-      virtual size_t load_range(key_type key,
-                                const iov_type& req_validity,
-                                RangeConditions& conditions);
-      /// Update a range of conditions according to the required IOV
-      virtual size_t update(const iov_type& req_validity,
-                            RangeConditions& conditions,
-                            iov_type& iov_intersection);
+      virtual size_t load_range( key_type key,
+                                 const IOV& req_validity,
+                                 RangeConditions& conditions);
+      /// Optimized update using conditions slice data
+      virtual size_t load_many(  const IOV& /* req_validity */,
+                                 RequiredItems&  /* work         */,
+                                 LoadedItems&    /* loaded       */,
+                                 IOV&       /* conditions_validity */)
+      {
+        except("ConditionsLoader","+++ update: Invalid call!");
+        return 0;
+      }
     };
-
-  } /* End namespace Conditions             */
-} /* End namespace DD4hep                   */
-
+  }    /* End namespace cond                */
+}      /* End namespace dd4hep                    */
 #endif /* DD4HEP_CONDITIONS_XMLCONDITONSLOADER_H  */
 
 //#include "ConditionsXmlLoader.h"
 #include "DD4hep/Printout.h"
 #include "DD4hep/Factories.h"
 #include "DD4hep/PluginCreators.h"
-#include "DD4hep/objects/ConditionsInterna.h"
+#include "DD4hep/detail/ConditionsInterna.h"
 
 #include "XML/XMLElements.h"
 #include "XML/DocumentHandler.h"
-#include "DDCond/ConditionsInterna.h"
 #include "DDCond/ConditionsEntry.h"
 
 // C/C++ include files
@@ -78,21 +80,21 @@ namespace DD4hep {
 
 // Forward declartions
 using std::string;
-using namespace DD4hep;
-using namespace DD4hep::Conditions;
+using namespace dd4hep;
+using namespace dd4hep::cond;
 
 namespace {
-  void* create_loader(DD4hep::Geometry::LCDD& lcdd, int argc, char** argv)   {
+  void* create_loader(Detector& description, int argc, char** argv)   {
     const char* name = argc>0 ? argv[0] : "XMLLoader";
     ConditionsManagerObject* mgr = (ConditionsManagerObject*)(argc>0 ? argv[1] : 0);
-    return new ConditionsXmlLoader(lcdd,ConditionsManager(mgr),name);
+    return new ConditionsXmlLoader(description,ConditionsManager(mgr),name);
   }
 }
-DECLARE_LCDD_CONSTRUCTOR(DD4hep_Conditions_xml_Loader,create_loader)
+DECLARE_DD4HEP_CONSTRUCTOR(DD4hep_Conditions_xml_Loader,create_loader)
 
 /// Standard constructor, initializes variables
-ConditionsXmlLoader::ConditionsXmlLoader(LCDD& lcdd, ConditionsManager mgr, const std::string& nam) 
-: ConditionsDataLoader(lcdd, mgr, nam)
+ConditionsXmlLoader::ConditionsXmlLoader(Detector& description, ConditionsManager mgr, const std::string& nam) 
+: ConditionsDataLoader(description, mgr, nam)
 {
 }
 
@@ -102,20 +104,21 @@ ConditionsXmlLoader::~ConditionsXmlLoader() {
 
 size_t ConditionsXmlLoader::load_source(const std::string& nam,
                                         key_type key,
-                                        const iov_type& req_validity,
+                                        const IOV& req_validity,
                                         RangeConditions& conditions)
 {
   size_t len = conditions.size();
   string fac = "XMLConditionsParser";
-  XML::DocumentHolder doc(XML::DocumentHandler().load(nam));
-  XML::Handle_t       handle = doc.root();
+  xml::DocumentHolder doc(xml::DocumentHandler().load(nam));
+  xml::Handle_t       handle = doc.root();
   ConditionsStack     stack;
   char* argv[] = { (char*)handle.ptr(), (char*)&stack, 0};
-  void* result = DD4hep::createPlugin(fac, m_lcdd, 2, argv, 0);
-  if ( result == &m_lcdd )  { // All OK.
+  void* result = dd4hep::createPlugin(fac, m_detDesc, 2, argv, 0);
+  if ( result == &m_detDesc )  { // All OK.
     for (ConditionsStack::iterator c=stack.begin(); c!=stack.end(); ++c)  {
       Entry* e = (*c);
-      Condition condition = queueUpdate(e);
+      Condition condition;/// = queueUpdate(e);
+      except("ConditionsXmlLoader","Fix me: queueUpdate(e) not implemented");
       delete e;
       if ( condition.isValid() )   {
         if ( key == condition->hash )  {
@@ -133,9 +136,9 @@ size_t ConditionsXmlLoader::load_source(const std::string& nam,
   return conditions.size()-len;
 }
 
-size_t ConditionsXmlLoader::load(key_type key,
-                                 const iov_type& req_validity,
-                                 RangeConditions& conditions)
+size_t ConditionsXmlLoader::load_single(key_type key,
+                                        const IOV& req_validity,
+                                        RangeConditions& conditions)
 {
   size_t len = conditions.size();
   if ( m_buffer.empty() && !m_sources.empty() )  {
@@ -156,7 +159,7 @@ size_t ConditionsXmlLoader::load(key_type key,
 }
 
 size_t ConditionsXmlLoader::load_range(key_type key,
-                                       const iov_type& req_validity,
+                                       const IOV& req_validity,
                                        RangeConditions& conditions)
 {
   size_t len = conditions.size();
@@ -178,8 +181,3 @@ size_t ConditionsXmlLoader::load_range(key_type key,
   return conditions.size()-len;
 }
 
-/// Update a range of conditions according to the required IOV
-size_t ConditionsXmlLoader::update(const IOV&,RangeConditions&, IOV&)  {
-  except("ConditionsXmlLoader","+++ update: Invalid call!");
-  return 0;
-}

@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -22,7 +21,7 @@
 
 // Framework include files
 #include "XML/config.h"
-#include "DD4hep/Primitives.h"
+//#include "DD4hep/Primitives.h"
 
 #ifndef RAD_2_DEGREE
 #define RAD_2_DEGREE 57.295779513082320876798154814105
@@ -32,10 +31,10 @@
 #endif
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the AIDA detector description toolkit supporting XML utilities
-  namespace XML {
+  namespace xml {
 
     typedef const XmlAttr* Attribute;
 
@@ -196,7 +195,7 @@ namespace DD4hep {
       }
       /// String length in native representation
       size_t length()  const  {
-	return XmlString::length(m_xml);
+        return XmlString::length(m_xml);
       }
       /// Assignment opertor from ascii string
       Strng_t& operator=(const char* s);
@@ -235,7 +234,7 @@ namespace DD4hep {
      *  -- unicode
      *  -- std::string
      *  -- const char*.
-     *  Internally a copy representation as an std::string is kept.
+     *  Internaly a copy representation as an std::string is kept.
      *
      *  \author  M.Frank
      *  \version 1.0
@@ -268,6 +267,10 @@ namespace DD4hep {
       Tag_t(const std::string& v, const std::string& s, void (*register_func)(const std::string&, Tag_t*))
         : Strng_t(s), m_str(s) {
         register_func(v, this);
+      }
+      /// Copy constructor
+      Tag_t(const Tag_t& c)
+        : Strng_t(c), m_str(c.m_str) {
       }
       /// Destructor
       ~Tag_t() {
@@ -310,6 +313,15 @@ namespace DD4hep {
     inline bool operator==(const std::string& c, const Tag_t& b) {
       return c == b.m_str;
     }
+
+    /// Convert Strng_t to std::string
+    std::string _toString(const Strng_t& s);
+    /// Convert Tag_t to std::string
+    std::string _toString(const Tag_t& s);
+    /// Helper function to populate the evaluator dictionary  \ingroup DD4HEP_XML
+    void _toDictionary(const XmlChar* name, const Strng_t& s);
+    /// Helper function to populate the evaluator dictionary  \ingroup DD4HEP_XML
+    void _toDictionary(const XmlChar* name, const Tag_t& t);
 
     /// Class describing a list of XML nodes
     /**
@@ -615,28 +627,31 @@ namespace DD4hep {
       typedef XmlDocument* DOC;
       DOC m_doc;
 
-      /// Constructor
-      Document(DOC d) : m_doc(d) {
-      }
+      /// Default Constructor
+      Document() : m_doc(0) {}
+      /// Initializing Constructor
+      Document(DOC d) : m_doc(d) {}
+      /// Copy constructor
+      Document(const Document& d) = default;
+      /// Assignment
+      Document& operator=(const Document& d) = default;
+      /// Destructor
+      ~Document() = default;
       /// Auto-conversion to DOM document
-      operator DOC() const {
-        return m_doc;
-      }
+      operator DOC() const       {        return m_doc;      }
       /// Accessot to DOM document behaviour using arrow operator
-      DOC operator->() const {
-        return m_doc;
-      }
+      DOC operator->() const     {        return m_doc;      }
       /// Accessot to DOM document behaviour
-      DOC ptr() const {
-        return m_doc;
-      }
+      DOC ptr() const            {        return m_doc;      }
+
       /// Access the ROOT eleemnt of the DOM document
       Handle_t root() const;
-
       /// Create DOM element
       Handle_t createElt(const XmlChar* tag) const;
       /// Clone a DOM element / sub-tree
       Handle_t clone(Handle_t source) const;
+      /// Acces the document URI
+      std::string uri() const;
     };
 
     /// Class supporting the basic functionality of an XML document including ownership
@@ -654,11 +669,13 @@ namespace DD4hep {
     class DocumentHolder : public Document {
     public:
       /// Default Constructor
-      DocumentHolder() : Document(0) {
-      }
+      DocumentHolder() = default;
+      /// Default Constructor
+      DocumentHolder(const DocumentHolder& copy) = delete;
       /// Constructor
-      DocumentHolder(DOC d) : Document(d) {
-      }
+      DocumentHolder(DOC d) : Document(d) { }
+      /// Assignment operator
+      DocumentHolder& operator=(const DocumentHolder& copy) = delete;
       /// Assign new document. Old document is dropped.
       DocumentHolder& assign(DOC d);
       /// Standard destructor - releases the document
@@ -668,7 +685,7 @@ namespace DD4hep {
     /// User abstraction class to manipulate XML elements within a document
     /**
      *  User class encapsulating a DOM element
-     *  using the Handle helper.
+     *  using the Handle_t helper.
      *  This is the main class we interact with when
      *  analysing the xml documents for constructing
      *  sub-detectors etc.
@@ -737,6 +754,14 @@ namespace DD4hep {
       /// Access the tag name of this DOM element
       const XmlChar* tagName() const {
         return m_element.rawTag();
+      }
+      /// Access the tag name of this DOM element
+      std::string text() const {
+        return m_element.text();
+      }
+      /// Set text attribute to the XML node
+      void text(const std::string value) const {
+        return m_element.setText(value);
       }
       /// Append a new element to the existing tree
       void append(Handle_t handle) const {
@@ -819,8 +844,14 @@ namespace DD4hep {
       Attribute setRef(const XmlChar* tag, const std::string& refname) const;
       /// Access the value of the reference attribute of the node (attribute ref="ref-name")
       const XmlChar* getRef(const XmlChar* tag) const;
+#ifndef __TIXML__
+      /// Add comment node to the element
+      void addComment(const XmlChar* text) const;
+#endif
       /// Add comment node to the element
       void addComment(const char* text) const;
+      /// Add comment node to the element
+      void addComment(const std::string& text_value) const;
     };
 
     /// User abstraction class to manipulate named XML elements (references) within a document
@@ -870,5 +901,5 @@ namespace DD4hep {
     void dump_tree(Document doc, std::ostream& os);
 
   }
-} /* End namespace DD4hep   */
+} /* End namespace dd4hep   */
 #endif    /* DD4HEP_XMLELEMENTS_H   */

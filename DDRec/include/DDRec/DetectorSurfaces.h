@@ -1,10 +1,10 @@
-#ifndef DDRec_DetectorSurfaces_H_
-#define DDRec_DetectorSurfaces_H_
+#ifndef rec_DetectorSurfaces_H_
+#define rec_DetectorSurfaces_H_
 
 #include "DDRec/Surface.h"
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
 
     /** View on DetElements for accessing the surfaces assigned to this DetElement
      *  in detector construction.
@@ -13,10 +13,10 @@ namespace DD4hep {
      * @date Apr, 10 2014
      * @version $Id$
      */
-    class DetectorSurfaces: virtual public Geometry::DetElement {
+    class DetectorSurfaces: virtual public DetElement {
 
     public:
-      typedef Geometry::DetElement DetElement;
+      typedef DetElement DetElement;
 
       DetectorSurfaces(const DetElement& e);
 
@@ -33,7 +33,9 @@ namespace DD4hep {
 
     };
 
-  } /* namespace DDRec */
-} /* namespace DD4hep */
+  } /* namespace rec */
+} /* namespace dd4hep */
 
-#endif // DDRec_DetectorSurfaces_H_
+
+
+#endif // rec_DetectorSurfaces_H_

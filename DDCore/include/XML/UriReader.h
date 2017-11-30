@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -18,10 +17,10 @@
 #include <string>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace containing utilities to parse XML files using XercesC or TinyXML
-  namespace XML {
+  namespace xml {
 
     /// Class supporting to read data given a URI
     /**
@@ -35,6 +34,14 @@ namespace DD4hep {
      */
     class UriReader {
     public:
+      /// Base class of the user context type chained to the entity resolver
+      /*  User overloaded extensions hole the information necessary 
+       *  to perform the entity resolution
+       *  
+       *  \author   M.Frank
+       *  \version  1.0
+       *  \ingroup DD4HEP_XML
+       */
       struct UserContext {
         UserContext() {}
         UserContext(const UserContext&) {}
@@ -82,17 +89,17 @@ namespace DD4hep {
       /// Default destructor
       virtual ~UriContextReader();
       /// Access to local context
-      virtual UserContext* context()  {  return m_context;  }
+      virtual UserContext* context()  override  {  return m_context;  }
       /// Resolve a given URI to a string containing the data
-      virtual bool load(const std::string& system_id, std::string& data);
+      virtual bool load(const std::string& system_id, std::string& data)  override;
       /// Resolve a given URI to a string containing the data with context
-      virtual bool load(const std::string& system_id, UserContext* context, std::string& data);
+      virtual bool load(const std::string& system_id, UserContext* context, std::string& data)  override;
       /// Inform reader about a locally (e.g. by XercesC) handled source load
-      virtual void parserLoaded(const std::string& system_id);
+      virtual void parserLoaded(const std::string& system_id)  override;
       /// Inform reader about a locally (e.g. by XercesC) handled source load
-      virtual void parserLoaded(const std::string& system_id, UserContext* ctxt);
+      virtual void parserLoaded(const std::string& system_id, UserContext* ctxt)  override;
     };
 
-  }       /* End namespace XML               */
-}         /* End namespace DD4hep            */
+  }       /* End namespace xml               */
+}         /* End namespace dd4hep            */
 #endif    /* DD4HEP_XML_URIREADER_H          */

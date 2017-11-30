@@ -1,6 +1,5 @@
-# $Id: $
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -20,17 +19,27 @@ dd4hep_add_package_library(DDG4 SOURCES src/*.cpp )
 #---------------------------  Legacy libraries (for Frank) -------------------------
 dd4hep_add_plugin(DDG4Legacy    SOURCES legacy/*.cpp)
 #-----------------------------------------------------------------------------------
-dd4hep_add_dictionary( G__DDG4  SOURCES python/DDG4Dict.C )
+dd4hep_add_dictionary( G__DDG4
+  SOURCES ${DDCore_INCLUDE_DIRS}/include/ROOT/Warnings.h python/DDG4Dict.C
+  LINKDEF ${DDCore_INCLUDE_DIRS}/include/ROOT/LinkDef.h
+  )
 #---------------------------  Plugin library for the simulation framework  ---------
 dd4hep_add_plugin(DDG4Plugins
   GENERATED   G__DDG4.cxx
-  SOURCES     plugins/*.cpp)
+  SOURCES     plugins/*.cpp
+  )
 #---------------------------  Plugin library for the simulation framework  ---------
-dd4hep_add_dictionary(G__DDG4Python SOURCES src/python/DDG4Python.C
-  OPTIONAL    [PYTHON REQUIRED] )
+dd4hep_add_dictionary(G__DDG4Python
+  SOURCES ${DDCore_INCLUDE_DIRS}/include/ROOT/Warnings.h src/python/DDG4Python.C
+  LINKDEF ${DDCore_INCLUDE_DIRS}/include/ROOT/LinkDef.h
+  OPTIONAL    [PYTHON REQUIRED]
+  )
 #---------------------------  Plugin library for the simulation framework  ---------
-dd4hep_add_dictionary(G__DDPython SOURCES tpython/DDPython.C
-  OPTIONAL    [PYTHON REQUIRED] )
+dd4hep_add_dictionary(G__DDPython
+  SOURCES ${DDCore_INCLUDE_DIRS}/include/ROOT/Warnings.h tpython/DDPython.C
+  LINKDEF ${DDCore_INCLUDE_DIRS}/include/ROOT/LinkDef.h
+  OPTIONAL    [PYTHON REQUIRED]
+  )
 #---------------------------  Specialized python plugins  --------------------------
 dd4hep_add_regular_library(DDPython
   GENERATED   G__DDPython.cxx
@@ -45,8 +54,8 @@ dd4hep_add_plugin(DDG4Python
 dd4hep_add_plugin(DDG4LCIO 
   OPTIONAL [LCIO REQUIRED SOURCES lcio/*.cpp] )
 #---------------------------  DDRec dependent Plugins  -----------------------------
-dd4hep_add_plugin(DDG4Reco
-  OPTIONAL [DDRec REQUIRED SOURCES reco/*.cpp] )
+#dd4hep_add_plugin(DDG4Reco
+#  OPTIONAL [DDRec REQUIRED SOURCES reco/*.cpp] )
 #-----------------------------------------------------------------------------------
 dd4hep_add_executable(g4gdmlDisplay SOURCES g4gdmlDisplay.cpp)
 #-----------------------------------------------------------------------------------

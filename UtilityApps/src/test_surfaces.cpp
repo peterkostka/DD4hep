@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,7 +10,7 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 
 #include "DDRec/Surface.h"
 #include "DDRec/DetectorSurfaces.h"
@@ -20,6 +19,7 @@
 #include "DD4hep/DDTest.h"
 
 #include "DD4hep/DD4hepUnits.h"
+#include "DD4hep/BitField64.h"
 
 #include "lcio.h"
 #include "IO/LCReader.h"
@@ -32,18 +32,17 @@
 #include <sstream>
 
 using namespace std ;
-using namespace DD4hep ;
-using namespace DD4hep::Geometry;
-using namespace DD4hep::DDRec ;
-using namespace DDSurfaces ;
+using namespace dd4hep ;
+using namespace dd4hep::detail;
+using namespace dd4hep::rec ;
 using namespace lcio;
 
 
-DDTest test = DDTest( "surfaces" ) ; 
+static DDTest test( "surfaces" ) ; 
 
 //=============================================================================
 
-int main(int argc, char** argv ){
+int main_wrapper(int argc, char** argv ){
 
   if( argc < 3 ) {
     std::cout << " usage: test_surfaces compact.xml lcio_file.slcio" << std::endl ;
@@ -52,21 +51,21 @@ int main(int argc, char** argv ){
   
   std::string inFile =  argv[1] ;
 
-  LCDD& lcdd = LCDD::getInstance();
+  Detector& description = Detector::getInstance();
 
-  lcdd.fromCompact( inFile );
+  description.fromCompact( inFile );
 
 
 #if 0
   // create a list of all surfaces in the detector:
-  DetElement world = lcdd.world() ;
+  DetElement world = description.world() ;
   
   SurfaceHelper surfMan(  world ) ;
   
   const SurfaceList& sL = surfMan.surfaceList() ;
   
   // map of surfaces
-  std::map< DD4hep::long64, Surface* > surfMap ;
+  std::map< dd4hep::long64, Surface* > surfMap ;
   
   for( SurfaceList::const_iterator it = sL.begin() ; it != sL.end() ; ++it ){
     
@@ -81,7 +80,7 @@ int main(int argc, char** argv ){
   }
 #else  
 
-  SurfaceManager surfMan = *lcdd.extension< SurfaceManager >() ;
+  SurfaceManager& surfMan = *description.extension< SurfaceManager >() ;
   const SurfaceMap& surfMap = *surfMan.map( "world" ) ;
 
 #endif
@@ -115,7 +114,7 @@ int main(int argc, char** argv ){
 
       std::string cellIDEcoding = col->getParameters().getStringVal("CellIDEncoding") ;
       
-      UTIL::BitField64 idDecoder( cellIDEcoding ) ;
+      BitField64 idDecoder( cellIDEcoding ) ;
 
       int nHit = col->getNumberOfElements() ;
       
@@ -123,7 +122,7 @@ int main(int argc, char** argv ){
 	
         SimTrackerHit* sHit = (SimTrackerHit*) col->getElementAt(i) ;
 	
-        DD4hep::long64 id = sHit->getCellID0() ;
+        dd4hep::long64 id = sHit->getCellID0() ;
 	
         idDecoder.setValue( id ) ;
         //      std::cout << " simhit with cellid : " << idDecoder << std::endl ;
@@ -219,3 +218,4 @@ int main(int argc, char** argv ){
 }
 
 //=============================================================================
+#include "main.h"

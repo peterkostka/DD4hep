@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,13 +15,15 @@
 #include "DDG4/Geant4Config.h"
 
 // C/C++ include files
+#include <stdexcept>
 #include <iostream>
+#include <cerrno>
 
-using namespace DD4hep::Simulation::Setup;
+using namespace dd4hep::sim::Setup;
 
-void setupG4_XML()  {
-  DD4hep::Geometry::LCDD& lcdd = DD4hep::Geometry::LCDD::getInstance();
-  Kernel& kernel = Kernel::instance(lcdd);
+int setupG4_XML()  {
+  dd4hep::Detector& description = dd4hep::Detector::getInstance();
+  Kernel& kernel = Kernel::instance(description);
   kernel.loadGeometry("file:../DD4hep.trunk/DDExamples/CLICSiD/compact/compact.xml");
   kernel.loadXML("DDG4_field.xml");
   kernel.loadXML("sequences.xml");
@@ -32,10 +33,19 @@ void setupG4_XML()  {
   kernel.run();
   std::cout << "Successfully executed application .... " << std::endl;
   kernel.terminate();
+  return 1;
 }
 
-
+/// Main entry point as a program
 int main(int, char**)   {
-  setupG4_XML();
-  return 1;
+  try  {
+    return setupG4_XML();
+  }
+  catch(const std::exception& e)  {
+    std::cout << "Got uncaught exception: " << e.what() << std::endl;
+  }
+  catch (...)  {
+    std::cout << "Got UNKNOWN uncaught exception." << std::endl;
+  }
+  return EINVAL;    
 }

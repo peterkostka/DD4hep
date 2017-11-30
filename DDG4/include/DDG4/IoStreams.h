@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -42,7 +41,7 @@
 class TFile;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   // Forward declarations
   template <typename T> class dd4hep_file_source;
@@ -53,7 +52,7 @@ namespace DD4hep {
     close_handle = 3
   };
 
-  /// DD4hep file handling extension to boost::iostreams
+  /// dd4hep file handling extension to boost::iostreams
   /**
    *  Basic file handling for data sources and data sinks.
    *  Please see boost::iostreams for details.
@@ -79,34 +78,43 @@ namespace DD4hep {
     typedef char  char_type;
     typedef boost::iostreams::stream_offset stream_offset;
     typedef boost::iostreams::detail::path detail_path;
+    /// Helper structure to define boost::iostreams
     struct  category : boost::iostreams::seekable_device_tag, boost::iostreams::closable_tag { };
 
-    // Default constructor
-    dd4hep_file() : m_handle(0) {   }
-    // Constructors taking file desciptors
+    /// Default constructor
+    dd4hep_file() = default;
+    /// Constructors taking file desciptors
     dd4hep_file(handle_type fd, dd4hep_file_flags);
-    // Constructors taking file desciptors
+    /// Constructors taking file desciptors
     dd4hep_file(const char* fname, BOOST_IOS::openmode mode);
-
-    // open overloads taking file descriptors
+    /// Default destructor
+    //~dd4hep_file() = default;
+    /// open overloads taking file descriptors
     void open(handle_type fd, dd4hep_file_flags flags);
-
-    // open overload taking C-style string
+    /// open overload taking C-style string
     void open(const char* path, BOOST_IOS::openmode mode = BOOST_IOS::in | BOOST_IOS::out );
-
-    bool is_open() const  {  return m_handle != 0;  }
+    /// Close the file stream
     void close();
+    /// Read from input stream
     std::streamsize read(char_type* s, std::streamsize n);
+    /// Write to output stream
     std::streamsize write(const char_type* s, std::streamsize n);
+    /// Direct access: set file pointer of the stream
     std::streampos seek(stream_offset off, BOOST_IOS::seekdir way);
+    /// Check if the file stream is opened
+    bool is_open() const  {  return m_handle != 0;  }
+    /// Access to native stream handle
     handle_type handle() const   {   return m_handle; }
+
   private:
-    handle_type m_handle;
-    dd4hep_file_flags m_flag;
+    /// Native stream handle
+    handle_type       m_handle = 0;
+    /// Stream flag(s)
+    dd4hep_file_flags m_flag = close_handle;
   };
 
 
-  /// DD4hep file source extension to boost::iostreams
+  /// dd4hep file source extension to boost::iostreams
   /**
    *  Basic data sources implementation.
    *  Please see boost::iostreams for details.
@@ -127,6 +135,7 @@ namespace DD4hep {
   template <typename T=int> class dd4hep_file_source : private dd4hep_file<T> {
   public:
     typedef dd4hep_file<T> descriptor;
+    /// Helper structure to define boost::iostreams
     struct category : boost::iostreams::input_seekable,
                       boost::iostreams::device_tag,
                       boost::iostreams::closable_tag      { };
@@ -170,7 +179,7 @@ namespace DD4hep {
     {     open(detail_path(path), mode);                           }
   };
 
-  /// DD4hep file sink extension to boost::iostreams
+  /// dd4hep file sink extension to boost::iostreams
   /**
    *  Basic data sink implementation.
    *  Please see boost::iostreams for details.
@@ -192,6 +201,7 @@ namespace DD4hep {
   class  dd4hep_file_sink : private dd4hep_file<T> {
   public:
     typedef dd4hep_file<T> descriptor;
+    /// Helper structure to define boost::iostreams
     struct category : boost::iostreams::output_seekable,
                       boost::iostreams::device_tag,
                       boost::iostreams::closable_tag  { };

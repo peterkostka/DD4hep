@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -25,7 +24,7 @@
 #include <climits>
 
 using namespace std;
-using namespace DD4hep;
+using namespace dd4hep;
 
 ClassImp(GenericEventHandler)
 
@@ -36,7 +35,7 @@ GenericEventHandler::GenericEventHandler() : m_current(0) {
 /// Default destructor
 GenericEventHandler::~GenericEventHandler()  {
   m_subscriptions.clear();
-  deletePtr(m_current);
+  detail::deletePtr(m_current);
 }
 
 EventHandler* GenericEventHandler::current() const   {
@@ -47,9 +46,9 @@ EventHandler* GenericEventHandler::current() const   {
 }
 
 /// Notfy all subscribers
-void GenericEventHandler::NotifySubscribers(void (EventConsumer::*pmf)(EventHandler*))   {
+void GenericEventHandler::NotifySubscribers(void (EventConsumer::*pmf)(EventHandler&))   {
   for(Subscriptions::iterator i=m_subscriptions.begin(); i!=m_subscriptions.end();++i)
-    ((*i)->*pmf)(this);
+    ((*i)->*pmf)(*this);
 }
 
 /// Subscribe to notification of new data present
@@ -105,7 +104,7 @@ bool GenericEventHandler::Open(const string& file_type, const string& file_name)
   m_hasFile = false;
   m_hasEvent = false;
   try  {
-    deletePtr(m_current);
+    detail::deletePtr(m_current);
     //  prefer event handler configured in xml
     if ( file_type.find("FCC") != string::npos ) {
       m_current = (EventHandler*)PluginService::Create<void*>("DDEve_FCCEventHandler",(const char*)0);
@@ -127,7 +126,7 @@ bool GenericEventHandler::Open(const string& file_type, const string& file_name)
         return true;
       }
       err = "+++ Failed to open the data file:"+file_name;
-      deletePtr(m_current);   
+      detail::deletePtr(m_current);   
     }
     else  {
       err = "+++ Failed to create fikle reader for file '"+file_name+"' of type '"+file_type+"'";

@@ -7,16 +7,23 @@ INSTALL_XERCESC=${SW}/xercesc;
 INSTALL_G4=${SW}/g4_10.01.p02_dbg/lib/Geant4-10.1.2;
 CHECKOUT=${dir_name}/../../DD4hep.trunk/checkout;
 GEANT_VERSION=10.01.p02;
-ROOT_VERSION=5.34.25
-ROOT_VERSION=6.04.10;
+#ROOT_VERSION=5.34.25
 
-#INSTALL_G4=${SW}/g4_10.02.p02_dbg/lib/Geant4-10.2.2;
-#GEANT_VERSION=10.02.p02;
-ROOT_VERSION=6.06.06;
-#source ${INSTALL_G4}/../../bin/geant4.sh;
+GEANT_VERSION=10.02.p02;
+GEANT_VERSION=10.03.p02;
+INSTALL_G4=${SW}/g4_${GEANT_VERSION}_dbg/lib/Geant4-10.3.2;
+#ROOT_VERSION=6.06.06;
+ROOT_VERSION=6.08.00;
+ROOT_VERSION=6.10.04;
+source ${INSTALL_G4}/../../bin/geant4.sh;
 num_threads=2
-export CXX="`which g++-5` -D_GLIBCXX_USE_CXX11_ABI=0";
-export CC="`which gcc-5` -D_GLIBCXX_USE_CXX11_ABI=0";
+#
+# Root version < 6.08 : 
+#export CXX="`which g++-5` -D_GLIBCXX_USE_CXX11_ABI=0";
+#export CC="`which gcc-5` -D_GLIBCXX_USE_CXX11_ABI=0";
+#
+export CXX="`which g++-5`";
+export CC="`which gcc-5`";
 
 # ==============================================================================
 # Parse arguments
@@ -131,14 +138,14 @@ make_build()
 
 build_all()
 {
+    export Geant4_DIR=${SW}/g4_${GEANT_VERSION}_dbg;
     DEF_MODES="ON OFF";
     G4_MODES="${DEF_MODES}";
     XERCES_MODES="${DEF_MODES}";
     LCIO_MODES="${DEF_MODES}";
-    #XERCES_MODES="OFF";
-    #G4_MODES="ON";
-    #XERCES_MODES="OFF";
-    #LCIO_MODES="ON";
+    XERCES_MODES="OFF";
+    G4_MODES="ON";
+    LCIO_MODES="OFF";
     BUILD_TYPE=;
     BUILD_TYPE="-DCMAKE_BUILD_TYPE=Debug";
     for DOGEANT4 in ${G4_MODES}; do
@@ -155,7 +162,7 @@ build_all()
                     OPTS="`make_opt ${DOGEANT4} -DDD4HEP_USE_GEANT4 -DGeant4_DIR=${INSTALL_G4}`\
 		    `make_opt ${DOLCIO}     -DDD4HEP_USE_LCIO -DLCIO_DIR=${INSTALL_LCIO}` \
 		    `make_opt ${DOXERCESC}  -DDD4HEP_USE_XERCESC -DXERCESC_ROOT_DIR=${INSTALL_XERCESC}` \
-                    -DDD4HEP_NO_REFLEX=ON -DDD4HEP_USE_CXX11=OFF \
+                    -DCLHEP_INCLUDE_DIR=${INSTALL_G4}/../../include/Geant4/CLHEP -DCLHEP_LIBRARY=${INSTALL_G4}/../libG4clhep.so \
                     -DROOTSYS=${ROOTSYS} -DCMAKE_INSTALL_PREFIX=${WORK_DIR}/DD4hep";
 		    CMD="cd ${dir_name}/$folder ; cmake ${BUILD_TYPE} ${OPTS} ${CHECKOUT};";
                     make_build;
@@ -166,7 +173,7 @@ build_all()
                     OPTS_ex="`make_opt ${DOGEANT4} -DDD4HEP_USE_GEANT4 -DGeant4_DIR=${INSTALL_G4}`\
 		    `make_opt ${DOLCIO}     -DDD4HEP_USE_LCIO    -DLCIO_DIR=${INSTALL_LCIO}` \
 		    `make_opt ${DOXERCESC}  -DDD4HEP_USE_XERCESC -DXERCESC_ROOT_DIR=${INSTALL_XERCESC}` \
-                    -DDD4HEP_NO_REFLEX=ON -DDD4HEP_USE_CXX11=OFF \
+                    -DCLHEP_INCLUDE_DIR=${INSTALL_G4}/../../include/Geant4/CLHEP -DCLHEP_LIBRARY=${INSTALL_G4}/../libG4clhep.so \
                     -DROOTSYS=${ROOTSYS}";
 		    source ${DD4hep_DIR}/bin/thisdd4hep.sh;
    		    CMD="cd ${WORK_DIR}/EX; cmake ${BUILD_TYPE} ${OPTS} -DDD4hep_DIR=${DD4hep_DIR} ${CHECKOUT}/examples;";
@@ -188,7 +195,7 @@ elif [ "$ROOT_VERSION" == "" ] || [ "$PLATFORMS" == "" ]; then
     echo "ERROR CONDITION ROOT_VERSION=${ROOT_VERSION}  PLATFORMS=${PLATFORMS}";
     exit 0;
 fi;
-export INSTALL_G4=${SW}/g4_${GEANT_VERSION}_dbg/lib/Geant4-10.1.2;
+export INSTALL_G4;
 export ROOTSYS=${SW}/root_v${ROOT_VERSION}_dbg;
 . ${ROOTSYS}/bin/thisroot.sh;
 #

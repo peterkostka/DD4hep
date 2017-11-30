@@ -1,6 +1,5 @@
-# $Id: $
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -20,13 +19,17 @@ dd4hep_add_executable( geoConverter    src/converter.cpp )
 #-----------------------------------------------------------------------------------
 dd4hep_add_executable( geoPluginRun    src/plugin_runner.cpp )
 #-----------------------------------------------------------------------------------
+dd4hep_add_executable( dumpBfield      src/dumpBfield.cpp )
+#-----------------------------------------------------------------------------------
 dd4hep_add_executable( print_materials src/print_materials.cpp USES DDRec )
 #-----------------------------------------------------------------------------------
 dd4hep_add_executable( materialScan    src/materialScan.cpp USES DDRec )
 #-----------------------------------------------------------------------------------
+dd4hep_add_executable( graphicalMaterialScan src/graphicalMaterialScan.cpp USES DDRec ROOT )
+#-----------------------------------------------------------------------------------
 #dd4hep_add_executable( pydd4hep     
 #  USES        [ROOT   REQUIRED COMPONENTS PyROOT]
-#  OPTIONAL    [PYTHON REQUIRED SOURCES src/dd4hep_python.cpp])
+#  OPTIONAL    [PYTHON REQUIRED SOURCES src/DD4hep_python.cpp])
 #-----------------------------------------------------------------------------------
 dd4hep_add_executable( dumpdetector     
   USES DDRec
@@ -36,27 +39,31 @@ dd4hep_add_executable(test_surfaces
   USES     DDRec DDTest
   OPTIONAL [LCIO REQUIRED SOURCES src/test_surfaces.cpp])
 #-----------------------------------------------------------------------------------
-dd4hep_add_dictionary( G__teve
+dd4hep_add_executable(test_cellid_position_converter
+  USES     DDRec DDTest
+  OPTIONAL [LCIO REQUIRED SOURCES src/test_cellid_position_converter.cpp])
+#-----------------------------------------------------------------------------------
+dd4hep_add_dictionary( G__eve
   SOURCES src/EvNavHandler.h
   LINKDEF src/LinkDef.h )
 
 #-----------------------------------------------------------------------------------
 if ( ${DD4HEP_USE_LCIO} )
-  dd4hep_add_dictionary( G__teve1
+  dd4hep_add_dictionary( G__eve1
     SOURCES src/EvNavHandler.h
     LINKDEF src/LinkDef.h )
   dd4hep_add_executable( teveLCIO
-    USES           [ROOT REQUIRED COMPONENTS TEve]
+    USES           [ROOT REQUIRED COMPONENTS Eve Gui Graf3d RGL]
                    [LCIO REQUIRED]
                    DDRec
-    GENERATED      G__teve1.cxx
+    GENERATED      G__eve1.cxx
     SOURCES        src/teve_display.cpp src/next_event_lcio.cpp
  )
 endif()
 
 #-----------------------------------------------------------------------------------
-dd4hep_add_executable( teveDisplay 
-  USES           [ROOT REQUIRED COMPONENTS TEve] DDRec
-  GENERATED      G__teve.cxx
+dd4hep_add_executable( teveDisplay
+  USES           [ROOT REQUIRED COMPONENTS Eve Gui Graf3d RGL] DDRec
+  GENERATED      G__eve.cxx
   SOURCES        src/teve_display.cpp src/next_event_dummy.cpp
 )

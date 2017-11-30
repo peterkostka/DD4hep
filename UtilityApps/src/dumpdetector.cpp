@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -17,7 +16,7 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/DetType.h"
 #include "DD4hep/DetectorSelector.h"
 #include "DD4hep/DD4hepUnits.h"
@@ -32,14 +31,13 @@
 
 
 using namespace std ;
-using namespace DD4hep ;
-using namespace DD4hep::Geometry;
-using namespace DD4hep::DDRec;
-using namespace DDSurfaces ;
 using namespace dd4hep ;
+using namespace dd4hep::detail;
+using namespace dd4hep::rec;
+
 
 //=============================================================================
-void printDetectorData( DetElement det ){
+static void printDetectorData( DetElement det ){
 
   try{ 
     FixedPadSizeTPCData* d = det.extension<FixedPadSizeTPCData>() ; 
@@ -64,10 +62,10 @@ void printDetectorData( DetElement det ){
 
 }
 
-void printDetectorSets( std::string name, unsigned int includeFlag,  unsigned int excludeFlag=DetType::IGNORE ){
+static void printDetectorSets( std::string name, unsigned int includeFlag,  unsigned int excludeFlag=DetType::IGNORE ){
 
-  LCDD& lcdd = LCDD::getInstance();
-  const std::vector<DetElement>& dets = DetectorSelector(lcdd).detectors( includeFlag, excludeFlag ) ;
+  Detector& description = Detector::getInstance();
+  const std::vector<DetElement>& dets = DetectorSelector(description).detectors( includeFlag, excludeFlag ) ;
   std::cout << " " << name  ;
   for(int i=0,N=dets.size();i<N;++i)  
     std::cout << dets[i].name() << ", " ;
@@ -77,7 +75,7 @@ void printDetectorSets( std::string name, unsigned int includeFlag,  unsigned in
 
 //=============================================================================
 
-int main(int argc, char** argv ){
+static int invoke_dump_detector(int argc, char** argv ){
     
   if( argc < 2 ) {
     std::cout << " usage: dumpdetector compact.xml [-s]" 
@@ -96,16 +94,16 @@ int main(int argc, char** argv ){
   bool printSurfaces = ( argc>2 && !strcmp( argv[2] , "-s" ) );
 
 
-  LCDD& lcdd = LCDD::getInstance();
+  Detector& description = Detector::getInstance();
 
-  lcdd.fromCompact( inFile );
+  description.fromCompact( inFile );
 
-  DetElement world = lcdd.world() ;
+  DetElement world = description.world() ;
 
 
   std::cout << "############################################################################### "  << std::endl  ;
   
-  Header h = lcdd.header() ;
+  Header h = description.header() ;
 
   std::cout << " detector model : " <<  h.name()  << std::endl 
 	    << "    title : "  << h.title() << std::endl 
@@ -130,9 +128,9 @@ int main(int argc, char** argv ){
 
   if( printDetData ){
 
-    DD4hep::Geometry::LCDD::HandleMap dets = lcdd.detectors() ;
+    dd4hep::Detector::HandleMap dets = description.detectors() ;
 
-    for( DD4hep::Geometry::LCDD::HandleMap::const_iterator it = dets.begin() ; it != dets.end() ; ++it ){
+    for( dd4hep::Detector::HandleMap::const_iterator it = dets.begin() ; it != dets.end() ; ++it ){
       
       DetElement det = it->second ;
 
@@ -154,13 +152,13 @@ int main(int argc, char** argv ){
 
 
 
-  DD4hep::Geometry::LCDD::HandleMap sensDet = lcdd.sensitiveDetectors() ;
+  dd4hep::Detector::HandleMap sensDet = description.sensitiveDetectors() ;
 
 
   std::cout << "############################################################################### "  << std::endl  
             << "     sensitive detectors:     " << std::endl ;
 
-  for( DD4hep::Geometry::LCDD::HandleMap::const_iterator it = sensDet.begin() ; it != sensDet.end() ; ++it ){
+  for( dd4hep::Detector::HandleMap::const_iterator it = sensDet.begin() ; it != sensDet.end() ; ++it ){
 
     SensitiveDetector sDet = it->second ;
     std::cout << "     " << it->first << " : type = " << sDet.type() << std::endl ;
@@ -209,7 +207,7 @@ int main(int argc, char** argv ){
     
     for(unsigned i=0 ; i < parentCount ; ++i ) std::cout << "\t" ;
 
-    std::cout << de.name() << "[ path: "<< de.placementPath ()  <<  "] (id: " << de.id() << ") - sens type : " << lcdd.sensitiveDetector( de.name() ).type() << "\t surfaces : " <<  ( sL.empty() ? 0 : sL.size()  ) << std::endl ;
+    std::cout << de.name() << "[ path: "<< de.placementPath ()  <<  "] (id: " << de.id() << ") - sens type : " << description.sensitiveDetector( de.name() ).type() << "\t surfaces : " <<  ( sL.empty() ? 0 : sL.size()  ) << std::endl ;
 
 
     //    printDetectorData( de ) ;
@@ -232,7 +230,17 @@ int main(int argc, char** argv ){
 }
 
 
-
-
+int main(int argc, char** argv ){
+  try {
+    return invoke_dump_detector(argc,argv);
+  }
+  catch(const std::exception& e)  {
+    std::cout << "Got uncaught exception: " << e.what() << std::endl;
+  }
+  catch (...)  {
+    std::cout << "Got UNKNOWN uncaught exception." << std::endl;
+  }
+  return EINVAL;    
+}
 
 //=============================================================================

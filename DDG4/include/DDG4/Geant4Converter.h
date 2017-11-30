@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -19,27 +18,47 @@
 #include "DDG4/Geant4Mapping.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
-    /// Geometry converter from DD4hep to Geant 4.
+    /// Geometry converter from dd4hep to Geant 4.
     /**
      *  \author  M.Frank
      *  \version 1.0
      *  \ingroup DD4HEP_SIMULATION
      */
-    class Geant4Converter : public Geometry::GeoHandler, public Geant4Mapping {
+    class Geant4Converter : public detail::GeoHandler, public Geant4Mapping {
     public:
-      bool m_checkOverlaps;
-      PrintLevel m_outputLevel;
+      /// Property: Flag to debug materials during conversion mechanism
+      bool debugMaterials  = false;
+      /// Property: Flag to debug elements during conversion mechanism
+      bool debugElements   = false;
+      /// Property: Flag to debug shapes during conversion mechanism
+      bool debugShapes     = false;
+      /// Property: Flag to debug volumes during conversion mechanism
+      bool debugVolumes    = false;
+      /// Property: Flag to debug placements during conversion mechanism
+      bool debugPlacements = false;
+      /// Property: Flag to debug regions during conversion mechanism
+      bool debugRegions    = false;
+
+      /// Property: Flag to dump all placements after the conversion procedure
+      bool printPlacements = false;
+      /// Property: Flag to dump all sensitives after the conversion procedure
+      bool printSensitives = false;
+
+      /// Property: Check geometrical overlaps for volume placements and G4 imprints 
+      bool       checkOverlaps;
+      /// Property: Output level for debug printing
+      PrintLevel outputLevel;
 
       /// Initializing Constructor
-      Geant4Converter(LCDD& lcdd);
+      Geant4Converter(Detector& description);
 
       /// Initializing Constructor
-      Geant4Converter(LCDD& lcdd, PrintLevel level);
+      Geant4Converter(Detector& description, PrintLevel level);
 
       /// Standard destructor
       virtual ~Geant4Converter();
@@ -77,7 +96,7 @@ namespace DD4hep {
       virtual void* handleLimitSet(LimitSet limitset, const std::set<const TGeoVolume*>& volumes) const;
 
       /// Handle the geant 4 specific properties
-      void handleProperties(LCDD::Properties& prp) const;
+      void handleProperties(Detector::Properties& prp) const;
 
       /// Print the geometry type SensitiveDetector
       virtual void printSensitive(SensitiveDetector sens_det, const std::set<const TGeoVolume*>& volumes) const;
@@ -85,7 +104,7 @@ namespace DD4hep {
       /// Print Geant4 placement
       virtual void* printPlacement(const std::string& name, const TGeoNode* node) const;
     };
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_GEANT4CONVERTER_H

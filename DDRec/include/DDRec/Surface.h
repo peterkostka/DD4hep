@@ -1,22 +1,21 @@
-#ifndef DDRec_Surface_H
-#define DDRec_Surface_H
+#ifndef rec_Surface_H
+#define rec_Surface_H
 
 #include "DD4hep/Objects.h"
 #include "DD4hep/Volumes.h"
-#include "DD4hep/Detector.h"
+#include "DD4hep/DetElement.h"
 
-#include "DDSurfaces/ISurface.h"
+#include "DDRec/ISurface.h"
 #include "DDRec/Material.h"
 
 #include <list>
+#include <memory>
 
 class TGeoMatrix ;
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
   
-    using namespace DDSurfaces ;
-    
     //-------------------------------------------------------------------------------------------
 
     class VolSurface  ;
@@ -43,7 +42,7 @@ namespace DD4hep {
       double _th_o ;
       MaterialData _innerMat ;
       MaterialData _outerMat ;    
-      Geometry::Volume _vol ;
+      Volume _vol ;
       long64 _id ;
       unsigned _refCount ;
 
@@ -80,7 +79,7 @@ namespace DD4hep {
       VolSurfaceBase( SurfaceType typ, 
 		      double thickness_inner ,double thickness_outer, 
 		      Vector3D u_val ,Vector3D v_val ,
-		      Vector3D n ,Vector3D o, Geometry::Volume vol,int identifier ) : 
+		      Vector3D n ,Vector3D o, Volume vol,int identifier ) : 
 	_type(typ ) ,
 	_u( u_val ) ,
 	_v( v_val ) ,
@@ -113,7 +112,7 @@ namespace DD4hep {
 
 
       /// the volume to which this surface is attached.
-      Geometry::Volume volume() const { return _vol ; }
+      Volume volume() const { return _vol ; }
 
       /// The id of this surface 
       virtual long64 id() const  ;
@@ -224,7 +223,7 @@ namespace DD4hep {
       
 
       /// the volume to which this surface is attached.
-      Geometry::Volume volume() const { return _surf->volume() ; }
+      Volume volume() const { return _surf->volume() ; }
 
       /// pointer to underlying object 
       VolSurfaceBase* ptr() const { return _surf ; }	
@@ -303,7 +302,7 @@ namespace DD4hep {
     /** Helper function for accessing the list assigned to a DetElement - attaches
      * empty list if needed.
      */
-    VolSurfaceList* volSurfaceList( Geometry::DetElement& det) ;
+    VolSurfaceList* volSurfaceList( DetElement& det) ;
 
     /** std::list of VolSurfaces that takes ownership.
      * @author F.Gaede, DESY
@@ -315,7 +314,7 @@ namespace DD4hep {
       VolSurfaceList() {}
 
       // required c'tor for extension mechanism
-      VolSurfaceList(Geometry::DetElement& det){
+      VolSurfaceList(DetElement& det){
 
         VolSurfaceList* sL = volSurfaceList( det ) ; 
 
@@ -324,7 +323,7 @@ namespace DD4hep {
 
 
       // required c'tor for extension mechanism
-      VolSurfaceList(const VolSurfaceList& vsl, Geometry::DetElement& /*det*/ ){
+      VolSurfaceList(const VolSurfaceList& vsl, DetElement& /*det*/ ){
 	
         this->insert( this->end() , vsl.begin() , vsl.end() ) ;
       }
@@ -350,7 +349,7 @@ namespace DD4hep {
 
       /// standard c'tor with all necessary arguments - origin is (0,0,0) if not given.
       VolPlaneImpl( SurfaceType typ, double thickness_inner ,double thickness_outer, 
-		    Vector3D u_val ,Vector3D v_val ,Vector3D n_val , Vector3D o_val, Geometry::Volume vol, int id_val  ) :
+		    Vector3D u_val ,Vector3D v_val ,Vector3D n_val , Vector3D o_val, Volume vol, int id_val  ) :
 	
       VolSurfaceBase( typ, thickness_inner, thickness_outer, u_val,v_val, n_val, o_val, vol, id_val ) {
 	
@@ -383,7 +382,7 @@ namespace DD4hep {
        *  its rho defining the radius of the cylinder. The measurement direction v is set to be (0,0,1), the normal is
        *  chosen to be parallel to the origin vector and u = n X v. 
        */
-      VolCylinderImpl( Geometry::Volume vol, SurfaceType type, double thickness_inner ,double thickness_outer,  Vector3D origin ) ;
+      VolCylinderImpl( Volume vol, SurfaceType type, double thickness_inner ,double thickness_outer,  Vector3D origin ) ;
 
       /** First direction of measurement U - rotated to point projected onto the cylinder.
        *  No check is done whether the point actually is on the cylinder surface
@@ -430,7 +429,7 @@ namespace DD4hep {
        *  The measurement direction v defines the opening angle of the cone,
        *  the normal is chosen to be orthogonal to v. NB: the cone is always parallel to the local z axis.
        */
-      VolConeImpl( Geometry::Volume vol, SurfaceType type, double thickness_inner ,double thickness_outer,
+      VolConeImpl( Volume vol, SurfaceType type, double thickness_inner ,double thickness_outer,
 		   Vector3D v, Vector3D origin ) ;
       
       /** First direction of measurement U - rotated to point projected onto the cone.
@@ -457,7 +456,7 @@ namespace DD4hep {
       /** Convert the local position (u,v) on the surface to the global position  - v runs along the axis of the cone, u is r*phi*/
       virtual Vector3D localToGlobal( const Vector2D& point) const ;
 
-      virtual std::vector< std::pair<DDSurfaces::Vector3D, DDSurfaces::Vector3D> > getLines(unsigned nMax=100) ;
+      virtual std::vector< std::pair<Vector3D, Vector3D> > getLines(unsigned nMax=100) ;
   } ;
 
 
@@ -474,7 +473,7 @@ namespace DD4hep {
     class VolSurfaceHandle : public VolSurface {
       
     public:
-      VolSurfaceHandle( Geometry::Volume vol, SurfaceType typ, double thickness_inner ,double thickness_outer, 
+      VolSurfaceHandle( Volume vol, SurfaceType typ, double thickness_inner ,double thickness_outer, 
 			Vector3D u_val ,Vector3D v_val ,Vector3D n_val , Vector3D o_val = Vector3D(0.,0.,0.) ) :
 	
 	VolSurface(  new T( typ, thickness_inner, thickness_outer, u_val, v_val, n_val, o_val, vol , 0 )  ){
@@ -489,13 +488,13 @@ namespace DD4hep {
 
     class VolCylinder : public VolSurface{
     public:
-      VolCylinder( Geometry::Volume vol, SurfaceType typ_val, double thickness_inner ,double thickness_outer,  Vector3D origin_val ) :
+      VolCylinder( Volume vol, SurfaceType typ_val, double thickness_inner ,double thickness_outer,  Vector3D origin_val ) :
         VolSurface( new VolCylinderImpl( vol,  typ_val,  thickness_inner , thickness_outer, origin_val ) ) {}
     } ;
 
     class VolCone : public VolSurface{
     public:
-      VolCone( Geometry::Volume vol, SurfaceType typ_val, double thickness_inner ,double thickness_outer, Vector3D v_val, Vector3D origin_val ) :
+      VolCone( Volume vol, SurfaceType typ_val, double thickness_inner ,double thickness_outer, Vector3D v_val, Vector3D origin_val ) :
         VolSurface( new VolConeImpl( vol,  typ_val,  thickness_inner , thickness_outer, v_val,  origin_val ) ) {}
     } ;
 
@@ -512,9 +511,9 @@ namespace DD4hep {
       
     protected:
       
-      Geometry::DetElement _det ;
+      DetElement _det ;
       mutable VolSurface _volSurf ;
-      TGeoMatrix* _wtM ; // matrix for world transformation of surface
+      std::unique_ptr<TGeoMatrix> _wtM ; // matrix for world transformation of surface
       
       long64 _id ;
       
@@ -524,8 +523,10 @@ namespace DD4hep {
       Vector3D _n ;
       Vector3D _o ;
 
-      /// default c'tor
-      Surface() :_det( Geometry::DetElement() ), _volSurf( VolSurface() ), _wtM( 0 ) , _id( 0)  { }
+      /// default c'tor etc. removed
+      Surface() = delete;
+      Surface( Surface const& ) = delete;
+      Surface& operator=( Surface const& ) = delete;
 
     public:
     
@@ -534,7 +535,7 @@ namespace DD4hep {
       /** Standard c'tor initializes the surface from the parameters of the VolSurface and the 
        *  transform (placement) of the corresponding volume, if found in DetElement 
        */
-      Surface( Geometry::DetElement det, VolSurface volSurf ) ;      
+      Surface( DetElement det, VolSurface volSurf ) ;      
     
       /// The id of this surface - corresponds to DetElement id.
       virtual long64 id() const ;
@@ -545,7 +546,7 @@ namespace DD4hep {
       virtual const SurfaceType& type() const ;
     
       /// The volume that has the surface attached.
-      Geometry::Volume volume() const { return _volSurf.volume()  ; }
+      Volume volume() const { return _volSurf.volume()  ; }
 
       /// The VolSurface attched to the volume.
       VolSurface volSurface() const { return _volSurf ; }
@@ -624,7 +625,7 @@ namespace DD4hep {
     public:
 
       ///Standard c'tor.
-      CylinderSurface( Geometry::DetElement det, VolSurface volSurf ) : Surface( det, volSurf ) { }      
+      CylinderSurface( DetElement det, VolSurface volSurf ) : Surface( det, volSurf ) { }      
       
     /** First direction of measurement U - rotated to point projected onto the cylinder.
        *  No check is done whether the point actually is on the cylinder surface
@@ -662,7 +663,7 @@ namespace DD4hep {
      */
     class ConeSurface : public CylinderSurface, public ICone {
     public:      
-      ConeSurface( Geometry::DetElement det, VolSurface volSurf ) : CylinderSurface( det, volSurf ) { }      
+      ConeSurface( DetElement det, VolSurface volSurf ) : CylinderSurface( det, volSurf ) { }      
       
       /// the start radius of the cone
       virtual double radius0() const ;
@@ -699,11 +700,11 @@ namespace DD4hep {
       SurfaceList(const SurfaceList& other ) : std::list< ISurface* >( other ), _isOwner( false ){}
 
       /// required c'tor for extension mechanism
-      SurfaceList(const Geometry::DetElement& ){
+      SurfaceList(const DetElement& ) : _isOwner( false ) {
         // anything to do here  ?
       }
       /// required c'tor for extension mechanism
-      SurfaceList(const SurfaceList& ,const Geometry::DetElement& ){
+      SurfaceList(const SurfaceList& ,const DetElement& ) : _isOwner( false ) {
         // anything to do here  ?
       }
     
@@ -712,12 +713,14 @@ namespace DD4hep {
 
     } ;
   
-    //    SurfaceList* surfaceList( Geometry::DetElement& det ) ;
+    //    SurfaceList* surfaceList( DetElement& det ) ;
 
     //======================================================================================================
 
   
   } /* namespace */
 } /* namespace */
+
+
 
 #endif /* Surface */

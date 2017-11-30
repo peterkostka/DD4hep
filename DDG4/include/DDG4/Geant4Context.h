@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -27,16 +26,14 @@ class G4VTrajectory;
 class G4TrackingManager;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   // Forward declarations
-  namespace Geometry {
-    class LCDD;
-    class DetElement;
-  }
+  class Detector;
+  class DetElement;
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     class Geant4Run;
     class Geant4Event;
@@ -83,21 +80,19 @@ namespace DD4hep {
       /// Access the G4Event directly: Explicit G4Run accessor
       const G4Run& run() const       { return *m_run;   }
       /// Add an extension object to the detector element
-      /** Note:
-       *  To add an extension, which should NOT be deleted,
-       *  set 'dtor' to ObjectExtensions::_noDelete or 0.
-       */
-      void* addExtension(void* ptr, const std::type_info& info, destruct_t dtor)    {
-        return ObjectExtensions::addExtension(ptr,info,dtor);
+      void* addExtension(unsigned long long int k, ExtensionEntry* e)  {
+        return ObjectExtensions::addExtension(k, e);
       }
       /// Add user extension object. Ownership is transferred!
       template <typename T> T* addExtension(T* ptr, bool take_ownership=true)   {
-        destruct_t dt = ObjectExtensions::_delete<T>;
-        return (T*)ObjectExtensions::addExtension(ptr,typeid(T),take_ownership ? dt : 0);
+        ExtensionEntry* e = take_ownership
+          ? (ExtensionEntry*)new detail::DeleteExtension<T,T>(ptr)
+          : (ExtensionEntry*)new detail::SimpleExtension<T,T>(ptr);
+        return (T*)ObjectExtensions::addExtension(detail::typeHash64<T>(),e);
       }
       /// Access to type safe extension object. Exception is thrown if the object is invalid
       template <typename T> T* extension(bool alert=true) {
-        return (T*)ObjectExtensions::extension(typeid(T),alert);
+        return (T*)ObjectExtensions::extension(detail::typeHash64<T>(),alert);
       }
     };
 
@@ -141,42 +136,80 @@ namespace DD4hep {
       Geant4Random& random() const     {  return *m_random;  }
 
       /// Add an extension object to the detector element
-      /** Note:
-       *  To add an extension, which should NOT be deleted,
-       *  set 'dtor' to ObjectExtensions::_noDelete or 0.
-       */
-      void* addExtension(void* ptr, const std::type_info& info, destruct_t dtor)    {
-        return ObjectExtensions::addExtension(ptr,info,dtor);
+      void* addExtension(unsigned long long int k, ExtensionEntry* e)  {
+        return ObjectExtensions::addExtension(k, e);
       }
       /// Add user extension object. Ownership is transferred and object deleted at the end of the event.
       template <typename T> T* addExtension(T* ptr, bool take_ownership=true)   {
-        destruct_t dt = ObjectExtensions::_delete<T>;
-        return (T*)ObjectExtensions::addExtension(ptr,typeid(T),take_ownership ? dt : 0);
+        ExtensionEntry* e = take_ownership
+          ? (ExtensionEntry*)new detail::DeleteExtension<T,T>(ptr)
+          : (ExtensionEntry*)new detail::SimpleExtension<T,T>(ptr);
+        return (T*)ObjectExtensions::addExtension(detail::typeHash64<T>(),e);
       }
       /// Access to type safe extension object. Exception is thrown if the object is invalid
       template <typename T> T* extension(bool alert=true) {
-        return (T*)ObjectExtensions::extension(typeid(T),alert);
+        return (T*)ObjectExtensions::extension(detail::typeHash64<T>(),alert);
       }
     };
 
     /// Generic context to extend user, run and event information
     /**
+     *  A valid instance of the Geant4Context is passed to every instance of a Geant4Action at 
+     *  creation time.
+     *
+     *  The Geant4Context is the main thread specific accessor to the dd4hep, DDG4 and
+     *  the user framework.
+     *  - The access to the dd4hep objects is via the Geant4Context::detectorDescription() call,
+     *  - the access to DDG4 as a whole is supported via Geant4Context::kernel() and
+     *  - the access to the user gframework using a specialized implementation of:
+     *  template <typename T> T& userFramework()  const;
+     *
+     *  A user defined implementations must be specialized somewhere in a compilation unit
+     *  of the user framework, not in a header file. The framework object could host
+     *  e.g. references for histogramming, logging, data access etc.
+     *
+     *  This way any experiment/user related data processing framework can exhibit
+     *  it's essential tools to DDG4 actions.
+     *
+     *  A possible specialized implementations would look like the following:
+     *
+     *  struct Gaudi  {
+     *    IMessageSvc*   msg;
+     *    IHistogramSvc* histos;
+     *    ....
+     *  };
+     *
+     *  template<> Gaudi& Geant4Context::userFramework<Gaudi>()  const  {
+     *    UserFramework& fw = m_kernel->userFramework();
+     *    if ( fw.first && &typeid(T) == fw.second ) return *(T*)fw.first;
+     *    throw std::runtime_error("No user specified framework context present!");
+     *  }
+     *
+     *  To access the user framework then use the following call:
+     *  Gaudi* fw = context->userFramework<Gaudi>();
+     *
+     *  of course after having initialized it:
+     *  Gaudi * fw = ...;
+     *  GaudiKernel& kernel = ...;
+     *  kernel.setUserFramework(fw);
+     *
      *  \author  M.Frank
      *  \version 1.0
      *  \ingroup DD4HEP_SIMULATION
      */
     class Geant4Context  {
+    public:
       friend class Geant4Kernel;
-    public:
-#ifdef R__DICTIONARY_FILENAME
-      /// ROOT does not know how to process the nested ns otherwise
-    public:
-      typedef Geometry::LCDD LCDD;
-#endif
+      typedef std::pair<void*, const std::type_info*>   UserFramework;
+
     protected:
+      /// Reference to the kernel object
       Geant4Kernel* m_kernel;
+      /// Transient context variable - depending on the thread context: run reference
       Geant4Run*    m_run;
+      /// Transient context variable - depending on the thread context: event reference
       Geant4Event*  m_event;
+
       /// Default constructor
       Geant4Context(Geant4Kernel* kernel);
     public:
@@ -196,8 +229,12 @@ namespace DD4hep {
       Geant4Event* eventPtr()  const  { return m_event; }
       /// Access to the kernel object
       Geant4Kernel& kernel()  const   { return *m_kernel;   }
+      /// Access to the user framework. Specialized function to be implemented by the client
+      template <typename T> T& framework()  const;
+      /// Generic framework access
+      UserFramework& userFramework() const;
       /// Access to detector description
-      Geometry::LCDD& lcdd() const;
+      Detector& detectorDescription() const;
       /// Access the tracking manager
       G4TrackingManager* trackMgr() const;
       /// Create a user trajectory
@@ -218,7 +255,7 @@ namespace DD4hep {
       Geant4SensDetSequences& sensitiveActions() const;
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4CONTEXT_H

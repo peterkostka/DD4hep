@@ -1,15 +1,16 @@
-#ifndef DDRec_SurfaceManager_H_
-#define DDRec_SurfaceManager_H_
+#ifndef rec_SurfaceManager_H_
+#define rec_SurfaceManager_H_
 
-#include "DDSurfaces/ISurface.h"
+#include "DDRec/ISurface.h"
+#include "DD4hep/Detector.h"
 #include <string>
 #include <map>
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
 
     /// typedef for surface maps, keyed by the cellID 
-    typedef std::multimap< unsigned long, DDSurfaces::ISurface*> SurfaceMap ;
+    typedef std::multimap< unsigned long, ISurface*> SurfaceMap ;
 
     /** Surface manager class that holds maps of surfaces for all known 
      *  sensitive detector types and  individual sub detectors. 
@@ -24,10 +25,20 @@ namespace DD4hep {
       typedef std::map< std::string,  SurfaceMap > SurfaceMapsMap ;
 
     public:
+      /// The constructor
+      SurfaceManager(Detector& theDetector);
 
-      SurfaceManager();
+      /// No default constructor
+      SurfaceManager() = delete ;
+
+      /// No copy constructor
+      SurfaceManager(const SurfaceManager& copy) = delete;
       
+      /// Default destructor
       ~SurfaceManager();
+
+      /// No assignment operator
+      SurfaceManager& operator=(const SurfaceManager& copy) = delete;
       
       /** Get the maps of all surfaces associated to the given detector or
        *  type of detectors, e.g. map("tracker") returns a map with all surfaces
@@ -43,12 +54,14 @@ namespace DD4hep {
 
 
       /// initialize all known surface maps
-      void initialize() ;
+      void initialize(Detector& theDetector) ;
 
       SurfaceMapsMap _map ;
     };
 
-  } /* namespace DDRec */
-} /* namespace DD4hep */
+  } /* namespace rec */
+} /* namespace dd4hep */
 
-#endif // DDRec_SurfaceManager_H_
+
+
+#endif // rec_SurfaceManager_H_

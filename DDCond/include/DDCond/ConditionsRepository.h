@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -20,17 +19,14 @@
 // C/C++ include files
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Forward declarations
   class IOV;
   class IOVType;
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Conditions {
-
-    /// Forward declarations
-
+  /// Namespace for implementation details of the AIDA detector description toolkit
+  namespace cond {
 
     /// Base class to be implemented by objects to listen on condition callbacks
     /**
@@ -41,21 +37,22 @@ namespace DD4hep {
      */
     class ConditionsRepository  {
     public:
+      /// Definition of a single Entry in the conditions repository
+      /**
+       *  \author  M.Frank
+       *  \version 1.0
+       *  \ingroup DD4HEP_CONDITIONS
+       */
       class Entry  {
       public:
         std::string name, address;
-        Condition::key_type key;
-        Entry() {}
-        Entry(const Entry& e) : name(e.name), address(e.address), key(e.key) {}
-        Entry& operator=(const Entry& e) {
-          if ( this != &e )  {
-            key = e.key;
-            name = e.name;
-            address = e.address;
-          }
-          return *this;
-        }
+        Condition::key_type key = 0;
+        Entry() = default;
+        Entry(const Entry& e) = default;
+        Entry& operator=(const Entry& e) = default;
       };
+
+      /// Definition of the entry collection
       typedef std::vector<Entry> Data;
 
     public:
@@ -69,7 +66,7 @@ namespace DD4hep {
       int load(const std::string& input, Data& data)  const;
     };
 
-  } /* End namespace Geometry               */
-} /* End namespace DD4hep                   */
+  } /* End namespace cond             */
+} /* End namespace dd4hep                   */
 
 #endif /* DD4HEP_CONDITIONS_CONDITIONSREPOSITORY_H  */

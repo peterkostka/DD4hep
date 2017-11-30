@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -19,10 +18,10 @@
 #include "DDG4/Geant4ParticleGenerator.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
     /// Generate particles isotrop in space around origine (0,0,0)
     /**
      *  \author  M.Frank
@@ -57,11 +56,15 @@ namespace DD4hep {
       void getParticleDirectionUniform(int num, ROOT::Math::XYZVector& direction, double& momentum) const;
 
     public:
+      /// Inhibit default constructor
+      Geant4IsotropeGenerator() = delete;
+      /// Inhibit copy constructor
+      Geant4IsotropeGenerator(const Geant4IsotropeGenerator& copy) = delete;
       /// Standard constructor
       Geant4IsotropeGenerator(Geant4Context* context, const std::string& name);
       /// Default destructor
       virtual ~Geant4IsotropeGenerator();
     };
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 #endif /* DD4HEP_DDG4_GEANT4ISOTROPEGENERATOR_H  */

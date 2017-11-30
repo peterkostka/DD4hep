@@ -1,23 +1,24 @@
-#ifndef DDRec_Material_H
-#define DDRec_Material_H
+#ifndef rec_Material_H
+#define rec_Material_H
 
+#include "DD4hep/Detector.h"
+#include "DDRec/IMaterial.h"
 #include "DD4hep/Objects.h"
-#include "DDSurfaces/IMaterial.h"
 
 #include <list>
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
     
     
-    /** Simple data class that implements the DDSurfaces::IMaterial interface
+    /** Simple data class that implements the IMaterial interface
      *  and is used in the Surface implementation.
      *
      * @author F.Gaede, DESY
      * @date May, 20 2014
      * @version $Id$
      */
-    class MaterialData : public DDSurfaces::IMaterial{
+    class MaterialData : public IMaterial{
       
     protected:
       std::string _name ;
@@ -29,8 +30,8 @@ namespace DD4hep {
 
     public:
 
-      /** Instantiate from Geometry::Material - default initialization if handle is not valid */
-      MaterialData( Geometry::Material m ) : 
+      /** Instantiate from Material - default initialization if handle is not valid */
+      MaterialData( Material m ) : 
 
         _name("unknown"),
         _Z( -1. ),
@@ -84,22 +85,34 @@ namespace DD4hep {
 					    _x0( m.radiationLength() ),
 					    _lambda( m.interactionLength() ) {}
       
-
-      /// assignment from Geometry::Material
-      MaterialData& operator=(const IMaterial& m){
-      
-	_name = m.name() ;
-	_Z = m.Z() ;
-	_A = m.A() ;
-	_rho = m.density() ;
-	_x0 = m.radiationLength() ;
-	_lambda = m.interactionLength() ;
-	
+      /// copy assignement
+       MaterialData& operator=(const MaterialData& m){
+        if ( this != &m )  {
+          _name = m._name ;
+          _Z = m._Z ;
+          _A = m._A  ;
+          _rho = m._rho ;
+          _x0 = m._x0 ;
+          _lambda = m._lambda ;
+        }
         return *this ;
       }
 
-      /// assignment from Geometry::Material
-      MaterialData& operator=(const Geometry::Material& m){
+     /// assignment from Material
+      MaterialData& operator=(const IMaterial& m){
+        if ( this != &m )  {
+          _name = m.name() ;
+          _Z = m.Z() ;
+          _A = m.A() ;
+          _rho = m.density() ;
+          _x0 = m.radiationLength() ;
+          _lambda = m.interactionLength() ;
+        }
+        return *this ;
+      }
+
+      /// assignment from Material
+      MaterialData& operator=(const Material& m){
       
         if( m.isValid() ) {
 
@@ -153,4 +166,6 @@ namespace DD4hep {
   } /* namespace */
 } /* namespace */
 
-#endif /* DDRec_Material_H */
+
+
+#endif /* rec_Material_H */

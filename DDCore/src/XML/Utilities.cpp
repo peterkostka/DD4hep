@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,38 +15,39 @@
 #include "XML/Utilities.h"
 #include "DD4hep/Printout.h"
 #include "DD4hep/Plugins.h"
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/DetFactoryHelper.h"
 
+class TObject;
+
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
+using namespace dd4hep::detail;
 
 /// Create a solid shape using the plugin mechanism from the attributes of the XML element
-Geometry::Solid 
-DD4hep::XML::createShape(Geometry::LCDD& lcdd, const std::string& shape_type, XML::Element element)   {
+Solid dd4hep::xml::createShape(Detector& description,
+                               const std::string& shape_type,
+                               xml::Element element)   {
   string fac  = shape_type + "__shape_constructor";
-  XML::Handle_t solid_elt = element;
-  Geometry::Solid solid = Geometry::Ref_t(PluginService::Create<NamedObject*>(fac, &lcdd, &solid_elt));
+  xml::Handle_t solid_elt = element;
+  Solid solid = Solid(PluginService::Create<TObject*>(fac, &description, &solid_elt));
   if ( !solid.isValid() )  {
     PluginDebug dbg;
-    PluginService::Create<NamedObject*>(shape_type, &lcdd, &solid_elt);
-    except("XML::createShape","Failed to create solid of type %s [%s]", 
+    PluginService::Create<TObject*>(shape_type, &description, &solid_elt);
+    except("xml::createShape","Failed to create solid of type %s [%s]", 
            shape_type.c_str(),dbg.missingFactory(shape_type).c_str());
   }
   return solid;
 }
 
-
-
-
-Geometry::Volume DD4hep::XML::createPlacedEnvelope( DD4hep::Geometry::LCDD& lcdd, DD4hep::XML::Handle_t e , 
-                                                    DD4hep::Geometry::DetElement sdet ){
-  
+Volume dd4hep::xml::createPlacedEnvelope( dd4hep::Detector& description,
+                                          dd4hep::xml::Handle_t e, 
+                                          dd4hep::DetElement sdet)
+{  
   xml_det_t     x_det     = e;
   string        det_name  = x_det.nameStr();
   
-  xml_comp_t    x_env     =  x_det.child( DD4hep::XML::Strng_t("envelope") ) ;
+  xml_comp_t    x_env     =  x_det.child( dd4hep::xml::Strng_t("envelope") ) ;
   xml_comp_t    x_shape   =  x_env.child( _U(shape) ); 
   
   
@@ -70,9 +70,7 @@ Geometry::Volume DD4hep::XML::createPlacedEnvelope( DD4hep::Geometry::LCDD& lcdd
   Volume  envelope  ;
 
   if(  x_shape.typeStr() == "Assembly" ){
-
     envelope = Assembly( det_name+"_assembly" ) ;
-
   } else { 
     // ---- create a shape from the specified xml element --------
     Box  env_solid = xml_comp_t( x_shape ).createShape();
@@ -83,7 +81,7 @@ Geometry::Volume DD4hep::XML::createPlacedEnvelope( DD4hep::Geometry::LCDD& lcdd
                                 std::string(" for detector " ) + det_name ) ;
     }
 
-    Material      env_mat   = lcdd.material( x_shape.materialStr() );
+    Material      env_mat   = description.material( x_shape.materialStr() );
   
     envelope = Volume( det_name+"_envelope", env_solid, env_mat );
   }
@@ -92,7 +90,7 @@ Geometry::Volume DD4hep::XML::createPlacedEnvelope( DD4hep::Geometry::LCDD& lcdd
   PlacedVolume  env_pv  ; 
 
 
-  Volume        mother = lcdd.pickMotherVolume(sdet);
+  Volume        mother = description.pickMotherVolume(sdet);
 
 
   // ---- place the envelope into the mother volume 
@@ -101,45 +99,34 @@ Geometry::Volume DD4hep::XML::createPlacedEnvelope( DD4hep::Geometry::LCDD& lcdd
 
   if( useRot && usePos ){
     env_pv =  mother.placeVolume( envelope , Transform3D( rot, pos )  ) ;
-
   } else if( useRot ){
     env_pv =  mother.placeVolume( envelope , rot  ) ;
-
   } else if( usePos ){
     env_pv =  mother.placeVolume( envelope , pos  ) ;
-
   } else {
     env_pv = mother.placeVolume( envelope );
   }
 
   // ----------------------------------------------
-
   env_pv.addPhysVolID("system", sdet.id());
-
   sdet.setPlacement( env_pv ) ;
-
-  envelope.setAttributes( lcdd,x_det.regionStr(),x_det.limitsStr(),x_env.visStr());
-
-  return envelope ;
+  envelope.setAttributes( description,x_det.regionStr(),x_det.limitsStr(),x_env.visStr());
+  return envelope;
 }
 
 
-void  DD4hep::XML::setDetectorTypeFlag( DD4hep::XML::Handle_t e, DD4hep::Geometry::DetElement sdet ){
-
+void  dd4hep::xml::setDetectorTypeFlag( dd4hep::xml::Handle_t e, dd4hep::DetElement sdet )  {
   xml_det_t     x_det     = e;
   string        det_name  = x_det.nameStr();
   
   try{
-    xml_comp_t    x_dettype     =  x_det.child( DD4hep::XML::Strng_t("type_flags") ) ;
-    
+    xml_comp_t  x_dettype =  x_det.child( dd4hep::xml::Strng_t("type_flags") ) ;
     unsigned int typeFlag = x_dettype.type() ;
-    
     printout(DEBUG,"Utilities","+++ setDetectorTypeFlags for detector :%s set to 0x%x", det_name.c_str(), typeFlag ) ; 
-    
     sdet.setTypeFlag( typeFlag ) ;
-
   } catch(std::runtime_error){
-
-    printout(INFO,"Utilities","+++ setDetectorTypeFlags for detector :%s no xml element <type_flags/> found - nothing to set ", det_name.c_str() ) ; 
+    printout(INFO,"Utilities",
+             "+++ setDetectorTypeFlags for detector :%s no xml element <type_flags/> found - nothing to set ",
+             det_name.c_str() ) ; 
   }
 }

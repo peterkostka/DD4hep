@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -24,10 +23,10 @@
 #include <vector>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     /// Class to dump the records of the intrinsic Geant4 event model.
     /**
@@ -58,22 +57,27 @@ namespace DD4hep {
 #if !(defined(G__DICTIONARY) || defined(__CLANG__) || defined(__CINT__) || defined(__MAKECINT__))
       /// Print a single particle to the output logging using the specified print level
       void print(PrintLevel level, Geant4ParticleHandle p)  const;
+      /// Print a single particle to the output logging using the specified print level
+      void print(PrintLevel level, int key, Geant4ParticleHandle p)  const;
 #endif
+      /// Print the particle map to the output logging using the specified print level
+      void print(PrintLevel level, const Geant4ParticleMap* parts)  const;
+
       /// Print the particle container to the output logging using the specified print level
-      void print(PrintLevel level, const std::string& container, const Particles* parts);
+      void print(PrintLevel level, const std::string& container, const Particles* parts)  const;
 
       /// Print a single tracker hit to the output logging using the specified print level
-      void print(PrintLevel level, const TrackerHit* h);
+      void print(PrintLevel level, const TrackerHit* h)  const;
       /// Print the tracker hits container to the output logging using the specified print level
-      void print(PrintLevel level, const std::string& container, const TrackerHits* hits);
+      void print(PrintLevel level, const std::string& container, const TrackerHits* hits) const;
 
       /// Print a calorimeter tracker hit to the output logging using the specified print level
-      void print(PrintLevel level, const CalorimeterHit* h);
+      void print(PrintLevel level, const CalorimeterHit* h)  const;
       /// Print the calorimeter hits container to the output logging using the specified print level
-      void print(PrintLevel level, const std::string& container, const CalorimeterHits* hits);
+      void print(PrintLevel level, const std::string& container, const CalorimeterHits* hits)  const;
 
     };
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif /* DD4HEP_DDG4_GEANT4DATADUMP_H */

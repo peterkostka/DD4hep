@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -28,10 +27,10 @@
 #include <stdexcept>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4Sensitive;
@@ -106,6 +105,7 @@ namespace DD4hep {
 
       typedef HitManipulator::Wrapper Wrapper;
     protected:
+      /// Wrapper data
       mutable Wrapper m_data;
 
     public:
@@ -225,8 +225,11 @@ namespace DD4hep {
         virtual void* operator()(const Geant4HitWrapper& w) const = 0;
       };
 
+      /// Union defining the hit collection flags for processing
       union CollectionFlags  {
+        /// Full value
         unsigned long        value;
+        /// Individual hit collection bits
         struct BitItems  {
           unsigned           repeatedLookup:1;
           unsigned           mappedLookup:1;
@@ -260,12 +263,13 @@ namespace DD4hep {
       void getData(const ComponentCast& cast, std::vector<void*>* result);
 
     public:
-      enum {
+      /// Enumeration for collection optimization types
+      enum OptimizationFlags  {
         OPTIMIZE_NONE = 0,
         OPTIMIZE_REPEATEDLOOKUP = 1<<0,
         OPTIMIZE_MAPPEDLOOKUP   = 1<<1,
         OPTIMIZE_LAST
-      } OptimizationFlags;
+      };
 
       /// Initializing constructor (C++ version)
       template <typename TYPE>
@@ -287,7 +291,7 @@ namespace DD4hep {
       {
         newInstance();
         m_hits.reserve(200);
-        m_flags.value = 0;//OPTIMIZE_REPEATEDLOOKUP;
+        m_flags.value = OPTIMIZE_NONE;
       }
       /// Default destructor
       virtual ~Geant4HitCollection();
@@ -428,7 +432,7 @@ namespace DD4hep {
       return 0;
     }
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4HITCOLLECTION_H

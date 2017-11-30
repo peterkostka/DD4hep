@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -27,7 +26,7 @@ namespace {
       double value = -1;
       char* ptr = ::strchr(argv[i],'=');
       if ( ptr )  {
-        value = DD4hep::_toDouble(++ptr);
+        value = dd4hep::_toDouble(++ptr);
       }
       std::cout << "SurfaceExamplePlugin: argument[" << i << "] = " << argv[i] 
                 << " value = " << value << std::endl;
@@ -36,7 +35,7 @@ namespace {
 
   /// Install measurement surfaces
   template <>
-  void Installer<UserData>::install(DetElement /* component */, PlacedVolume /* pv */)   {
+  void Installer<UserData>::install(dd4hep::DetElement /* component */, dd4hep::PlacedVolume /* pv */)   {
     // Do here whatever is necessary ....
   }
 }

@@ -1,6 +1,6 @@
 # $Id: $
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -12,7 +12,7 @@
 #
 #==========================================================================
 dd4hep_package(DDRec
-  USES             DDCore DDSurfaces
+  USES             DDCore DDSurfaces boost
                   [ROOT REQUIRED COMPONENTS Geom]
   INCLUDE_DIRS     include
   INSTALL_INCLUDES include/DDRec)
@@ -34,7 +34,7 @@ dd4hep_add_package_library(DDRec
 )
 dd4hep_add_plugin(DDRecPlugins 
   SOURCES  src/plugins/*.cpp 
-  OPTIONAL [GEAR SOURCES src/gear/createGearForILD.cpp src/gear/createGearForCLIC.cpp DEFINITIONS DD4HEP_USE_GEAR]
+  OPTIONAL [GEAR SOURCES src/gear/createGearForILD.cpp src/gear/createGearForCLIC.cpp src/gear/createGearForSiD.cpp DEFINITIONS DD4HEP_USE_GEAR]
 )
 
 if(DD4HEP_USE_GEAR)

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -13,55 +12,37 @@
 //==========================================================================
 
 // Framework includes
-#include "DD4hep/Handle.inl"
 #include "DD4hep/Printout.h"
-#include "DD4hep/objects/ConditionsInterna.h"
+#include "DD4hep/detail/ConditionsInterna.h"
 
 // C/C++ include files
 #include <climits>
 #include <iomanip>
+#include <cstdio>
 
 using namespace std;
-using namespace DD4hep::Conditions;
+using namespace dd4hep;
 
-/// Access the key of the condition
-ConditionKey DD4hep::Conditions::make_key(Condition c) {
-  Condition::Object* p = c.ptr();
-  if ( p ) return ConditionKey(p->name,p->hash);
-  invalidHandleError<Condition>();
-  return ConditionKey();
+/// Default constructor
+Condition::Processor::Processor() {
 }
 
-/// Constructor from string
-ConditionKey::ConditionKey(const string& value) 
-  : name(value), hash(hashCode(value))
+/// Initializing constructor for a pure, undecorated conditions object
+Condition::Condition(const std::string& nam, const std::string& typ) : Handle<Object>()
 {
-}
-
-/// Assignment operator from the string representation
-ConditionKey& ConditionKey::operator=(const string& value)  {
-  ConditionKey key(value);
-  hash = hashCode(value);
-  name = value;
-  return *this;
-}
-
-/// Operator less (for map insertions) using the string representation
-bool ConditionKey::operator<(const string& compare)  const  {  
-  return hash < hashCode(compare);
-}
-
-/// Initializing constructor
-Condition::Condition(const string& nam,const string& typ) : Handle<Object>()  {
   Object* o = new Object();
   assign(o,nam,typ);
-  o->hash = ConditionKey::hashCode(nam);
+  o->hash = 0;
 }
 
-/// Assignment operator
-Condition& Condition::operator=(const Condition& c)   {
-  if ( this != &c ) this->m_element = c.m_element;
-  return *this;
+/// Initializing constructor for a pure, undecorated conditions object with payload buffer
+Condition::Condition(const string& nam,const string& typ, size_t memory)
+  : Handle<Object>()
+{
+  void* ptr = ::operator new(sizeof(Object)+memory);
+  Object* o = new(ptr) Object();
+  assign(o,nam,typ);
+  o->hash = 0;
 }
 
 /// Output method
@@ -92,23 +73,18 @@ int Condition::dataType() const   {
 }
 
 /// Access the IOV block
-DD4hep::OpaqueData& Condition::data() const   {
+dd4hep::OpaqueData& Condition::data() const   {
   return access()->data;
 }
 
 /// Access the IOV type
-const DD4hep::IOVType& Condition::iovType() const   {
+const dd4hep::IOVType& Condition::iovType() const   {
   return *(access()->iovType());
 }
 
 /// Access the IOV block
-const DD4hep::IOV& Condition::iov() const   {
+const dd4hep::IOV& Condition::iov() const   {
   return *(access()->iovData());
-}
-
-/// Access the name of the condition
-const string& Condition::name()  const   {
-  return access()->name;
 }
 
 /// Access the type field of the condition
@@ -141,8 +117,33 @@ Condition::key_type Condition::key()  const    {
   return access()->hash;
 }
 
+/// DetElement part of the identifier
+Condition::detkey_type Condition::detector_key()  const   {
+  return ConditionKey::KeyMaker(access()->hash).values.det_key;
+}
+
+/// Item part of the identifier
+Condition::itemkey_type Condition::item_key()  const   {
+  return ConditionKey::KeyMaker(access()->hash).values.item_key;
+}
+
+/// Flag operations: Set a conditons flag
+void Condition::setFlag(mask_type option)   {
+  access()->setFlag(option);
+}
+
+/// Flag operations: UN-Set a conditons flag
+void Condition::unFlag(mask_type option)   {
+  access()->unFlag(option);
+}
+
+/// Flag operations: Test for a given a conditons flag
+bool Condition::testFlag(mask_type option) const {
+  return access()->testFlag(option);
+}
+
 /// Access to the grammar type
-const DD4hep::BasicGrammar& Condition::descriptor() const   {
+const dd4hep::BasicGrammar& Condition::descriptor() const   {
   const BasicGrammar* g = access()->data.grammar;
   if ( !g ) {
     invalidHandleError<Condition>();
@@ -167,71 +168,60 @@ Condition& Condition::rebind()    {
 #endif
   o->data.fromString(o->value);
   printout(INFO,"Condition","+++ condition:%s rebinding value:%s",
-           name().c_str(), o->value.c_str());
+           name(), o->value.c_str());
   return *this;
 }
 
-/// Access the number of conditons keys available for this detector element
-size_t Container::numKeys() const   {
-  Object* o = ptr();
-  if ( !o )   {
-    invalidHandleError<Container>();
-  }
-  return o->keys.size();
+/// Default destructor. 
+ConditionsSelect::~ConditionsSelect()   {
 }
 
-/// Access to condition objects
-Condition Container::get(const string& condition_key, const iov_type& iov)  {
-  Object* o = ptr();
-  if ( o )  {
-    Condition c = o->get(condition_key, iov);
-    if ( c.isValid() )  {
-      return c;
-    }
-    invalidHandleError<Condition>();
-  }
-  invalidHandleError<Container>();
-  return Condition();
+/// Constructor from string
+ConditionKey::ConditionKey(DetElement detector, const string& value)  {
+  KeyMaker m(detector.key(), detail::hash32(value));
+  hash = m.hash;
+#ifdef DD4HEP_CONDITIONKEY_HAVE_NAME
+  name = detector.path()+"#"+value;
+#endif
 }
 
-/// Access to condition objects
-Condition Container::get(key_type condition_key, const iov_type& iov)  {
-  Object* o = ptr();
-  if ( o )  {
-    Condition c = o->get(condition_key, iov);
-    if ( c.isValid() )  {
-      return c;
-    }
-    invalidHandleError<Condition>();
-  }
-  invalidHandleError<Container>();
-  return Condition();
+/// Constructor from detector element key and item sub-key
+ConditionKey::ConditionKey(Condition::detkey_type det_key, const string& value)    {
+  KeyMaker m(det_key, detail::hash32(value));
+  hash = m.hash;
+#ifdef DD4HEP_CONDITIONKEY_HAVE_NAME
+  char text[32];
+  ::snprintf(text,sizeof(text),"%08X#",det_key);
+  name = text+value;
+#endif
 }
 
-/// Access to condition objects
-Condition Container::get(const string& condition_key, const UserPool& pool)  {
-  Object* o = ptr();
-  if ( o )  {
-    Condition c = o->get(condition_key, pool);
-    if ( c.isValid() )  {
-      return c;
-    }
-    invalidHandleError<Condition>();
-  }
-  invalidHandleError<Container>();
-  return Condition();
+/// Constructor from detector element key and item sub-key
+ConditionKey::ConditionKey(DetElement detector, Condition::itemkey_type item_key)  {
+  hash = KeyMaker(detector.key(),item_key).hash;
+#ifdef DD4HEP_CONDITIONKEY_HAVE_NAME
+  char text[32];
+  ::snprintf(text,sizeof(text),"#%08X",item_key);
+  name = detector.path()+text;
+#endif
 }
 
-/// Access to condition objects
-Condition Container::get(key_type condition_key, const UserPool& pool)  {
-  Object* o = ptr();
-  if ( o )  {
-    Condition c = o->get(condition_key, pool);
-    if ( c.isValid() )  {
-      return c;
-    }
-    invalidHandleError<Condition>();
-  }
-  invalidHandleError<Container>();
-  return Condition();
+/// Hash code generation from input string
+Condition::key_type ConditionKey::hashCode(DetElement detector, const char* value)  {
+  return KeyMaker(detector.key(), detail::hash32(value)).hash;
+}
+
+/// Hash code generation from input string
+Condition::key_type ConditionKey::hashCode(DetElement detector, const string& value)  {
+  return KeyMaker(detector.key(), detail::hash32(value)).hash;
+}
+
+/// 32 bit hashcode of the item
+Condition::itemkey_type ConditionKey::itemCode(const char* value)  {
+  return detail::hash32(value);
+}
+
+/// 32 bit hashcode of the item
+Condition::itemkey_type ConditionKey::itemCode(const std::string& value)   {
+  return detail::hash32(value);
 }

@@ -1,10 +1,5 @@
-#ifndef DD4HEP_DDG4_GEANT4ACTION_H
-#define DD4HEP_DDG4_GEANT4ACTION_H
-
-// Framework include files
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,6 +10,11 @@
 // Author     : M.Frank
 //
 //==========================================================================
+
+#ifndef DD4HEP_DDG4_GEANT4ACTION_H
+#define DD4HEP_DDG4_GEANT4ACTION_H
+
+// Framework include files
 #include "DD4hep/Printout.h"
 #include "DD4hep/ComponentProperties.h"
 #include "DDG4/Geant4Context.h"
@@ -36,10 +36,10 @@ class G4UIdirectory;
 #include <cstdarg>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4UIMessenger;
@@ -62,15 +62,17 @@ namespace DD4hep {
     class TypeName : public std::pair<std::string, std::string> {
     public:
       /// Default constructor
-      TypeName()
-        : std::pair<std::string, std::string>() {
-      }
+      TypeName() = default;
+      /// Copy constructor
+      TypeName(const TypeName& copy) = default;
+      /// Copy constructor from pair
       TypeName(const std::pair<std::string, std::string>& c)
-        : std::pair<std::string, std::string>(c) {
-      }
+        : std::pair<std::string, std::string>(c) {      }
+      /// Initializing constructor
       TypeName(const std::string& typ, const std::string& nam)
-        : std::pair<std::string, std::string>(typ, nam) {
-      }
+        : std::pair<std::string, std::string>(typ, nam) {      }
+      /// Assignment operator
+      TypeName& operator=(const TypeName& copy) = default;
       /// Split string pair according to default delimiter ('/')
       static TypeName split(const std::string& type_name);
       /// Split string pair according to custom delimiter
@@ -89,20 +91,20 @@ namespace DD4hep {
     class Geant4Action {
     protected:
       /// Reference to the Geant4 context
-      Geant4Context*     m_context;
+      Geant4Context*     m_context = 0;
       /// Control directory of this action
-      Geant4UIMessenger* m_control;
+      Geant4UIMessenger* m_control = 0;
 
       /// Default property: Output level
-      int                m_outputLevel;
+      int                m_outputLevel = 3;
       /// Default property: Flag to create control instance
-      bool               m_needsControl;
+      bool               m_needsControl = false;
       /// Action name
       std::string        m_name;
       /// Property pool
       PropertyManager    m_properties;
       /// Reference count. Initial value: 1
-      long               m_refCount;
+      long               m_refCount = 1;
 
     public:
       /// Functor to update the context of a Geant4Action object
@@ -113,8 +115,8 @@ namespace DD4hep {
        */
       class ContextSwap   {
         /// reference to the context;
-        Geant4Context* context;
-        Geant4Action*  action;
+        Geant4Context* context = 0;
+        Geant4Action*  action = 0;
       public:
         /// Constructor
         ContextSwap(Geant4Action* a,Geant4Context* c) : action(a)  {
@@ -145,35 +147,19 @@ namespace DD4hep {
       public:
         typedef typename std::vector<T*> _V;
         _V m_v;
-        Actors() {
-        }
-        ~Actors() {
-        }
-        void clear() {
-          m_v.clear();
-        }
-        void add(T* obj) {
-          m_v.push_back(obj);
-        }
-        void add_front(T* obj) {
-          m_v.insert(m_v.begin(), obj);
-        }
-        operator const _V&() const {
-          return m_v;
-        }
-        operator _V&() {
-          return m_v;
-        }
-        const _V* operator->() const {
-          return &m_v;
-        }
-        _V* operator->() {
-          return &m_v;
-        }
-        typename _V::iterator begin() { return m_v.begin(); }
-        typename _V::iterator end()   { return m_v.end();   }
-        typename _V::const_iterator begin() const  { return m_v.begin(); }
-        typename _V::const_iterator end()   const  { return m_v.end();   }
+        Actors() = default;
+        ~Actors()  = default;
+        void clear()                  { m_v.clear();                    }
+        void add(T* obj)              { m_v.push_back(obj);             }
+        void add_front(T* obj)        { m_v.insert(m_v.begin(), obj);   }
+        operator const _V&() const    { return m_v;                     }
+        operator _V&()                { return m_v;                     }
+        const _V* operator->() const  { return &m_v;                    }
+        _V* operator->()              { return &m_v;                    }
+        typename _V::iterator begin() { return m_v.begin();             }
+        typename _V::iterator end()   { return m_v.end();               }
+        typename _V::const_iterator begin() const { return m_v.begin(); }
+        typename _V::const_iterator end()   const { return m_v.end();   }
         
         /// Context updates
         void updateContext(Geant4Context* ctxt)  {
@@ -252,6 +238,14 @@ namespace DD4hep {
           return true;
         }
       };
+
+    protected:
+      /// Inhibit default constructor
+      Geant4Action() = default;
+      /// Inhibit copy constructor
+      Geant4Action(const Geant4Action& copy) = delete;
+      /// Inhibit assignment operator
+      Geant4Action& operator=(const Geant4Action& copy) = delete;
 
       /// Default destructor
       virtual ~Geant4Action();
@@ -371,7 +365,7 @@ namespace DD4hep {
       m_properties.add(nam, val);
       return *this;
     }
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4ACTION_H

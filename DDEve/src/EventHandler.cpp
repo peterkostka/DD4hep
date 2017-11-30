@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,21 +14,13 @@
 // Framework include files
 #include "DDEve/EventHandler.h"
 
-using namespace DD4hep;
+using namespace dd4hep;
 
 ClassImp(EventHandler)
 ClassImp(EventConsumer)
 
-/// Standard constructor
-EventHandler::EventHandler() : m_hasFile(false), m_hasEvent(false) {
-}
-
 /// Default destructor
 EventHandler::~EventHandler()   {
-}
-
-/// Standard constructor
-EventConsumer::EventConsumer()  {
 }
 
 /// Default destructor

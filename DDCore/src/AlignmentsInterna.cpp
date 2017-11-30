@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,133 +13,70 @@
 
 // Framework includes
 #include "DD4hep/IOV.h"
-#include "DD4hep/Handle.inl"
-
 #include "DD4hep/World.h"
 #include "DD4hep/Printout.h"
 #include "DD4hep/InstanceCount.h"
-#include "DD4hep/objects/DetectorInterna.h"
-#include "DD4hep/objects/AlignmentsInterna.h"
+#include "DD4hep/detail/Handle.inl"
+#include "DD4hep/detail/DetectorInterna.h"
+#include "DD4hep/detail/AlignmentsInterna.h"
 
 using namespace std;
-using namespace DD4hep::Alignments;
-using namespace DD4hep::Alignments::Interna;
+using namespace dd4hep;
+using namespace dd4hep::detail;
 
-DD4HEP_INSTANTIATE_HANDLE_NAMED(AlignmentConditionObject);
-DD4HEP_INSTANTIATE_HANDLE_NAMED(AlignmentNamedObject);
-DD4HEP_INSTANTIATE_HANDLE_NAMED(AlignmentContainer);
 DD4HEP_INSTANTIATE_HANDLE_UNNAMED(AlignmentData);
+DD4HEP_INSTANTIATE_HANDLE_NAMED(AlignmentObject,ConditionObject);
+
+/// Default constructor
+AlignmentObject::AlignmentObject()
+  : ConditionObject(), alignment_data(0)
+{
+  InstanceCount::increment(this);
+  flags  = Condition::ALIGNMENT_DERIVED;
+  AlignmentData& d = data.bind<AlignmentData>();
+  alignment_data   = &d;
+}
 
 /// Standard constructor
-AlignmentConditionObject::AlignmentConditionObject(const string& nam, const string& tit)
+AlignmentObject::AlignmentObject(const string& nam, const string& tit, void* p, size_t len)
   : ConditionObject(nam, tit), alignment_data(0)
 {
   InstanceCount::increment(this);
-  flags = Conditions::Condition::ALIGNMENT;
+  flags  = Condition::ALIGNMENT_DERIVED|Condition::ONSTACK;
+  AlignmentData& d = data.bind<AlignmentData>(p,len);
+  alignment_data   = &d;
 }
 
 /// Standard Destructor
-AlignmentConditionObject::~AlignmentConditionObject()  {
+AlignmentObject::~AlignmentObject()  {
   InstanceCount::decrement(this);
 }
 
 /// Clear data content on demand.
-void AlignmentConditionObject::clear()   {
+void AlignmentObject::clear()   {
   AlignmentCondition a(this);
-  Alignment::Data& d = a.data();
+  AlignmentData& d = a.data();
   d.trToWorld = Transform3D();
   d.detectorTrafo.Clear();
   d.worldTrafo.Clear();
   d.nodes.clear();
-  flags = Conditions::Condition::ALIGNMENT;
+  flags = Condition::ALIGNMENT_DERIVED;
 }
 
-/// Standard constructor
-AlignmentContainer::AlignmentContainer(Geometry::DetElementObject* par)
-  : NamedObject(), detector(par), keys()
-{
-  InstanceCount::increment(this);
-}
 
-/// Default destructor
-AlignmentContainer::~AlignmentContainer() {
-  InstanceCount::decrement(this);
-}
+#include "DDParsers/Parsers.h"
+#include "DDParsers/ToStream.h"
+DD4HEP_DEFINE_PARSER_DUMMY(AlignmentObject)
 
-/// Add a new key to the alignments access map
-void AlignmentContainer::addKey(const string& key_val)  {
-  key_type hash = Alignment::hashCode(key_val);
-  if ( !keys.insert(make_pair(hash,make_pair(hash,key_val))).second )   {
-    except("AlignmentContainer","++ Key[%08X]: %s already present. "
-           "Duplicate insertions inhibited!",hash, key_val.c_str());
+#include "DD4hep/detail/BasicGrammar_inl.h"
+#include "DD4hep/detail/ConditionsInterna.h"
+namespace dd4hep {
+  template <> bool Grammar<AlignmentObject>::fromString(void*, const std::string&) const {return true;}
+  template <> void Grammar<AlignmentObject>::copy(void*, const void*) const {}
+  namespace Utils {
+    template <> std::ostream& toStream(const AlignmentObject&, std::ostream& s) { return s; }
   }
 }
-
-/// Add a new key to the alignments access map: Allow for alias if key_val != data_val
-void AlignmentContainer::addKey(const string& key_val, const string& data_val)  {
-  key_type key_hash = Alignment::hashCode(key_val);
-  key_type val_hash = Alignment::hashCode(data_val);
-  if ( !keys.insert(make_pair(key_hash,make_pair(val_hash,data_val))).second )   {
-    except("AlignmentContainer","++ Key[%08X]: %s already present. "
-           "Duplicate insertions inhibited!",key_hash, key_val.c_str());
-  }
-}
-
-/// Access to alignment objects directly by their hash key. 
-Alignment AlignmentContainer::get(const string& key_val, const iov_type& iov)   {
-  AlignmentsLoader& loader = detector->world().alignmentsLoader();
-  key_type hash = Alignment::hashCode(key_val);
-  Keys::const_iterator i=keys.find(hash);
-  if ( i != keys.end() )  {
-    const key_value& k = (*i).second;
-    return loader.get(k.first, iov);
-  }
-  /// Last resort: Assume the key value is globally known:
-  return loader.get(hash, iov);
-}
-
-/// Access to alignment objects directly by their hash key. 
-Alignment AlignmentContainer::get(key_type hash_key, const iov_type& iov)   {
-  AlignmentsLoader& loader = detector->world().alignmentsLoader();
-  Keys::const_iterator i=keys.find(hash_key);
-  if ( i != keys.end() )  {
-    const key_value& k = (*i).second;
-    return loader.get(k.first, iov);
-  }
-  /// Last resort: Assume the key value is globally known:
-  return loader.get(hash_key, iov);
-}
-
-/// Access to alignment objects directly by their hash key. 
-Alignment AlignmentContainer::get(const string& key_val, const UserPool& pool)   {
-  AlignmentsLoader& loader = detector->world().alignmentsLoader();
-  key_type hash = Alignment::hashCode(key_val);
-  Keys::const_iterator i=keys.find(hash);
-  if ( i != keys.end() )  {
-    const key_value& k = (*i).second;
-    return loader.get(k.first, pool);
-  }
-  /// Last resort: Assume the key value is globally known:
-  return loader.get(hash, pool);
-}
-
-/// Access to alignment objects directly by their hash key. 
-Alignment AlignmentContainer::get(key_type hash_key, const UserPool& pool)   {
-  AlignmentsLoader& loader = detector->world().alignmentsLoader();
-  Keys::const_iterator i=keys.find(hash_key);
-  if ( i != keys.end() )  {
-    const key_value& k = (*i).second;
-    return loader.get(k.first, pool);
-  }
-  /// Last resort: Assume the key value is globally known:
-  return loader.get(hash_key, pool);
-}
-
-/// Protected destructor
-AlignmentsLoader::~AlignmentsLoader()   {
-}
-
-/// Default destructor
-AlignmentNamedObject::~AlignmentNamedObject()   {
-}
+DD4HEP_DEFINE_PARSER_GRAMMAR(AlignmentObject,eval_none<AlignmentObject>)
+DD4HEP_DEFINE_CONDITIONS_TYPE(AlignmentObject)
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 
 project(GaudiPluginService)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -9,6 +9,9 @@ add_definitions(-DGaudi=DD4hep_Flavor)
 if( APPLE ) 
   add_definitions( -DAPPLE) 
 endif()
+target_compile_options(DD4hepGaudiPluginMgr PRIVATE -Wno-unused-function)
+target_compile_options(DD4hepGaudiPluginMgr PRIVATE -Wno-deprecated)
+target_compile_options(DD4hepGaudiPluginMgr PRIVATE -Wno-shadow)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 target_link_libraries(DD4hepGaudiPluginMgr ${CMAKE_DL_LIBS})
@@ -21,6 +24,7 @@ endif()
 
 add_executable(listcomponents src/listcomponents.cpp ) #src/PluginService.cpp)
 target_link_libraries(listcomponents DD4hepGaudiPluginMgr  ${CMAKE_DL_LIBS} )
+target_compile_options(listcomponents PRIVATE -Wno-deprecated)
 
 install(TARGETS listcomponents DD4hepGaudiPluginMgr
   RUNTIME DESTINATION bin

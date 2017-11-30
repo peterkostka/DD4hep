@@ -1,5 +1,5 @@
-// Framework include files
-//  AIDA Detector description implementation for LCD
+//==========================================================================
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,7 +11,6 @@
 //  \date   2015-11-03
 //
 //==========================================================================
-// $Id$
 
 // Framework include files
 #include "DDG4/Factories.h"
@@ -24,8 +23,8 @@
 #include <fstream>
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 
 DECLARE_GEANT4ACTION(Geant4PythonAction)
 

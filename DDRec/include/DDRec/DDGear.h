@@ -2,6 +2,7 @@
 #define DDGear_H
 
 #include "DD4hep/Detector.h"
+#include "DD4hep/DetElement.h"
 
 #include "gear/GEAR.h"
 #include "gearimpl/GearParametersImpl.h"
@@ -13,8 +14,9 @@ namespace gear{
   class GearMgr ;
 }
 
-namespace DD4hep {
-
+namespace dd4hep {
+  namespace rec {
+    
   /**
      Simple wrapper class for objects of type GearParametersImpl that
      can be added to DetElements with the extension mechanism.
@@ -23,7 +25,7 @@ namespace DD4hep {
      @version $Id$
   */
 
-  class GearHandle  { //: public gear::GearParametersImpl {
+  class GearHandle  { 
     
   protected:
     gear::GearParametersImpl* _gObj ;
@@ -31,7 +33,7 @@ namespace DD4hep {
     std::vector< gear::SimpleMaterialImpl > _materials ;
     
   public :
-    /** Default c'tor  - only used by DD4hep extenbsion mechanism.*/ 
+    /** Default c'tor  - only used by dd4hep extenbsion mechanism.*/ 
     GearHandle() : _gObj( 0 ) , _name( "UNKNOWN" ) {}
     
     /** User c'tor - specify a name (should be the canonical name used in gear, eg. TPCParameters, SITParameters, etc.) and
@@ -69,20 +71,22 @@ namespace DD4hep {
 
 
     /** dummy implementation of required c'tors to allow using the extension mechanism */
-    GearHandle(const Geometry::DetElement& /*d*/) : _gObj(0) {}
-    GearHandle(const GearHandle& /*c*/,const Geometry::DetElement& /*det*/) : _gObj(0)  {}
+    GearHandle(const DetElement& /*d*/) : _gObj(0) {}
+    GearHandle(const GearHandle& /*c*/,const DetElement& /*det*/) : _gObj(0)  {}
   } ;
   
 
   //===============================================================================================================
 
   /** Factory method that creates a GearMgr object pobulated with the GearParametersImpl objects from
-      all (top level) DetElements in the lcdd object
+      all (top level) DetElements in the description object
       @author  F.Gaede, DESY
       @version $Id$
   */
-  gear::GearMgr* createGearMgr( Geometry::LCDD& lcdd , const std::string& pluginName="GearForILD" ) ;
+  gear::GearMgr* createGearMgr( Detector& description , const std::string& pluginName="GearForILD" ) ;
 
-}
+  }}
+
+
 
 #endif

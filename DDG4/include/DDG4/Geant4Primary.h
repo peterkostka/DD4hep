@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -30,10 +29,10 @@
 class G4PrimaryParticle;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4Particle;
@@ -48,7 +47,7 @@ namespace DD4hep {
     class PrimaryExtension  {
     public:
       /// Default constructor
-      PrimaryExtension() {}
+      PrimaryExtension() = default;
       /// Default destructor
       virtual ~PrimaryExtension();
     };
@@ -71,7 +70,7 @@ namespace DD4hep {
 
     public:
       /// Default constructor
-      Geant4PrimaryMap() {}
+      Geant4PrimaryMap() = default;
       /// Default destructor
       virtual ~Geant4PrimaryMap();
       /// Add a new object pair (G4 primary particle, DDG4 particle) into the maps
@@ -96,16 +95,16 @@ namespace DD4hep {
     class Geant4PrimaryInteraction   {
     private:
       /// Copy constructor
-      Geant4PrimaryInteraction(const Geant4PrimaryInteraction& c);
+      Geant4PrimaryInteraction(const Geant4PrimaryInteraction& c) = delete;
       /// Assignment operator
-      Geant4PrimaryInteraction& operator=(const Geant4PrimaryInteraction& c);
+      Geant4PrimaryInteraction& operator=(const Geant4PrimaryInteraction& c) = delete;
 
     public:
-      typedef Geant4Particle                    Particle;
-      typedef Geant4Vertex                      Vertex;
-      typedef std::map<int,Particle*>           ParticleMap;
-      typedef std::map<int,Vertex*>             VertexMap;
-      typedef dd4hep_ptr<PrimaryExtension>      ExtensionHandle;
+      typedef Geant4Particle                     Particle;
+      typedef Geant4Vertex                       Vertex;
+      typedef std::map<int,Particle*>            ParticleMap;
+      typedef std::map<int,std::vector<Vertex*>> VertexMap;
+      typedef dd4hep_ptr<PrimaryExtension>       ExtensionHandle;
 
       /// The map of primary vertices for the particles.
       VertexMap       vertices;
@@ -114,15 +113,15 @@ namespace DD4hep {
       /// User data extension if required
       ExtensionHandle extension;
       /// User mask to flag the interaction. Also unique identifier
-      int             mask;
+      int             mask = 0;
       /// Flag that the event is locked for G4 native generators
-      int             locked;
+      int             locked = 0;
       /// Next PID indentifier
-      int             next_particle_identifier;
+      int             next_particle_identifier = -1;
       
     public:
       /// Default constructor
-      Geant4PrimaryInteraction();
+      Geant4PrimaryInteraction() = default;
       /// Default destructor
       virtual ~Geant4PrimaryInteraction();
       /// Access a new particle identifier within the interaction
@@ -144,9 +143,9 @@ namespace DD4hep {
     class Geant4PrimaryEvent   {
     private:
       /// Copy constructor
-      Geant4PrimaryEvent(const Geant4PrimaryEvent& c);
+      Geant4PrimaryEvent(const Geant4PrimaryEvent& c) = delete;
       /// Assignment operator
-      Geant4PrimaryEvent& operator=(const Geant4PrimaryEvent& c);
+      Geant4PrimaryEvent& operator=(const Geant4PrimaryEvent& c) = delete;
 
     public:
       typedef Geant4PrimaryInteraction     Interaction;
@@ -163,7 +162,7 @@ namespace DD4hep {
 
     public:
       /// Default constructor
-      Geant4PrimaryEvent();
+      Geant4PrimaryEvent() = default;
       /// Default destructor
       virtual ~Geant4PrimaryEvent();
       /// Add a new interaction object to the event
@@ -176,6 +175,6 @@ namespace DD4hep {
       std::vector<Geant4PrimaryInteraction*> interactions() const;
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 #endif // DD4HEP_GEANT4PRIMARY_H

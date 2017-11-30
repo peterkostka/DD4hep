@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -17,13 +16,6 @@
 //
 //====================================================================
 
-// Disable some diagnostics for ROOT dictionaries
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#pragma GCC diagnostic ignored "-Wdeprecated"
-#pragma GCC diagnostic ignored "-Wunused"
-#endif
-
 // Framework include files
 #include "DDG4/Geant4Config.h"
 #include "DDG4/Geant4Primary.h"
@@ -33,10 +25,11 @@
 #include "DDG4/Geant4InputAction.h"
 #include "DDG4/Geant4GeneratorWrapper.h"
 
-namespace DD4hep {
-  namespace Simulation  {
+/// Namespace for the AIDA detector description toolkit
+namespace dd4hep {
 
-    using std::string;
+  /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
+  namespace sim {
 
 #define ACTIONHANDLE(x)                                                                   \
     struct x##Handle  {                                                                   \
@@ -45,7 +38,7 @@ namespace DD4hep {
       x##Handle(const x##Handle& h) : action(h.action) { if ( action ) action->addRef();} \
       ~x##Handle()                  { if ( action) action->release();                   } \
       Geant4##x* release()          { Geant4##x* tmp = action; action=0; return tmp;    } \
-      operator DD4hep::Simulation::Geant4##x* () const  { return action;     }            \
+      operator dd4hep::sim::Geant4##x* () const  { return action;     }            \
       Geant4##x* operator->() const                     { return action;     }            \
       Geant4##x* get() const                            { return action;     }            \
     }
@@ -77,52 +70,52 @@ namespace DD4hep {
     ACTIONHANDLE(UserInitializationSequence);
 
     struct PropertyResult  {
-      string data;
+      std::string data;
       int status;
       PropertyResult() : status(0) {}
-      PropertyResult(const string& d, int s) : data(d), status(s) {}
+      PropertyResult(const std::string& d, int s) : data(d), status(s) {}
       PropertyResult(const PropertyResult& c) : data(c.data), status(c.status) {}
       ~PropertyResult() {}
     };
 
     struct Geant4ActionCreation  {
-      template <typename H,typename T> static H cr(KernelHandle& kernel, const string& name_type, bool shared)  {
+      template <typename H,typename T> static H cr(KernelHandle& kernel, const std::string& name_type, bool shared)  {
         T action(*kernel.get(),name_type,shared);
         H handle(action.get());
         return handle;
       }
-      static ActionHandle createAction(KernelHandle& kernel, const string& name_type, bool shared)   
+      static ActionHandle createAction(KernelHandle& kernel, const std::string& name_type, bool shared)   
       { return cr<ActionHandle,Setup::Action>(kernel,name_type,shared);                            }
-      static FilterHandle createFilter(KernelHandle& kernel, const string& name_type, bool shared)
+      static FilterHandle createFilter(KernelHandle& kernel, const std::string& name_type, bool shared)
       { return cr<FilterHandle,Setup::Filter>(kernel,name_type,shared);                            }
-      static PhaseActionHandle createPhaseAction(KernelHandle& kernel, const string& name_type, bool shared)   
+      static PhaseActionHandle createPhaseAction(KernelHandle& kernel, const std::string& name_type, bool shared)   
       { return cr<PhaseActionHandle,Setup::PhaseAction>(kernel,name_type,shared);                  }
-      static PhysicsListHandle createPhysicsList(KernelHandle& kernel, const string& name_type)
+      static PhysicsListHandle createPhysicsList(KernelHandle& kernel, const std::string& name_type)
       { return cr<PhysicsListHandle,Setup::PhysicsList>(kernel,name_type,false);                  }
-      static RunActionHandle createRunAction(KernelHandle& kernel, const string& name_type, bool shared)
+      static RunActionHandle createRunAction(KernelHandle& kernel, const std::string& name_type, bool shared)
       { return cr<RunActionHandle,Setup::RunAction>(kernel,name_type,shared);                      }
-      static EventActionHandle createEventAction(KernelHandle& kernel, const string& name_type, bool shared)
+      static EventActionHandle createEventAction(KernelHandle& kernel, const std::string& name_type, bool shared)
       { return cr<EventActionHandle,Setup::EventAction>(kernel,name_type,shared);         }
-      static TrackingActionHandle createTrackingAction(KernelHandle& kernel, const string& name_type, bool shared)
+      static TrackingActionHandle createTrackingAction(KernelHandle& kernel, const std::string& name_type, bool shared)
       { return cr<TrackingActionHandle,Setup::TrackAction>(kernel,name_type,shared);               }
-      static SteppingActionHandle createSteppingAction(KernelHandle& kernel, const string& name_type, bool shared)
+      static SteppingActionHandle createSteppingAction(KernelHandle& kernel, const std::string& name_type, bool shared)
       { return cr<SteppingActionHandle,Setup::StepAction>(kernel,name_type,shared);                }
-      static StackingActionHandle createStackingAction(KernelHandle& kernel, const string& name_type, bool shared)
+      static StackingActionHandle createStackingAction(KernelHandle& kernel, const std::string& name_type, bool shared)
       { return cr<StackingActionHandle,Setup::StackAction>(kernel,name_type,shared);               }
       
-      static GeneratorActionHandle createGeneratorAction(KernelHandle& kernel, const string& name_type, bool shared)
+      static GeneratorActionHandle createGeneratorAction(KernelHandle& kernel, const std::string& name_type, bool shared)
       { return cr<GeneratorActionHandle,Setup::GenAction>(kernel,name_type,shared);                }
       
-      static DetectorConstructionHandle createDetectorConstruction(KernelHandle& kernel, const string& name_type)
+      static DetectorConstructionHandle createDetectorConstruction(KernelHandle& kernel, const std::string& name_type)
       { return cr<DetectorConstructionHandle,Setup::DetectorConstruction>(kernel,name_type,false); }
       
-      static UserInitializationHandle createUserInitialization(KernelHandle& kernel, const string& name_type)
+      static UserInitializationHandle createUserInitialization(KernelHandle& kernel, const std::string& name_type)
       {	return UserInitializationHandle(Setup::Initialization(*kernel.get(),name_type,false).get());}
       
-      static SensitiveHandle createSensitive(KernelHandle& kernel, const string& name_type, const string& detector, bool shared)
+      static SensitiveHandle createSensitive(KernelHandle& kernel, const std::string& name_type, const std::string& detector, bool shared)
       {	return SensitiveHandle(Setup::Sensitive(*kernel.get(),name_type,detector,shared).get());   }
       
-      static SensDetActionSequenceHandle createSensDetSequence(KernelHandle& kernel, const string& name_type)
+      static SensDetActionSequenceHandle createSensDetSequence(KernelHandle& kernel, const std::string& name_type)
       {	return cr<SensDetActionSequenceHandle,Setup::SensitiveSeq>(kernel,name_type,false);       }
       
       static Geant4Action* toAction(Geant4Filter* f)                   { return f;          }
@@ -172,26 +165,26 @@ namespace DD4hep {
       static Geant4Action* toAction(UserInitializationSequenceHandle f){ return f.action;   }
       static Geant4Action* toAction(DetectorConstructionHandle f)      { return f.action;   }
       static Geant4Action* toAction(DetectorConstructionSequenceHandle f){ return f.action;   }
-      static PropertyResult getProperty(Geant4Action* action, const string& name)  {
+      static PropertyResult getProperty(Geant4Action* action, const std::string& name)  {
         if ( action->hasProperty(name) )  {
           return PropertyResult(action->property(name).str(),1);
         }
         return PropertyResult("",0);
       }
-      static int setProperty(Geant4Action* action, const string& name, const string& value)  {
+      static int setProperty(Geant4Action* action, const std::string& name, const std::string& value)  {
         if ( action->hasProperty(name) )  {
           action->property(name).str(value);
           return 1;
         }
         return 0;
       }
-      static PropertyResult getPropertyKernel(Geant4Kernel* kernel, const string& name)  {
+      static PropertyResult getPropertyKernel(Geant4Kernel* kernel, const std::string& name)  {
         if ( kernel->hasProperty(name) )  {
           return PropertyResult(kernel->property(name).str(),1);
         }
         return PropertyResult("",0);
       }
-      static int setPropertyKernel(Geant4Kernel* kernel, const string& name, const string& value)  {
+      static int setPropertyKernel(Geant4Kernel* kernel, const std::string& name, const std::string& value)  {
         if ( kernel->hasProperty(name) )  {
           kernel->property(name).str(value);
           return 1;
@@ -199,15 +192,20 @@ namespace DD4hep {
         return 0;
       }
     };
+
+    /// Container definitions for Geant4Vertex
+    typedef vector<Geant4Vertex*>  Geant4VertexVector;
+    typedef map<int,Geant4Vertex*> Geant4VertexIntMap;
+
+    /// Container definitions for Geant4Particle
+    typedef vector<Geant4Particle*>  Geant4ParticleVector;
+    typedef map<int,Geant4Particle*> Geant4ParticleIntMap;
   }
 }
 
-typedef DD4hep::Simulation::Geant4ActionCreation Geant4ActionCreation;
+typedef dd4hep::sim::Geant4ActionCreation Geant4ActionCreation;
 
-#include "DD4hep/objects/DetectorInterna.h"
-using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+#include "DD4hep/detail/DetectorInterna.h"
 
 // CINT configuration
 #if defined(__CINT__) || defined(__MAKECINT__) || defined(__CLING__) || defined(__ROOTCLING__)
@@ -215,131 +213,127 @@ using namespace DD4hep::Simulation;
 //#pragma link C++ namespace DDSegmentation;
 
 /// Geant4 Vertex dictionaries
-#pragma link C++ class VertexExtension+;
-#pragma link C++ class Geant4Vertex+;
-#pragma link C++ class vector<Geant4Vertex*>+;
-#pragma link C++ class map<int,Geant4Vertex*>+;
+#pragma link C++ class dd4hep::sim::VertexExtension+;
+#pragma link C++ class dd4hep::sim::Geant4Vertex+;
+#pragma link C++ class vector<dd4hep::sim::Geant4Vertex*>+;
+#pragma link C++ class map<int,dd4hep::sim::Geant4Vertex*>+;
 
-#pragma link C++ class Geant4ParticleMap+;
-#pragma link C++ class PrimaryExtension+;
-#pragma link C++ class Geant4PrimaryInteraction+;
-#pragma link C++ class vector<Geant4PrimaryInteraction*>+;
-#pragma link C++ class map<int,Geant4PrimaryInteraction*>+;
-#pragma link C++ class Geant4PrimaryEvent+;
+#pragma link C++ class dd4hep::sim::Geant4ParticleMap+;
+#pragma link C++ class dd4hep::sim::PrimaryExtension+;
+#pragma link C++ class dd4hep::sim::Geant4PrimaryInteraction+;
+#pragma link C++ class std::vector<dd4hep::sim::Geant4PrimaryInteraction*>+;
+#pragma link C++ class std::map<int,dd4hep::sim::Geant4PrimaryInteraction*>+;
+#pragma link C++ class dd4hep::sim::Geant4PrimaryEvent+;
 
-#pragma link C++ class PropertyResult;
-#pragma link C++ class Geant4InputAction::Particles;
+#pragma link C++ typedef dd4hep::sim::Geant4VertexVector;
+#pragma link C++ typedef dd4hep::sim::Geant4VertexIntMap;
 
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,0,0)
-namespace {
-  struct bla {
-    dd4hep_ptr<Geant4InputAction::Particles>  __m1;
-    dd4hep_ptr<ParticleExtension>  __m2;
-    dd4hep_ptr<DataExtension>  __m3;
-  };
-}
-#else
-#pragma link C++ class Geant4ParticleHandle;
-#pragma link C++ class Geant4ParticleMap;
-#pragma link C++ class map<int,Geant4Particle*>;
-#endif
+#pragma link C++ typedef dd4hep::sim::Geant4ParticleVector;
+#pragma link C++ typedef dd4hep::sim::Geant4ParticleIntMap;
 
-#pragma link C++ class dd4hep_ptr<VertexExtension>+;
-#pragma link C++ class dd4hep_ptr<PrimaryExtension>+;
-#pragma link C++ class dd4hep_ptr<Geant4InputAction::Particles>;
+#pragma link C++ class dd4hep::sim::PropertyResult;
+#pragma link C++ class dd4hep::sim::Geant4InputAction::Particles;
+
+#pragma link C++ class dd4hep::sim::Geant4ParticleHandle;
+#pragma link C++ class dd4hep::sim::Geant4ParticleMap;
+#pragma link C++ class std::map<int,dd4hep::sim::Geant4Particle*>;
+
+#pragma link C++ class dd4hep::dd4hep_ptr<dd4hep::sim::VertexExtension>+;
+#pragma link C++ class dd4hep::dd4hep_ptr<dd4hep::sim::PrimaryExtension>+;
+#pragma link C++ class dd4hep::dd4hep_ptr<dd4hep::sim::Geant4InputAction::Particles>;
 #ifdef DD4HEP_DD4HEP_PTR_AUTO
-#pragma link C++ class dd4hep_ptr<Geant4InputAction::Particles>::base_t;
+#pragma link C++ class dd4hep::dd4hep_ptr<dd4hep::sim::Geant4InputAction::Particles>::base_t;
 #endif
 
 // Basic stuff
-#pragma link C++ class Geant4ActionCreation;
-#pragma link C++ class Geant4Kernel;
-#pragma link C++ class Geant4Kernel::PhaseSelector;
-#pragma link C++ class Geant4Context;
-#pragma link C++ class KernelHandle;
-#pragma link C++ class Geant4ActionContainer;
+#pragma link C++ class dd4hep::sim::Geant4ActionCreation;
+#pragma link C++ class dd4hep::sim::Geant4Kernel;
+#pragma link C++ class dd4hep::sim::Geant4Kernel::PhaseSelector;
+#pragma link C++ class dd4hep::sim::Geant4Context;
+#pragma link C++ class dd4hep::sim::KernelHandle;
+#pragma link C++ class dd4hep::sim::Geant4ActionContainer;
 
-#pragma link C++ class Geant4Action;
-#pragma link C++ class ActionHandle;
+#pragma link C++ class dd4hep::sim::Geant4Action;
+#pragma link C++ class dd4hep::sim::ActionHandle;
 
-#pragma link C++ class RunActionSequenceHandle;
-#pragma link C++ class Geant4RunActionSequence;
-#pragma link C++ class RunActionHandle;
-#pragma link C++ class Geant4SharedRunAction;
-#pragma link C++ class Geant4RunAction;
+#pragma link C++ class dd4hep::sim::RunActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4RunActionSequence;
+#pragma link C++ class dd4hep::sim::RunActionHandle;
+#pragma link C++ class dd4hep::sim::Geant4SharedRunAction;
+#pragma link C++ class dd4hep::sim::Geant4RunAction;
 
-#pragma link C++ class EventActionSequenceHandle;
-#pragma link C++ class Geant4EventActionSequence;
-#pragma link C++ class EventActionHandle;
-#pragma link C++ class Geant4SharedEventAction;
-#pragma link C++ class Geant4EventAction;
+#pragma link C++ class dd4hep::sim::EventActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4EventActionSequence;
+#pragma link C++ class dd4hep::sim::EventActionHandle;
+#pragma link C++ class dd4hep::sim::Geant4SharedEventAction;
+#pragma link C++ class dd4hep::sim::Geant4EventAction;
 
-#pragma link C++ class SteppingActionSequenceHandle;
-#pragma link C++ class Geant4SteppingActionSequence;
-#pragma link C++ class SteppingActionHandle;
-#pragma link C++ class Geant4SharedSteppingAction;
-#pragma link C++ class Geant4SteppingAction;
+#pragma link C++ class dd4hep::sim::SteppingActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4SteppingActionSequence;
+#pragma link C++ class dd4hep::sim::SteppingActionHandle;
+#pragma link C++ class dd4hep::sim::Geant4SharedSteppingAction;
+#pragma link C++ class dd4hep::sim::Geant4SteppingAction;
 
-#pragma link C++ class StackingActionHandle;
-#pragma link C++ class Geant4StackingAction;
-#pragma link C++ class StackingActionSequenceHandle;
-#pragma link C++ class Geant4StackingActionSequence;
+#pragma link C++ class dd4hep::sim::StackingActionHandle;
+#pragma link C++ class dd4hep::sim::Geant4StackingAction;
+#pragma link C++ class dd4hep::sim::StackingActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4StackingActionSequence;
 
-#pragma link C++ class TrackingActionHandle;
-#pragma link C++ class Geant4TrackingAction;
-#pragma link C++ class TrackingActionSequenceHandle;
-#pragma link C++ class Geant4TrackingActionSequence;
+#pragma link C++ class dd4hep::sim::TrackingActionHandle;
+#pragma link C++ class dd4hep::sim::Geant4TrackingAction;
+#pragma link C++ class dd4hep::sim::TrackingActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4TrackingActionSequence;
 
-#pragma link C++ class GeneratorActionHandle;
-#pragma link C++ class GeneratorActionSequenceHandle;
-#pragma link C++ class Geant4GeneratorActionSequence;
-#pragma link C++ class Geant4GeneratorAction;
+#pragma link C++ class dd4hep::sim::GeneratorActionHandle;
+#pragma link C++ class dd4hep::sim::GeneratorActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4GeneratorActionSequence;
+#pragma link C++ class dd4hep::sim::Geant4GeneratorAction;
 
-#pragma link C++ class Geant4InputAction;
-#pragma link C++ class Geant4EventReader;
+#pragma link C++ class dd4hep::sim::Geant4InputAction;
+#pragma link C++ class dd4hep::sim::Geant4EventReader;
 
-#pragma link C++ class PhysicsListHandle;
-#pragma link C++ class Geant4PhysicsList;
-#pragma link C++ class PhysicsListActionSequenceHandle;
-#pragma link C++ class Geant4PhysicsListActionSequence;
+#pragma link C++ class dd4hep::sim::PhysicsListHandle;
+#pragma link C++ class dd4hep::sim::Geant4PhysicsList;
+#pragma link C++ class dd4hep::sim::PhysicsListActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4PhysicsListActionSequence;
 
-#pragma link C++ class UserInitializationHandle;
-#pragma link C++ class UserInitializationSequenceHandle;
-#pragma link C++ class Geant4UserInitializationSequence;
-#pragma link C++ class Geant4UserInitialization;
+#pragma link C++ class dd4hep::sim::UserInitializationHandle;
+#pragma link C++ class dd4hep::sim::UserInitializationSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4UserInitializationSequence;
+#pragma link C++ class dd4hep::sim::Geant4UserInitialization;
 
-#pragma link C++ class DetectorConstructionHandle;
-#pragma link C++ class DetectorConstructionSequenceHandle;
-#pragma link C++ class Geant4DetectorConstructionSequence;
-#pragma link C++ class Geant4DetectorConstruction;
+#pragma link C++ class dd4hep::sim::DetectorConstructionHandle;
+#pragma link C++ class dd4hep::sim::DetectorConstructionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4DetectorConstructionSequence;
+#pragma link C++ class dd4hep::sim::Geant4DetectorConstruction;
 
-#pragma link C++ class SensitiveHandle;
-#pragma link C++ class SensDetActionSequenceHandle;
-#pragma link C++ class Geant4ActionSD;
-#pragma link C++ class Geant4Sensitive;
-#pragma link C++ class Geant4SensDetActionSequence;
+#pragma link C++ class dd4hep::sim::SensitiveHandle;
+#pragma link C++ class dd4hep::sim::SensDetActionSequenceHandle;
+#pragma link C++ class dd4hep::sim::Geant4ActionSD;
+#pragma link C++ class dd4hep::sim::Geant4Sensitive;
+#pragma link C++ class dd4hep::sim::Geant4SensDetActionSequence;
 
-#pragma link C++ class FilterHandle;
-#pragma link C++ class Geant4Filter;
-#pragma link C++ class Geant4GeneratorWrapper;
+#pragma link C++ class dd4hep::sim::FilterHandle;
+#pragma link C++ class dd4hep::sim::Geant4Filter;
+#pragma link C++ class dd4hep::sim::Geant4GeneratorWrapper;
 
-#pragma link C++ class PhaseActionHandle;
-#pragma link C++ class Geant4ActionPhase;
-#pragma link C++ class Geant4PhaseAction;
+#pragma link C++ class dd4hep::sim::PhaseActionHandle;
+#pragma link C++ class dd4hep::sim::Geant4ActionPhase;
+#pragma link C++ class dd4hep::sim::Geant4PhaseAction;
 
-#pragma link C++ class Callback;
-#pragma link C++ class Callback::mfunc_t;
+#pragma link C++ class dd4hep::Callback;
+#pragma link C++ class dd4hep::Callback::mfunc_t;
 
 // Other (specialized) components
-#pragma link C++ class Geant4DataDump;
-#pragma link C++ class Geant4Random;
-#pragma link C++ class Geant4ParticleHandler;
-#pragma link C++ class Geant4UserParticleHandler;
+#pragma link C++ class dd4hep::sim::Geant4DataDump;
+#pragma link C++ class dd4hep::sim::Geant4Random;
+#pragma link C++ class dd4hep::sim::Geant4ParticleHandler;
+#pragma link C++ class dd4hep::sim::Geant4UserParticleHandler;
 
 
 // somehow the symbol Geometry moved into global namespace. Redeclare it here
-//namespace Geometry {}
-//#pragma link C++ namespace Geometry;
+//namespace detail {}
+//#pragma link C++ namespace detail;
 
 #endif
 
@@ -351,8 +345,3 @@ namespace {
 #pragma link C++ class CLHEP::HepRandom;
 #pragma link C++ class CLHEP::HepRandomEngine;
 #endif
-
-
-int Geant4Dict()  {
-  return 0;
-}

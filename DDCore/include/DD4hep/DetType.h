@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,9 +15,10 @@
 #define DD4HEP_DetType_H
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /** Helper class for encoding sub detector types in a flag word.
+  /// Helper class for encoding sub detector types in a flag word.
+  /** 
    *  Example:<br>
    *  DetType type( DetType::TRACKER | DetType::STRIP | DetType::BARREL ) ; <br>
    *  type.is( DetType::ELECTROMAGNETIC  ) ; // false <br>
@@ -27,7 +27,6 @@ namespace DD4hep {
    *
    * @author F.gaede, DESY
    * @date 05.02.2016
-   * @version $Id: $
    */
   class DetType {
 
@@ -35,29 +34,28 @@ namespace DD4hep {
 
   public:
 
-    enum {
-      IGNORE       = 0 ,
-      TRACKER      = 1 <<  0, 
-      CALORIMETER  = 1 <<  1, 
-      CHERENKOV    = 1 <<  2, 
-      ENDCAP	   = 1 <<  3, 
-      BARREL	   = 1 <<  4, 
-      FORWARD	   = 1 <<  5, 
-      VERTEX	   = 1 <<  6, 
-      STRIP	   = 1 <<  7, 
-      PIXEL	   = 1 <<  8, 
-      GASEOUS	   = 1 <<  9, 
-      WIRE	   = 1 << 10, 
+    /// Different detector type flags
+    enum DetectorTypeEnumeration {
+      IGNORE          = 0 ,
+      TRACKER         = 1 <<  0, 
+      CALORIMETER     = 1 <<  1, 
+      CHERENKOV       = 1 <<  2, 
+      ENDCAP	        = 1 <<  3, 
+      BARREL          = 1 <<  4, 
+      FORWARD	        = 1 <<  5, 
+      VERTEX	        = 1 <<  6, 
+      STRIP	          = 1 <<  7, 
+      PIXEL	          = 1 <<  8, 
+      GASEOUS  	      = 1 <<  9, 
+      WIRE	          = 1 << 10, 
       ELECTROMAGNETIC = 1 << 11, 
-      HADRONIC	   = 1 << 12, 
-      MUON	   = 1 << 13, 
-      SUPPORT      = 1 << 14,
-      BEAMPIPE     = 1 << 15, 
-      COIL         = 1 << 16,
-      AUXILIARY    = 1 << 17 
-
-   } ;
-    
+      HADRONIC	      = 1 << 12, 
+      MUON	          = 1 << 13, 
+      SUPPORT         = 1 << 14,
+      BEAMPIPE        = 1 << 15, 
+      COIL            = 1 << 16,
+      AUXILIARY       = 1 << 17 
+   };
 
     /// default c'tor
     DetType( ) : _type(0) {}
@@ -122,6 +120,6 @@ namespace DD4hep {
   }
 
   
-} /* End namespace DD4hep        */
+} /* End namespace dd4hep        */
 
 #endif    /* DD4HEP_DETECTOR_H      */

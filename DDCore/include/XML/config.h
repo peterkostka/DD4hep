@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -9,6 +8,10 @@
 // For the list of contributors see $DD4hepINSTALL/doc/CREDITS.
 //
 // Author     : M.Frank
+//
+//==========================================================================
+//
+// Setup XML parsing for the use of Apache Xerces-C and TiXml
 //
 //==========================================================================
 #ifndef DD4HEP_XML_CONFIG_H
@@ -21,16 +24,19 @@
 // C/C++ include files
 #include <cstdlib>
 
-/* Setup XML parsing for the use of Apache Xerces-C and TiXml
- *
- */
-
+#ifndef  __TIXML__
+// This is the absolute minimal include necessary to comply with XercesC
+// Not includuing this file leads to clashes in XmlChar aka XMLCh in XercesC.
+//
+// We do not load here many dependencies. This simply sets up primitive types.
+#include <xercesc/util/Xerces_autoconf_config.hpp>
+#endif
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the AIDA detector description toolkit supporting XML utilities
-  namespace XML {
+  namespace xml {
     class XmlElement;
     class XmlDocument;
     class XmlNodeList;
@@ -40,7 +46,7 @@ namespace DD4hep {
 #ifdef  __TIXML__
     typedef char XmlChar;
 #else
-    typedef unsigned short XmlChar;
+    typedef XERCES_XMLCH_T XmlChar;
 #endif
   }
 }

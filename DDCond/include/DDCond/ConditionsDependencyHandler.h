@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,20 +14,22 @@
 #define DDCOND_CONDITIONSDEPENDENCYHANDLER_H
 
 // Framework include files
-#include "DD4hep/Detector.h"
-#include "DD4hep/Conditions.h"
-#include "DDCond/ConditionsInterna.h"
+#include "DD4hep/DetElement.h"
+#include "DD4hep/ConditionDerived.h"
+#include "DDCond/ConditionsPool.h"
 #include "DDCond/ConditionsManager.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Conditions {
+  /// Namespace for implementation details of the AIDA detector description toolkit
+  namespace cond {
 
     // Forward declarations
     class UserPool;
-
+    class ConditionsPool;
+    class ConditionsManagerObject;
+    
     /// Callback handler to update condition dependencies.
     /** 
      *
@@ -37,47 +38,51 @@ namespace DD4hep {
      */
     class ConditionsDependencyHandler : public ConditionResolver {
     public:
-      typedef ConditionsManager::Dependencies Dependencies;
+      typedef std::map<Condition::key_type,const ConditionDependency*> Dependencies;
 
     protected:
       /// Reference to conditions manager 
-      ConditionsManager::Object* m_manager;
+      ConditionsManagerObject* m_manager;
       /// Reference to the user pool object
-      UserPool&                  m_pool;
+      UserPool&                m_pool;
       /// Dependency container to be resolved.
-      const Dependencies&        m_dependencies;
+      const Dependencies&      m_dependencies;
+      /// IOV target pool for this handler
+      ConditionsPool*          m_iovPool;
       /// User defined optional processing parameter
-      void*                      m_userParam;
-      
+      void*                    m_userParam;
+
+    public:
+      /// Number of callbacks to the handler for monitoring
+      mutable size_t           num_callback;
+
+    protected:
       /// Internal call to trigger update callback
       Condition::Object* do_callback(const ConditionDependency& dep) const;
 
     public:
       /// Initializing constructor
-      ConditionsDependencyHandler(ConditionsManager::Object* mgr,
+      ConditionsDependencyHandler(ConditionsManager mgr,
                                   UserPool& pool, 
                                   const Dependencies& dependencies,
                                   void* user_param);
       /// Default destructor
       ~ConditionsDependencyHandler();
-      /// ConditionResolver implementation: Access to the conditions manager
-      virtual Ref_t manager() const
-      { return m_manager;         }
       /// ConditionResolver implementation: Access to the detector description instance
-      virtual LCDD& lcdd() const
-      { return m_manager->lcdd(); }
-      virtual const IOV& requiredValidity()  const
-      { return m_pool.validity(); }
+      Detector& detectorDescription() const;
+      /// ConditionResolver implementation: Access to the conditions manager
+      virtual Ref_t manager() const                     { return m_manager;         }
+      /// Access to pool IOV
+      virtual const IOV& requiredValidity()  const      { return m_pool.validity(); }
       /// ConditionResolver implementation: Interface to access conditions.
-      virtual Condition get(const ConditionKey& key)  const
-      {  return get(key.hash);    }
+      virtual Condition get(const ConditionKey& key)  const { return get(key.hash); }
       /// ConditionResolver implementation: Interface to access conditions
-      virtual Condition get(unsigned int key)  const;
+      virtual Condition get(Condition::key_type key)  const;
       /// Handler callback to process multiple derived conditions
       Condition::Object* operator()(const ConditionDependency* dep)  const;
     };
 
-  }        /* End namespace Conditions                */
-}          /* End namespace DD4hep                    */
+  }        /* End namespace cond                */
+}          /* End namespace dd4hep                    */
 
 #endif     /* DDCOND_CONDITIONSDEPENDENCYHANDLER_H    */

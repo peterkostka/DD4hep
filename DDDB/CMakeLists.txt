@@ -1,6 +1,5 @@
-# $Id$
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -22,6 +21,13 @@ dd4hep_package(    DDDB
   INCLUDE_DIRS     include
   INSTALL_INCLUDES include/DDDB)
 
+#
+# We only create only library for DDDB. The whole package is a single component
+# library. A priory there is no need to seperate the implementation from the
+# plugins....
+#
+# If need arises, this can be changed easily.
+#
 #---DDDB plugin library -------------------------------------------------------
-dd4hep_add_plugin ( DDDB SOURCES src/*.cpp
+dd4hep_add_plugin ( DDDB SOURCES src/*.cpp src/plugins/*.cpp
   USES  DDCore DDAlign DDCond )

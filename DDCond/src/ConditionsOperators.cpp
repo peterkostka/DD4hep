@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,76 +14,66 @@
 // Framework include files
 #include "DD4hep/Printout.h"
 #include "DD4hep/InstanceCount.h"
-#include "DDCond/ConditionsManager.h"
-#include "DDCond/ConditionsOperators.h"
-#include "DDCond/ConditionsIOVPool.h"
-#include "DDCond/ConditionsInterna.h"
+#include "DD4hep/detail/ConditionsInterna.h"
 #include "DDCond/ConditionsPool.h"
-#include "DDCond/ConditionsInterna.h"
+#include "DDCond/ConditionsIOVPool.h"
+#include "DDCond/ConditionsOperators.h"
+
+// C/C++ include files
+#include <cstring>
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Conditions;
-using DD4hep::Geometry::LCDD;
+using namespace dd4hep;
+using namespace dd4hep::cond;
 
-/// Select all condition from the conditions manager registered at the LCDD object
-size_t Operators::collectAllConditions(LCDD& lcdd, RangeConditions& conditions)   {
-  ConditionsManager manager = ConditionsManager::from(lcdd);
+/// Select all condition from the conditions manager registered at the Detector object
+size_t Operators::collectAllConditions(Detector& description, RangeConditions& conditions)   {
+  ConditionsManager manager = ConditionsManager::from(description);
   return collectAllConditions(manager, conditions);
 }
 
-/// Select all condition from the conditions manager registered at the LCDD object
+/// Select all condition from the conditions manager registered at the Detector object
 size_t Operators::collectAllConditions(ConditionsManager manager, RangeConditions& conditions)   {
-  typedef vector<const IOVType*> _T;
-  typedef ConditionsIOVPool::Elements _E;
-  const _T types = manager.iovTypesUsed();
+  const auto types = manager.iovTypesUsed();
   size_t num_conditions = 0;
-  for( _T::const_iterator i = types.begin(); i != types.end(); ++i )    {
-    const IOVType* type = *i;
+  for( auto type : types )  {
     if ( type )   {
       ConditionsIOVPool* pool = manager.iovPool(*type);
       if ( pool )  {
-	const _E& e = pool->elements;
-	for (_E::const_iterator j=e.begin(); j != e.end(); ++j)  {
-	  ConditionsPool* cp = (*j).second;
-	  RangeConditions rc;
-	  cp->select_all(rc);
-	  for(RangeConditions::const_iterator ic=rc.begin(); ic!=rc.end(); ++ic)
-	    conditions.push_back(*ic);
-	  num_conditions += rc.size();
-	}
+        for( auto& cp : pool->elements )  {
+          RangeConditions rc;
+          cp.second->select_all(rc);
+          for( auto c : rc )
+            conditions.push_back(c);
+          num_conditions += rc.size();
+        }
       }
     }
   }
   return num_conditions;
 }
 
-/// Select all condition from the conditions manager registered at the LCDD object
-size_t Operators::collectAllConditions(LCDD& lcdd, std::map<int,Condition>& conditions)   {
-  ConditionsManager manager = ConditionsManager::from(lcdd);
+/// Select all condition from the conditions manager registered at the Detector object
+size_t Operators::collectAllConditions(Detector& description, std::map<int,Condition>& conditions)   {
+  ConditionsManager manager = ConditionsManager::from(description);
   return collectAllConditions(manager, conditions);
 }
 
-/// Select all condition from the conditions manager registered at the LCDD object
+/// Select all condition from the conditions manager registered at the Detector object
 size_t Operators::collectAllConditions(ConditionsManager manager, std::map<int,Condition>& conditions)   {
-  typedef vector<const IOVType*> _T;
-  typedef ConditionsIOVPool::Elements _E;
-  const _T types = manager.iovTypesUsed();
+  const auto types = manager.iovTypesUsed();
   size_t num_conditions = 0;
-  for( _T::const_iterator i = types.begin(); i != types.end(); ++i )    {
-    const IOVType* type = *i;
+  for( auto type : types )  {
     if ( type )   {
       ConditionsIOVPool* pool = manager.iovPool(*type);
       if ( pool )  {
-	const _E& e = pool->elements;
-	for (_E::const_iterator j=e.begin(); j != e.end(); ++j)  {
-	  ConditionsPool* cp = (*j).second;
-	  RangeConditions rc;
-	  cp->select_all(rc);
-	  for(RangeConditions::const_iterator ic=rc.begin(); ic!=rc.end(); ++ic)
-	    conditions.insert(make_pair((*ic)->hash,*ic));
-	  num_conditions += rc.size();
-	}
+        for( auto& cp : pool->elements )  {
+          RangeConditions rc;
+          cp.second->select_all(rc);
+          for( auto c : rc )
+            conditions.insert(make_pair(c->hash,c));
+          num_conditions += rc.size();
+        }
       }
     }
   }

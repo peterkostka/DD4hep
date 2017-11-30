@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,6 +13,7 @@
 
 // Framework include files
 #include "DD4hep/Printout.h"
+#include "DD4hep/Primitives.h"
 #include "DD4hep/BasicGrammar.h"
 #include "DD4hep/ComponentProperties.h"
 
@@ -22,7 +22,11 @@
 #include <cstring>
 
 using namespace std;
-using namespace DD4hep;
+using namespace dd4hep;
+
+/// Default destructor
+PropertyConfigurator::~PropertyConfigurator()   {
+}
 
 /// Default constructor
 PropertyGrammar::PropertyGrammar(const BasicGrammar& g) : m_grammar(g) {
@@ -33,12 +37,16 @@ PropertyGrammar::~PropertyGrammar() {
 }
 
 /// Error callback on invalid conversion
-void PropertyGrammar::invalidConversion(const std::type_info& from, const std::type_info& to)  {
+void PropertyGrammar::invalidConversion(const std::type_info& from,
+                                        const std::type_info& to)
+{
   BasicGrammar::invalidConversion(from,to);
 }
 
 /// Error callback on invalid conversion
-void PropertyGrammar::invalidConversion(const std::string& value, const std::type_info& to)   {
+void PropertyGrammar::invalidConversion(const std::string& value,
+                                        const std::type_info& to)
+{
   BasicGrammar::invalidConversion(value,to);
 }
 
@@ -55,25 +63,6 @@ std::string PropertyGrammar::str(const void* ptr) const  {
 /// Set value from serialized string. On successful data conversion TRUE is returned.
 bool PropertyGrammar::fromString(void* ptr, const std::string& value) const  {
   return m_grammar.fromString(ptr,value);
-}
-
-/// Default constructor
-Property::Property()
-  : m_par(0), m_hdl(0) {
-}
-
-/// Copy constructor
-Property::Property(const Property& property)
-  : m_par(property.m_par), m_hdl(property.m_hdl) {
-}
-
-/// Assignment operator
-Property& Property::operator=(const Property& property) {
-  if ( &property != this )  {
-    m_par = property.m_par;
-    m_hdl = property.m_hdl;
-  }
-  return *this;
 }
 
 /// Property type name
@@ -106,7 +95,16 @@ string Property::str() const {
 }
 
 /// Conversion from string value
-Property& Property::str(const std::string& input) {
+const Property& Property::str(const std::string& input)   const {
+  if (m_hdl && m_par )   {
+    m_hdl->fromString(m_par,input);
+    return *this;
+  }
+  throw runtime_error("Attempt to access property grammar from invalid object.");
+}
+
+/// Conversion from string value
+Property& Property::str(const std::string& input)    {
   if (m_hdl && m_par )   {
     m_hdl->fromString(m_par,input);
     return *this;
@@ -138,6 +136,11 @@ PropertyManager::~PropertyManager() {
   m_properties.clear();
 }
 
+/// Access total number of properties
+size_t PropertyManager::size()  const   {
+  return m_properties.size();
+}
+
 /// Export properties of another instance
 void PropertyManager::adopt(const PropertyManager& copy)   {
   m_properties = copy.m_properties;
@@ -158,7 +161,8 @@ void PropertyManager::verifyNonExistence(const string& name) const {
 }
 
 /// Verify that this property exists (throw exception if the name was not found)
-PropertyManager::Properties::const_iterator PropertyManager::verifyExistence(const string& name) const {
+PropertyManager::Properties::const_iterator
+PropertyManager::verifyExistence(const string& name) const {
   Properties::const_iterator i = m_properties.find(name);
   if (i != m_properties.end())
     return i;
@@ -166,7 +170,8 @@ PropertyManager::Properties::const_iterator PropertyManager::verifyExistence(con
 }
 
 /// Verify that this property exists (throw exception if the name was not found)
-PropertyManager::Properties::iterator PropertyManager::verifyExistence(const string& name) {
+PropertyManager::Properties::iterator
+PropertyManager::verifyExistence(const string& name) {
   Properties::iterator i = m_properties.find(name);
   if (i != m_properties.end())
     return i;
@@ -201,18 +206,15 @@ void PropertyManager::add(const string& name, const Property& prop) {
 
 /// Bulk set of all properties
 void PropertyManager::set(const string& component_name, PropertyConfigurator& cfg) {
-  for (Properties::iterator i = m_properties.begin(); i != m_properties.end(); ++i) {
-    Property& p = (*i).second;
-    cfg.set(p.grammar(), component_name, (*i).first, p.ptr());
-  }
+  for (auto& i : m_properties )
+    cfg.set(i.second.grammar(), component_name, i.first, i.second.ptr());
 }
 
 /// Dump string values
 void PropertyManager::dump() const {
-  for (Properties::const_iterator i = m_properties.begin(); i != m_properties.end(); ++i) {
-    const Property& p = (*i).second;
-    printout(ALWAYS, "PropertyManager", "Property %s = %s", (*i).first.c_str(), p.str().c_str());
-  }
+  for (const auto& i : m_properties )
+    printout(ALWAYS, "PropertyManager", "Property %s = %s",
+             i.first.c_str(), i.second.str().c_str());
 }
 
 /// Standard PropertyConfigurable constructor
@@ -233,7 +235,7 @@ Property& PropertyConfigurable::property(const string& nam)   {
   return properties()[nam];
 }
 
-namespace DD4hep { 
+namespace dd4hep { 
   namespace Parsers {
     int parse(Property& result, const std::string& input) {
       result.str(input); 
@@ -252,46 +254,46 @@ namespace DD4hep {
 #include <set>
 #include <map>
 
-#include "Math/Point3D.h"
-#include "Math/Vector3D.h"
-#include "Math/Vector4D.h"
-
-#include "DD4hep/objects/BasicGrammar_inl.h"
-#include "DD4hep/ComponentProperties_inl.h"
+#include "DD4hep/detail/BasicGrammar_inl.h"
+#include "DD4hep/detail/ComponentProperties_inl.h"
 DD4HEP_DEFINE_PARSER_GRAMMAR_TYPE(Property)
 
-namespace DD4hep {
+namespace dd4hep {
 
-  //DD4HEP_DEFINE_PROPERTY_TYPE(Property);
   template Property Property::value() const;
   template void Property::value(Property& value) const;
   template void Property::set(const Property& value);
   template void Property::make(Property& value);
+}
 
-
-  #if defined(DD4HEP_HAVE_ALL_PARSERS)
-  DD4HEP_DEFINE_PROPERTY_U_CONT(char);
-  DD4HEP_DEFINE_PROPERTY_U_CONT(short);
-  DD4HEP_DEFINE_PROPERTY_U_CONT(long long);
+#if defined(DD4HEP_HAVE_ALL_PARSERS)
+DD4HEP_DEFINE_PROPERTY_U_CONT(char)
+DD4HEP_DEFINE_PROPERTY_U_CONT(short)
+DD4HEP_DEFINE_PROPERTY_U_CONT(long long)
 #endif   //  DD4HEP_HAVE_ALL_PARSERS
 
-  DD4HEP_DEFINE_PROPERTY_CONT(bool);
-  DD4HEP_DEFINE_PROPERTY_U_CONT(int);
-  DD4HEP_DEFINE_PROPERTY_U_CONT(long);
-  DD4HEP_DEFINE_PROPERTY_CONT(float);
-  DD4HEP_DEFINE_PROPERTY_CONT(double);
+DD4HEP_DEFINE_PROPERTY_CONT(bool)
+DD4HEP_DEFINE_PROPERTY_U_CONT(int)
+DD4HEP_DEFINE_PROPERTY_U_CONT(long)
+DD4HEP_DEFINE_PROPERTY_CONT(float)
+DD4HEP_DEFINE_PROPERTY_CONT(double)
 
-  // STL objects
-  DD4HEP_DEFINE_PROPERTY_CONT(string);
+// STL objects
+DD4HEP_DEFINE_PROPERTY_CONT(string)
 
-  typedef map<string, int> map_string_int;
-  DD4HEP_DEFINE_PROPERTY_TYPE(map_string_int);
+typedef map<string, int> map_string_int;
+DD4HEP_DEFINE_PROPERTY_TYPE(map_string_int)
 
-  typedef map<string, string> map_string_string;
-  DD4HEP_DEFINE_PROPERTY_TYPE(map_string_string);
+typedef map<string, string> map_string_string;
+DD4HEP_DEFINE_PROPERTY_TYPE(map_string_string)
 
-  // ROOT::Math Object instances
-  DD4HEP_DEFINE_PROPERTY_TYPE(ROOT::Math::XYZPoint);
-  DD4HEP_DEFINE_PROPERTY_TYPE(ROOT::Math::XYZVector);
-  DD4HEP_DEFINE_PROPERTY_TYPE(ROOT::Math::PxPyPzEVector);
-}
+#ifndef DD4HEP_PARSERS_NO_ROOT
+#include "Math/Point3D.h"
+#include "Math/Vector3D.h"
+#include "Math/Vector4D.h"
+
+// ROOT::Math Object instances
+DD4HEP_DEFINE_PROPERTY_TYPE(ROOT::Math::XYZPoint)
+DD4HEP_DEFINE_PROPERTY_TYPE(ROOT::Math::XYZVector)
+DD4HEP_DEFINE_PROPERTY_TYPE(ROOT::Math::PxPyPzEVector)
+#endif

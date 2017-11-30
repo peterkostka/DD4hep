@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -25,7 +24,7 @@ class TEveCalo3D;
 class TEveCaloDataHist;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Lego plot for calorimeter energy deposits
   /*
@@ -41,18 +40,16 @@ namespace DD4hep {
     /// Default destructor
     virtual ~CaloLego();
     /// Build the projection view and map it to the given slot
-    virtual View& Build(TEveWindow* slot);
+    virtual View& Build(TEveWindow* slot)  override;
     /// Configure a single geometry view
-    virtual void ConfigureGeometry(const DisplayConfiguration::ViewConfig& config);
+    virtual void ConfigureGeometry(const DisplayConfiguration::ViewConfig& config)  override;
     /// Configure a single event scene view
-    virtual void ConfigureEvent(const DisplayConfiguration::ViewConfig& config);
+    virtual void ConfigureEvent(const DisplayConfiguration::ViewConfig& config)  override;
     /// Call to import geometry topics
-    void ImportGeoTopics(const std::string& title);
+    void ImportGeoTopics(const std::string& title)  override;
 
     /// Root implementation macro
-    ClassDef(CaloLego,0);
+    ClassDefOverride(CaloLego,0);
   };
-
-} /* End namespace DD4hep   */
-
+}      /* End namespace dd4hep    */
 #endif /* DD4HEP_DDEVE_CALOLEGO_H */

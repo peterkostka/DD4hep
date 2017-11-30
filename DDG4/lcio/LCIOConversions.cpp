@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,7 +13,7 @@
 
 // Framework include files
 #define DDG4_MAKE_INSTANTIATIONS
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/Printout.h"
 #include "DDG4/Geant4HitCollection.h"
 #include "DDG4/Geant4DataConversion.h"
@@ -57,17 +56,17 @@ using namespace lcio ;
 //==================================================================================
 
 /*
- *   DD4hep namespace declaration
+ *   dd4hep namespace declaration
  */
-namespace DD4hep {
+namespace dd4hep {
 
   /*
    *   Simulation namespace declaration
    */
-  namespace Simulation   {
+  namespace sim   {
 
-    typedef Geometry::VolumeManager VolMgr;
-    typedef Geometry::IDDescriptor  IDDescriptor;
+    typedef VolumeManager VolMgr;
+    typedef IDDescriptor  IDDescriptor;
 
     /// Data conversion interface calling lower level explicit convetrers
     /**
@@ -137,6 +136,17 @@ namespace DD4hep {
         lc_hit->setMCParticle(lc_mcp);
         lc_hit->setPosition(pos);
         lc_hit->setMomentum(hit->momentum.x()/CLHEP::GeV,hit->momentum.y()/CLHEP::GeV,hit->momentum.z()/CLHEP::GeV);
+
+#if LCIO_VERSION_GE( 2, 8 )
+        auto particleIt = pm->particles().find(trackID);
+        if( ( particleIt != pm->particles().end()) ){
+	  // if the original track ID of the particle is not the same as the
+	  // original track ID of the hit it was produced by an MCParticle that
+	  // is no longer stored
+	  lc_hit->setProducedBySecondary( (particleIt->second->originalG4ID != t.trackID) );
+        }
+#endif
+
         lc_coll->addElement(lc_hit);
       }
       return lc_coll;
@@ -193,7 +203,11 @@ namespace DD4hep {
           EVENT::MCParticle* lc_mcp = (EVENT::MCParticle*)lc_parts->getElementAt(trackID);
           if ( hit_creation_mode == Geant4Sensitive::DETAILED_MODE )     {
             float contrib_pos[] = {float(c.x/mm), float(c.y/mm), float(c.z/mm)};
+#if LCIO_VERSION_GE( 2, 11 )
+            lc_hit->addMCParticleContribution(lc_mcp, c.deposit/GeV, c.time/ns, c.length/mm, c.pdgID, contrib_pos);
+#else
             lc_hit->addMCParticleContribution(lc_mcp, c.deposit/GeV, c.time/ns, c.pdgID, contrib_pos);
+#endif
           }
           else    {
             lc_hit->addMCParticleContribution(lc_mcp, c.deposit/GeV, c.time/ns);
@@ -308,8 +322,8 @@ namespace DD4hep {
     DECLARE_GEANT4_HITCONVERTER(lcio::LCCollectionVec,CONVERSION_ARGS,lcio::SimTrackerHitImpl)
     DECLARE_GEANT4_HITCONVERTER(lcio::LCCollectionVec,CONVERSION_ARGS,lcio::SimCalorimeterHitImpl)
     DECLARE_GEANT4_HITCONVERTER(lcio::LCCollectionVec,CONVERSION_ARGS,lcio::ClusterImpl)
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 
 

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -12,20 +11,22 @@
 //
 //==========================================================================
 
-#include "DD4hep/Handle.inl"
-#include "DD4hep/InstanceCount.h"
 #include "DD4hep/Objects.h"
-#include "DD4hep/objects/ObjectsInterna.h"
+#include "DD4hep/InstanceCount.h"
+#include "DD4hep/detail/Handle.inl"
+#include "DD4hep/detail/ObjectsInterna.h"
+#include "DD4hep/detail/SegmentationsInterna.h"
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
+using namespace dd4hep::detail;
 
 DD4HEP_INSTANTIATE_HANDLE_NAMED(VisAttrObject);
 
 /// Standard constructor
 VisAttrObject::VisAttrObject()
-  : magic(magic_word()), col(0), color(0), alpha(0), drawingStyle(VisAttr::SOLID), lineStyle(VisAttr::SOLID), showDaughters(true), visible(true) {
+  : magic(magic_word()), col(0), color(0), alpha(0),
+    drawingStyle(VisAttr::SOLID), lineStyle(VisAttr::SOLID), showDaughters(true), visible(true) {
   InstanceCount::increment(this);
 }
 
@@ -49,6 +50,11 @@ HeaderObject::~HeaderObject() {
 
 DD4HEP_INSTANTIATE_HANDLE_NAMED(ConstantObject);
 
+/// Default constructor
+ConstantObject::ConstantObject()  {
+  InstanceCount::increment(this);
+}
+
 /// Standard constructor
 ConstantObject::ConstantObject(const string& nam, const string& val, const string& typ)
   : NamedObject(nam.c_str(), val.c_str()) {
@@ -65,7 +71,8 @@ DD4HEP_INSTANTIATE_HANDLE_NAMED(RegionObject);
 
 /// Standard constructor
 RegionObject::RegionObject()
-  : magic(magic_word()), threshold(10.0), cut(10.0), store_secondaries(false)
+  : magic(magic_word()), threshold(10.0), cut(10.0), store_secondaries(false),
+    use_default_cut(true), was_threshold_set(false)
 {
   InstanceCount::increment(this);
 }
@@ -108,13 +115,13 @@ DD4HEP_INSTANTIATE_HANDLE_NAMED(IDDescriptorObject);
 
 /// Standard constructor
 IDDescriptorObject::IDDescriptorObject()
-  : NamedObject(), BitField64() /*, maxBit(0) */{
+  : NamedObject(), decoder()   {
   InstanceCount::increment(this);
 }
 
 /// Standard constructor
 IDDescriptorObject::IDDescriptorObject(const std::string& desc)
-  : NamedObject(), BitField64(desc) /*, maxBit(0) */{
+  : NamedObject(), decoder(desc)   {
   InstanceCount::increment(this);
 }
 
@@ -122,3 +129,4 @@ IDDescriptorObject::IDDescriptorObject(const std::string& desc)
 IDDescriptorObject::~IDDescriptorObject() {
   InstanceCount::decrement(this);
 }
+

@@ -1,5 +1,5 @@
-// Framework include files
-//  AIDA Detector description implementation for LCD
+//==========================================================================
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,19 +11,17 @@
 //  \date   2015-11-03
 //
 //==========================================================================
-// $Id$
-
 #ifndef DD4HEP_DDG4_PYDDG4_H
 #define DD4HEP_DDG4_PYDDG4_H
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
     // Forward declarations
     class Geant4Kernel;
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 
 /// Python interface class for Geant4 python involation
@@ -33,7 +31,7 @@ namespace DD4hep {
  *  \ingroup DD4HEP_SIMULATION
  */
 struct PyDDG4  {
-  typedef DD4hep::Simulation::Geant4Kernel Kernel;
+  typedef dd4hep::sim::Geant4Kernel Kernel;
 
   static int execute();
   static int process(const char* fname);

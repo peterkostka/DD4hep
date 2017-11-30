@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -28,14 +27,14 @@ class G4Step;
 class G4StepPoint;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
+  // Forward type definitions
+  typedef ROOT::Math::XYZVector Position;
+  typedef ROOT::Math::XYZVector Direction;
+  
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
-
-    // Forward type definitions
-    typedef ROOT::Math::XYZVector Position;
-    typedef ROOT::Math::XYZVector Direction;
+  namespace sim {
 
     /// Simple run description structure. Used in the default I/O mechanism.
     /**
@@ -69,11 +68,11 @@ namespace DD4hep {
     public:
       typedef std::vector<long> Seeds;
       /// Run identifiers
-      int runID;
+      int    runID;
       /// Event identifier
-      int eventID;
+      int    eventID;
       /// Random number generator seeds
-      Seeds seeds;
+      Seeds  seeds;
       /// Default constructor
       SimpleEvent();
       /// Default destructor
@@ -147,6 +146,8 @@ namespace DD4hep {
         double deposit;
         /// Timestamp when this energy was deposited
         double time;
+        /// Length of this step
+        double length = 0.0;
         /// Proper position of the hit contribution
         float  x,y,z;
 
@@ -155,24 +156,24 @@ namespace DD4hep {
           : trackID(-1), pdgID(-1), deposit(0.0), time(0.0), x(0), y(0), z(0) {
         }
         /// Initializing constructor
-        MonteCarloContrib(int track_id, int pdg, double dep, double time_stamp)
-          : trackID(track_id), pdgID(pdg), deposit(dep), time(time_stamp), x(0), y(0), z(0) {
+        MonteCarloContrib(int track_id, int pdg, double dep, double time_stamp, double len)
+          : trackID(track_id), pdgID(pdg), deposit(dep), time(time_stamp), length(len), x(0), y(0), z(0) {
         }
         /// Initializing constructor
-        MonteCarloContrib(int track_id, int pdg, double dep, double time_stamp, float* pos)
-          : trackID(track_id), pdgID(pdg), deposit(dep), time(time_stamp),
+        MonteCarloContrib(int track_id, int pdg, double dep, double time_stamp, double len, float* pos)
+          : trackID(track_id), pdgID(pdg), deposit(dep), time(time_stamp), length(len),
             x(pos[0]), y(pos[1]), z(pos[2])
         {
         }
         /// Initializing constructor
-        MonteCarloContrib(int track_id, int pdg, double dep, double time_stamp, double* pos)
-          : trackID(track_id), pdgID(pdg), deposit(dep), time(time_stamp),
+        MonteCarloContrib(int track_id, int pdg, double dep, double time_stamp, double len, double* pos)
+          : trackID(track_id), pdgID(pdg), deposit(dep), time(time_stamp), length(len),
             x(pos[0]), y(pos[1]), z(pos[2])
         {
         }
         /// Copy constructor
         MonteCarloContrib(const MonteCarloContrib& c)
-          : trackID(c.trackID), pdgID(c.pdgID), deposit(c.deposit), time(c.time),
+          : trackID(c.trackID), pdgID(c.pdgID), deposit(c.deposit), time(c.time), length(c.length),
             x(c.x), y(c.y), z(c.z) {
         }
         /// Assignment operator
@@ -182,6 +183,7 @@ namespace DD4hep {
             pdgID   = c.pdgID;
             deposit = c.deposit;
             time    = c.time;
+            length  = c.length;
             x       = c.x;
             y       = c.y;
             z       = c.z;
@@ -191,7 +193,7 @@ namespace DD4hep {
         /// Clear data content
         void clear() {
           x = y = z = 0.0;
-          time = deposit = 0.0;
+          time = deposit = length = 0.0;
           pdgID = trackID = -1;
         }
       };
@@ -228,15 +230,16 @@ namespace DD4hep {
       class Hit : public Geant4HitData {
       public:
         /// Hit position
-        Position position;
+        Position      position;
         /// Hit direction
-        Direction momentum;
+        Direction     momentum;
         /// Length of the track segment contributing to this hit
-        double length;
+        double        length;
         /// Monte Carlo / Geant4 information
-        Contribution truth;
+        Contribution  truth;
         /// Energy deposit in the tracker hit
-        double energyDeposit;
+        double        energyDeposit;
+      public:
         /// Default constructor
         Hit();
         /// Initializing constructor
@@ -273,11 +276,11 @@ namespace DD4hep {
       class Hit : public Geant4HitData {
       public:
         /// Hit position
-        Position position;
+        Position      position;
         /// Hit contributions by individual particles
         Contributions truth;
         /// Total energy deposit
-        double energyDeposit;
+        double        energyDeposit;
       public:
         /// Default constructor (for ROOT)
         Hit();
@@ -293,6 +296,6 @@ namespace DD4hep {
     typedef Geant4Tracker SimpleTracker;
     typedef Geant4Calorimeter SimpleCalorimeter;
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 #endif // DD4HEP_GEANT4DATA_H

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,23 +15,23 @@
 #include "DD4hep/ObjectExtensions.h"
 #include "DD4hep/InstanceCount.h"
 #include "DD4hep/Primitives.h"
+#include "DD4hep/Printout.h"
 
 // C/C++ include files
 #include <stdexcept>
 
-using namespace DD4hep;
+using namespace std;
+using namespace dd4hep;
 
 namespace {
-  static int s_extensionID = 0;
-  ObjectExtensions::ExtensionMap* extensionContainer(const std::type_info& typ) {
-    static std::map<const std::type_info*, ObjectExtensions::ExtensionMap> s_map;
-    return &s_map[&typ];
+  std::string obj_type(void* ptr)  {
+    ObjectExtensions* o = (ObjectExtensions*)ptr;
+    return typeName(typeid(*o));
   }
 }
 
 /// Default constructor
-ObjectExtensions::ObjectExtensions(const std::type_info& parent_type)    {
-  extensionMap = extensionContainer(parent_type);
+ObjectExtensions::ObjectExtensions(const type_info& /* parent_type */)    {
   InstanceCount::increment(this);
 }
 
@@ -42,91 +41,81 @@ ObjectExtensions::~ObjectExtensions()   {
   InstanceCount::decrement(this);
 }
 
+/// Move extensions to target object
+void ObjectExtensions::move(ObjectExtensions& source)   {
+  extensions = source.extensions;
+  source.extensions.clear();
+}
+
 /// Internal object destructor: release extension object(s)
 void ObjectExtensions::clear(bool destroy) {
-  for (Extensions::iterator i = extensions.begin(); i != extensions.end(); ++i) {
-    void* ptr = (*i).second;
-    if (ptr) {
-      ExtensionMap::iterator j = extensionMap->find((*i).first);
-      if (j != extensionMap->end()) {
-        Entry& e = (*j).second;
-        if (destroy && e.destruct)
-          (*(e.destruct))(ptr);
-      }
+  for( const auto& i : extensions )  {
+    if ( i.second ) {
+      if ( destroy ) i.second->destruct();
+      delete i.second;
     }
   }
   extensions.clear();
 }
 
 /// Copy object extensions from another object
-void ObjectExtensions::copyFrom(const Extensions& ext, void* arg)  {
-  for (Extensions::const_iterator i = ext.begin(); i != ext.end(); ++i) {
-    const std::type_info* info = (*i).first;
-    ExtensionMap::const_iterator j = extensionMap->find(info);
-    const Entry& e = (*j).second;
-    extensions[info] = (*(e.copy))((*i).second, arg);
+void ObjectExtensions::copyFrom(const map<unsigned long long int,ExtensionEntry*>& ext, void* arg)  {
+  for( const auto& i : ext )  {
+    extensions[i.first] = i.second->clone(arg);
   }
 }
 
 /// Add an extension object to the detector element
-void* ObjectExtensions::addExtension(void* ptr, const std::type_info& info, destruct_t dtor)  {
-  return addExtension(ptr, info, 0, dtor);
-}
-
-/// Add an extension object to the detector element
-void* ObjectExtensions::addExtension(void* ptr, const std::type_info& info, copy_t ctor, destruct_t dtor)  {
-  Extensions::iterator j = extensions.find(&info);
-  if (j == extensions.end()) {
-    ExtensionMap::iterator i = extensionMap->find(&info);
-    if (i == extensionMap->end()) {
-      Entry entry;
-      entry.destruct = dtor;
-      entry.copy = ctor;
-      entry.id = ++s_extensionID;
-      extensionMap->insert(make_pair(&info, entry));
-      i = extensionMap->find(&info);
+void* ObjectExtensions::addExtension(unsigned long long int key, ExtensionEntry* e)  {
+  if ( e )   {
+    if ( e->object() )  {
+      auto j = extensions.find(key);
+      if (j == extensions.end()) {
+        extensions[key] = e;
+        return e->object();
+      }
+      except("ObjectExtensions::addExtension","Object already has an extension of type: %s.",obj_type(e->object()).c_str());
     }
-    return extensions[&info] = ptr;
+    except("ObjectExtensions::addExtension","Invalid extension object for key %016llX!",key);
   }
-  throw std::runtime_error("DD4hep: addExtension: Object already has an extension of type:" + typeName(info) + ".");
+  except("ObjectExtensions::addExtension","Invalid extension entry for key %016llX!",key);
+  return 0;
 }
 
 /// Remove an existing extension object from the instance
-void* ObjectExtensions::removeExtension(const std::type_info& info, bool destroy)  {
-  Extensions::iterator j = extensions.find(&info);
-  if (j != extensions.end()) {
-    void *ptr = (*j).second;
+void* ObjectExtensions::removeExtension(unsigned long long int key, bool destroy)  {
+  auto j = extensions.find(key);
+  if ( j != extensions.end() )   {
+    void* ptr = (*j).second->object();
     if ( destroy )  {
-      ExtensionMap::iterator i = extensionMap->find(&info);
-      if (i != extensionMap->end()) {
-        Entry& e = (*i).second;
-        (*e.destruct)((*j).second);
-        ptr = 0;
-      }
+      (*j).second->destruct();
     }
+    delete (*j).second;
     extensions.erase(j);
     return ptr;
   }
-  throw std::runtime_error("DD4hep: removeExtension: The object of type " + typeName(info) + " is not present.");
+  except("ObjectExtensions::removeExtension","The object of type %016llX is not present.",key);
+  return 0;
 }
 
 /// Access an existing extension object from the detector element
-void* ObjectExtensions::extension(const std::type_info& info) const {
-  Extensions::const_iterator j = extensions.find(&info);
+void* ObjectExtensions::extension(unsigned long long int key) const {
+  const auto j = extensions.find(key);
   if (j != extensions.end()) {
-    return (*j).second;
+    return (*j).second->object();
   }
-  throw std::runtime_error("DD4hep: extension: Object has no extension of type:" + typeName(info) + ".");
+  string msg = format("ObjectExtensions::extension","The object has no extension of type %016llX.",key);
+  throw runtime_error(msg);
 }
 
 /// Access an existing extension object from the detector element
-void* ObjectExtensions::extension(const std::type_info& info, bool alert) const {
-  Extensions::const_iterator j = extensions.find(&info);
+void* ObjectExtensions::extension(unsigned long long int key, bool alert) const {
+  const auto j = extensions.find(key);
   if (j != extensions.end()) {
-    return (*j).second;
+    return (*j).second->object();
   }
   else if ( !alert )
     return 0;
-  throw std::runtime_error("DD4hep: extension: Object has no extension of type:" + typeName(info) + ".");
+  string msg = format("ObjectExtensions::extension","The object has no extension of type %016llX.",key);
+  throw runtime_error(msg);
 }
-

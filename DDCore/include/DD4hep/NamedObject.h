@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,15 +10,14 @@
 // Author     : M.Frank
 //
 //==========================================================================
-
-#ifndef DD4HEP_GEOMETRY_INTERNAL_NAMEDOBJECT_H
-#define DD4HEP_GEOMETRY_INTERNAL_NAMEDOBJECT_H
+#ifndef DD4HEP_DDCORE_NAMEDOBJECT_H
+#define DD4HEP_DDCORE_NAMEDOBJECT_H
 
 // C/C++ include files
 #include <string>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Implementation of a named object
   /**
@@ -27,7 +25,7 @@ namespace DD4hep {
    *
    *  \author  M.Frank
    *  \version 1.0
-   *  \ingroup DD4HEP_GEOMETRY
+   *  \ingroup DD4HEP_CORE
    */
   class NamedObject {
   public:
@@ -36,20 +34,21 @@ namespace DD4hep {
     /// The object type
     std::string type;
 
-    /// Standard constructor
-    NamedObject();
     /// Initializing constructor
     NamedObject(const char* nam, const char* typ="");
     /// Initializing constructor
     NamedObject(const std::string& nam);
     /// Initializing constructor
     NamedObject(const std::string& nam, const std::string& typ);
+
+    /// Standard constructor
+    NamedObject() = default;
     /// Copy constructor
-    NamedObject(const NamedObject& c);
+    NamedObject(const NamedObject& c) = default;
     /// Default destructor
-    virtual ~NamedObject();
+    virtual ~NamedObject() = default;
     /// Assignment operator
-    NamedObject& operator=(const NamedObject& c);
+    NamedObject& operator=(const NamedObject& c) = default;
 
     /// Access name
     const char* GetName()  const  {
@@ -69,5 +68,5 @@ namespace DD4hep {
     }
   };
 
-} /* End namespace DD4hep                   */
-#endif    /*  DD4HEP_GEOMETRY_INTERNAL_NAMEDOBJECT_H   */
+}         /* End namespace dd4hep          */
+#endif    /* DD4HEP_DDCORE_NAMEDOBJECT_H   */

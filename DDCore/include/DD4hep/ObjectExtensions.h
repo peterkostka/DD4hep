@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,15 +10,17 @@
 // Author     : M.Frank
 //
 //==========================================================================
-#ifndef DD4HEP_GEOMETRY_OBJECTEXTENSIONS_H
-#define DD4HEP_GEOMETRY_OBJECTEXTENSIONS_H
+#ifndef DD4HEP_DDCORE_OBJECTEXTENSIONS_H
+#define DD4HEP_DDCORE_OBJECTEXTENSIONS_H
+
+// Framework include files
+#include "DD4hep/ExtensionEntry.h"
 
 // C/C++ include files
-#include <typeinfo>
 #include <map>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Implementation of an object supporting arbitrary user extensions
   /**
@@ -27,57 +28,39 @@ namespace DD4hep {
    *
    *  \author  M.Frank
    *  \version 1.0
-   *  \ingroup DD4HEP_GEOMETRY
+   *  \ingroup DD4HEP_CORE
    */
   class ObjectExtensions   {
   public:
-    /// Definition of the extension type
-    typedef std::map<const std::type_info*, void*> Extensions;
-    /// Extensions copy constructor type
-    typedef void* (*copy_t)(const void*, void* arg);
-    /// Extensions destructor type
-    typedef void (*destruct_t)(void*);
-    /// Defintiion of the extension entry
-    struct Entry {
-      copy_t copy;
-      destruct_t destruct;
-      int id;
-    };
-    typedef std::map<const std::type_info*, Entry> ExtensionMap;
-
     /// The extensions object
-    Extensions    extensions; //!
-    /// Pointer to the extension map
-    ExtensionMap* extensionMap; //!
-
-    /// Function to be passed as dtor if object should NOT be deleted!
-    static void _noDelete(void*) {}
-
-    /// Templated destructor function
-    template <typename T> static void _delete(void* ptr) {
-      delete (T*) (ptr);
-    }
+    std::map<unsigned long long int, ExtensionEntry*>    extensions;   //!
 
   public:
     /// Default constructor
     ObjectExtensions(const std::type_info& parent_type);
+    /// Copy constructor
+    ObjectExtensions(const ObjectExtensions& copy) = delete;
     /// Default destructor
     virtual ~ObjectExtensions();
+    /// Assignment operator
+    ObjectExtensions& operator=(const ObjectExtensions& copy) = delete;
+    /// Initialize non-persistent object containers (e.g. after loading from ROOT file)
+    void initialize();
+    /// Move extensions to target object
+    void move(ObjectExtensions& copy);
     /// Clear all extensions
     void clear(bool destroy=true);
     /// Copy object extensions from another object. Hosting type must be identical!
-    void copyFrom(const Extensions& ext, void* arg);
+    void copyFrom(const std::map<unsigned long long int,ExtensionEntry*>& ext, void* arg);
     /// Add an extension object to the detector element
-    void* addExtension(void* ptr, const std::type_info& info, copy_t ctor, destruct_t dtor);
-    /// Add an extension object to the detector element
-    void* addExtension(void* ptr, const std::type_info& info, destruct_t dtor);
+    void* addExtension(unsigned long long int key, ExtensionEntry* entry);
     /// Remove an existing extension object from the instance
-    void* removeExtension(const std::type_info& info, bool destroy);
+    void* removeExtension(unsigned long long int key, bool destroy);
     /// Access an existing extension object from the detector element
-    void* extension(const std::type_info& info, bool alert) const;
+    void* extension(unsigned long long int key, bool alert) const;
     /// Access an existing extension object from the detector element
-    void* extension(const std::type_info& info) const;
+    void* extension(unsigned long long int key) const;
   };
 
-} /* End namespace DD4hep        */
-#endif    /* DD4HEP_GEOMETRY_OBJECTEXTENSIONS_H */
+} /* End namespace dd4hep        */
+#endif    /* DD4HEP_DDCORE_OBJECTEXTENSIONS_H */

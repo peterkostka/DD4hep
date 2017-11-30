@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -13,13 +12,12 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/Printout.h"
+#include "XML/Printout.h"
 #include "XML/UriReader.h"
 #include "XML/DocumentHandler.h"
-#include "TUri.h"
-#include "TUrl.h"
 
 // C/C++ include files
+#include <memory>
 #include <iostream>
 #include <stdexcept>
 #include <sys/types.h>
@@ -27,10 +25,22 @@
 #ifndef _WIN32
 #include <libgen.h>
 #endif
+#include "TSystem.h"
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::XML;
+using namespace dd4hep;
+using namespace dd4hep::xml;
+
+namespace {
+  string undressed_file_name(const string& fn)   {
+    if ( !fn.empty() )   {
+      TString tfn(fn);
+      gSystem->ExpandPathName(tfn);
+      return string(tfn.Data());
+    }
+    return fn;
+  }
+}
 
 #ifndef __TIXML__
 #include "xercesc/framework/LocalFileFormatTarget.hpp"
@@ -53,10 +63,10 @@ using namespace DD4hep::XML;
 using namespace xercesc;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace containing utilities to parse XML files using XercesC or TinyXML
-  namespace XML {
+  namespace xml {
 
     /// XML-DOM ERror handler class for the XercesC document parser.
     class DocumentErrorHandler: public ErrorHandler, public DOMErrorHandler {
@@ -132,15 +142,15 @@ namespace DD4hep {
     namespace {
 
       /// Specialized DOM parser to handle special system IDs
-      class DD4hepDOMParser : public XercesDOMParser      {
+      class dd4hepDOMParser : public XercesDOMParser      {
         /// Pointer to URI reader
         UriReader*           m_reader;
         /// Xerces Error handler
-        DocumentErrorHandler m_errHandler;
+        DocumentErrorHandler m_errHandle_tr;
         class Resolver : public XMLEntityResolver {
-          DD4hepDOMParser* parser;
+          dd4hepDOMParser* parser;
         public:
-          Resolver(DD4hepDOMParser* p) : parser(p) {}
+          Resolver(dd4hepDOMParser* p) : parser(p) {}
           virtual ~Resolver() {}
           virtual InputSource *resolveEntity(XMLResourceIdentifier *id)
           {   return parser->read_uri(id);                            }
@@ -148,13 +158,13 @@ namespace DD4hep {
         Resolver m_resolver;
       public:
         /// Initializing constructor
-        DD4hepDOMParser(UriReader* rdr) : XercesDOMParser(), m_reader(rdr), m_resolver(this)  {
+        dd4hepDOMParser(UriReader* rdr) : XercesDOMParser(), m_reader(rdr), m_resolver(this)  {
           //printout(FATAL,"XercesC","+++ Creating new parser");
-          setErrorHandler(&m_errHandler);
+          setErrorHandler(&m_errHandle_tr);
           setXMLEntityResolver(&m_resolver);
         }
         /// Default destructor
-        virtual ~DD4hepDOMParser() {
+        virtual ~dd4hepDOMParser() {
           //printout(FATAL,"XercesC","+++ Deleting new parser");
         }
         /// Entity resolver overload to use uri reader
@@ -179,7 +189,7 @@ namespace DD4hep {
 
       /// Helper function to create a XercesC pareser
       XercesDOMParser* make_parser(UriReader* reader=0) {
-        XercesDOMParser* parser = new DD4hepDOMParser(reader);
+        XercesDOMParser* parser = new dd4hepDOMParser(reader);
         parser->setValidationScheme(XercesDOMParser::Val_Auto);
         parser->setValidationSchemaFullChecking(true);
         parser->setCreateEntityReferenceNodes(false);
@@ -221,6 +231,19 @@ namespace DD4hep {
     }
   }
 }
+
+#ifdef DD4HEP_NONE
+/// System ID of a given XML entity
+string DocumentHandler::system_path(Handle_t base, const string& fn)   {
+  string path = system_path(base);
+  string dir  = ::dirname((char*)path.c_str());
+  return dir+fn;
+}
+#else
+
+#include "TUri.h"
+#include "TUrl.h"
+#endif
 
 /// System ID of a given XML entity
 string DocumentHandler::system_path(Handle_t base, const string& fn)   {
@@ -305,7 +328,7 @@ Document DocumentHandler::load(const string& fname, UriReader* reader) const   {
   }
   catch(...)   {
   }
-  dd4hep_ptr < XercesDOMParser > parser(make_parser(reader));
+  unique_ptr < XercesDOMParser > parser(make_parser(reader));
   try {
     if ( !path.empty() )  {
       parser->parse(path.c_str());
@@ -337,7 +360,7 @@ Document DocumentHandler::load(const string& fname, UriReader* reader) const   {
 
 /// Parse a standalong XML string into a document.
 Document DocumentHandler::parse(const char* bytes, size_t length, const char* sys_id, UriReader* rdr) const {
-  dd4hep_ptr < XercesDOMParser > parser(make_parser(rdr));
+  unique_ptr < XercesDOMParser > parser(make_parser(rdr));
   MemBufInputSource src((const XMLByte*)bytes, length, sys_id, false);
   parser->parse(src);
   DOMDocument* doc = parser->adoptDocument();
@@ -355,9 +378,10 @@ int DocumentHandler::output(Document doc, const string& fname) const {
 
   if (fname.empty())
     tar = new StdOutFormatTarget();
-  else
-    tar = new LocalFileFormatTarget(Strng_t(fname));
-
+  else   {
+    string fn = undressed_file_name(fname);
+    tar = new LocalFileFormatTarget(Strng_t(fn));
+  }
   out->setByteStream(tar);
   wrt->getDomConfig()->setParameter(Strng_t("format-pretty-print"), true);
   wrt->write((xercesc::DOMDocument*) doc.ptr(), out);
@@ -372,12 +396,12 @@ int DocumentHandler::output(Document doc, const string& fname) const {
 #include "XML/tinyxml.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
   /// Namespace containing utilities to parse XML files using XercesC or TinyXML
-  namespace XML {
+  namespace xml {
 
     /// XML-DOM ERror handler class for the TinyXML document parser (Compatibility class)
-    struct DocumentErrorHandler {};
+    class DocumentErrorHandler {};
 
     union Xml {
       Xml(void* ptr) : p(ptr) {}
@@ -397,7 +421,7 @@ namespace DD4hep {
 namespace {
   static string _clean_fname(const string& s) {
     std::string const& temp = getEnviron(s);
-    std::string temp2 = temp.empty() ? s : temp;
+    std::string temp2 = undressed_file_name(temp.empty() ? s : temp);
     if ( strncmp(temp2.c_str(),"file:",5)==0 ) return temp2.substr(5);
     return temp2;
   }
@@ -440,7 +464,7 @@ string DocumentHandler::system_path(Handle_t base)   {
   if ( elt ) {
     fn = Xml(elt.document()).d->Value();
   }
-  return fn;
+  return undressed_file_name(fn);
 }
 
 /// Load XML file and parse it using URI resolver to read data.
@@ -451,7 +475,8 @@ Document DocumentHandler::load(const std::string& fname, UriReader* reader) cons
              fname.c_str(),"[URI Resolution is not supported by TiXML]");
   }
   else  {
-    printout(INFO,"DocumentHandler","+++ Loading document URI: %s",fname.c_str());
+    printout(INFO,"DocumentHandler","+++ Loading document URI: %s [Resolved:'%s']",
+             fname.c_str(),clean.c_str());
   }
   TiXmlDocument* doc = new TiXmlDocument(clean.c_str());
   bool result = false;
@@ -459,19 +484,23 @@ Document DocumentHandler::load(const std::string& fname, UriReader* reader) cons
     result = doc->LoadFile();
     if ( !result ) {
       if ( doc->Error() ) {
-        printout(FATAL,"DocumentHandler","+++ Error (TinyXML) while parsing XML document:%s",doc->ErrorDesc());
+        printout(FATAL,"DocumentHandler","+++ Error (TinyXML) parsing XML document:%s [%s]",
+                 fname.c_str(), clean.c_str());
+        printout(FATAL,"DocumentHandler","+++ Error (TinyXML) XML parsing error:%s",
+                 doc->ErrorDesc());
         printout(FATAL,"DocumentHandler","+++ Document:%s Location Line:%d Column:%d",
                  doc->Value(), doc->ErrorRow(), doc->ErrorCol());
-        throw runtime_error(string("DD4hep: ")+doc->ErrorDesc());
+        except("dd4hep:XML","++ file:%s error:%s",clean.c_str(),doc->ErrorDesc());
       }
-      throw runtime_error("DD4hep: Unknown error whaile parsing XML document with TinyXML.");
+      except("dd4hep:XML","++ Unknown error (TinyXML) while parsing:%s",fname.c_str());
     }
   }
   catch(exception& e) {
     printout(ERROR,"DocumentHandler","+++ Exception (TinyXML): parse(path):%s",e.what());
   }
   if ( result ) {
-    printout(INFO,"DocumentHandler","+++ Document %s succesfully parsed with TinyXML .....",fname.c_str());
+    printout(INFO,"DocumentHandler","+++ Document %s succesfully parsed with TinyXML .....",
+             fname.c_str());
     return (XmlDocument*)doc;
   }
   delete doc;
@@ -496,12 +525,15 @@ Document DocumentHandler::parse(const char* bytes, size_t /* length */, const ch
       return (XmlDocument*)doc;
     }
     if ( doc->Error() ) {
-      printout(FATAL,"DocumentHandler","+++ Error (TinyXML) while parsing XML document:%s",doc->ErrorDesc());
-      printout(FATAL,"DocumentHandler","+++ Document:%s Location Line:%d Column:%d",
+      printout(FATAL,"DocumentHandler",
+               "+++ Error (TinyXML) while parsing XML string [%s]",
+               doc->ErrorDesc());
+      printout(FATAL,"DocumentHandler",
+               "+++ XML Document error: %s Location Line:%d Column:%d",
                doc->Value(), doc->ErrorRow(), doc->ErrorCol());
-      throw runtime_error(string("DD4hep: ")+doc->ErrorDesc());
+      throw runtime_error(string("dd4hep: ")+doc->ErrorDesc());
     }
-    throw runtime_error("DD4hep: Unknown error whaile parsing XML document with TiXml.");
+    throw runtime_error("dd4hep: Unknown error while parsing XML document with TiXml.");
   }
   catch(exception& e) {
     printout(ERROR,"DocumentHandler","+++ Exception (TinyXML): parse(string):%s",e.what());
@@ -512,19 +544,20 @@ Document DocumentHandler::parse(const char* bytes, size_t /* length */, const ch
 
 /// Write xml document to output file (stdout if file name empty)
 int DocumentHandler::output(Document doc, const string& fname) const {
-  FILE* file = fname.empty() ? stdout : ::fopen(fname.c_str(),"w");
+  string fn = undressed_file_name(fname);
+  FILE* file = fn.empty() ? stdout : ::fopen(fn.c_str(),"w");
   if ( !file ) {
     printout(ERROR,"DocumentHandler","+++ Failed to open output file: %s",fname.c_str());
     return 0;
   }
   TiXmlDocument* d = (TiXmlDocument*)doc.ptr();
   d->Print(file);
-  if ( !fname.empty() ) ::fclose(file);
+  if ( !fn.empty() ) ::fclose(file);
   return 1;
 }
 
 /// Dump partial or full XML trees
-void DD4hep::XML::dump_tree(Handle_t elt, ostream& os) {
+void dd4hep::xml::dump_tree(Handle_t elt, ostream& os) {
   TiXmlNode* node = (TiXmlNode*)elt.ptr();
   TiXmlPrinter printer;
   printer.SetStreamPrinting();
@@ -533,7 +566,7 @@ void DD4hep::XML::dump_tree(Handle_t elt, ostream& os) {
 }
 
 /// Dump partial or full XML documents
-void DD4hep::XML::dump_tree(Document doc, ostream& os) {
+void dd4hep::xml::dump_tree(Document doc, ostream& os) {
   TiXmlDocument* node = (TiXmlDocument*)doc.ptr();
   TiXmlPrinter printer;
   printer.SetStreamPrinting();
@@ -548,6 +581,22 @@ DocumentHandler::DocumentHandler() {}
 
 /// Default destructor of a document handler using TiXml
 DocumentHandler::~DocumentHandler() {}
+
+/// Default comment string
+std::string DocumentHandler::defaultComment()  {
+  const char comment[] = "\n"
+    "      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+    "      ++++   dd4hep generated alignment file using the         ++++\n"
+    "      ++++   dd4hep Detector description XML generator.        ++++\n"
+    "      ++++                                                     ++++\n"
+    "      ++++   Parser:"
+    XML_IMPLEMENTATION_TYPE
+    "                ++++\n"
+    "      ++++                                                     ++++\n"
+    "      ++++                              M.Frank CERN/LHCb      ++++\n"
+    "      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n  ";
+  return comment;
+}
 
 /// Load XML file and parse it.
 Document DocumentHandler::load(const std::string& fname) const {
@@ -597,12 +646,17 @@ Document DocumentHandler::create(const char* tag, const char* comment) const {
   return doc;
 }
 
+// Create new XML document by parsing empty xml buffer
+Document DocumentHandler::create(const std::string& tag, const std::string& comment) const   {
+  return create(tag.c_str(), comment.c_str());
+}
+
 /// Dump partial or full XML trees to stdout
-void DD4hep::XML::dump_tree(Handle_t elt) {
+void dd4hep::xml::dump_tree(Handle_t elt) {
   dump_tree(elt,cout);
 }
 
 /// Dump partial or full XML documents to stdout
-void DD4hep::XML::dump_tree(Document doc) {
+void dd4hep::xml::dump_tree(Document doc) {
   dump_tree(doc,cout);
 }

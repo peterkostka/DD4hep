@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -28,13 +27,33 @@
 using namespace std;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation   {
+  namespace sim   {
 
-    using namespace Geometry;
+    using namespace detail;
 
+    /**
+     *  \addtogroup Geant4SDActionPlugin
+     *
+     *  @{
+     *  \package Geant4TrackerWeightedAction
+     *
+     *  \brief Sensitive detector meant for tracking detectors with multiple ways to combine steps
+     *
+     *
+     *  \param integer HitPositionCombination
+     *   -# Use energy weights to define the position of the energy deposit
+     *   -# Set the hit position between the step pre and post point
+     *   -# Set the hit position to the position of the step pre point
+     *   -# Set the hit position to the position of the step post point
+     *
+     *  \param bool CollectSingleDeposits
+     *   - If true each step is written out
+     *
+     * @}
+     */
     /// Geant4 sensitive detector combining all deposits of one G4Track within one sensitive element.
     /**
      *  Geant4SensitiveAction<TrackerWeighted>
@@ -44,31 +63,7 @@ namespace DD4hep {
      *  \version 1.0
      *  \ingroup DD4HEP_SIMULATION
      */
-
-    /** \addtogroup Geant4SDActionPlugin
-     *
-     * @{
-     * \package Geant4TrackerWeightedAction
-     *
-     * \brief Sensitive detector meant for tracking detectors with multiple ways to combine steps
-
-     
-      \param integer HitPositionCombination
-        -# Use energy weights to define the position of the energy deposit
-        -# Set the hit position between the step pre and post point
-        -# Set the hit position to the position of the step pre point
-        -# Set the hit position to the position of the step post point
-
-      \param bool CollectSingleDeposits
-        - If true each step is written out
-
-
-     *
-     * @}
-     */
-
     struct TrackerWeighted {
-      typedef Geant4HitCollection HitCollection;
 
       /// Enumeration to define the calculation of the position of the energy deposit
       enum  {
@@ -80,28 +75,25 @@ namespace DD4hep {
       
       Geant4Tracker::Hit    pre, post;
       Position              mean_pos;
-      Geant4Sensitive*      sensitive;
-      G4VSensitiveDetector* thisSD;
-      double                distance_to_inside;
-      double                distance_to_outside;
-      double                mean_time;
-      double                step_length;
-      double                e_cut;
-      int                   current, parent;
-      int                   combined;
-      int                   hit_position_type;
-      int                   hit_flag;
-      int                   g4ID;
-      EInside               last_inside;
-      long long int         cell;
-      bool                  single_deposit_mode;
-      TrackerWeighted() : pre(), post(), sensitive(0), thisSD(0), 
-                          distance_to_inside(0.0), distance_to_outside(0.0), mean_time(0.0), 
-                          step_length(0.0), e_cut(0.0), current(-1), parent(0), combined(0),
-                          hit_position_type(POSITION_MIDDLE), hit_flag(0), g4ID(0), cell(0),
-                          single_deposit_mode(false)
-      {
-      }
+      Geant4Sensitive*      sensitive            = 0;
+      G4VSensitiveDetector* thisSD               = 0;
+      double                distance_to_inside   = 0.0;
+      double                distance_to_outside  = 0.0;
+      double                mean_time            = 0.0;
+      double                step_length          = 0.0;
+      double                e_cut                = 0.0;
+      int                   current              = -1;
+      int                   parent               = 0;
+      int                   combined             = 0;
+      int                   hit_position_type    = POSITION_MIDDLE;
+      int                   hit_flag             = 0;
+      int                   g4ID                 = 0;
+      EInside               last_inside          = kOutside;
+      long long int         cell                 = 0;
+      bool                  single_deposit_mode  = false;
+
+      /// Default constructor
+      TrackerWeighted() = default;
 
       /// Clear collected information and restart for new hit
       TrackerWeighted& clear()   {
@@ -414,7 +406,7 @@ namespace DD4hep {
   }
 }
 
-using namespace DD4hep::Simulation;
+using namespace dd4hep::sim;
 
 #include "DDG4/Factories.h"
 DECLARE_GEANT4SENSITIVE(Geant4TrackerWeightedAction)

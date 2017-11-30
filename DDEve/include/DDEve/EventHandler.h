@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -28,9 +27,9 @@ class TH2F;
 #define MEV_2_GEV 0.001
 
 /*
- *   DD4hep namespace declaration
+ *   dd4hep namespace declaration
  */
-namespace DD4hep {
+namespace dd4hep {
 
   // Forward declarations
   class EventConsumer;
@@ -49,8 +48,9 @@ namespace DD4hep {
 
   /// Event data actor base class for particles. Used to extract data from concrete classes.
   /** 
-   * @author  M.Frank
-   * @version 1.0
+   * \author  M.Frank
+   * \version 1.0
+   * \ingroup DD4HEP_EVE
    */
   struct DDEveParticleActor  {
     virtual ~DDEveParticleActor() {}
@@ -58,10 +58,11 @@ namespace DD4hep {
     virtual void setSize(size_t /* num_elements */) {}
   };
 
-  /// Event handler base class. Interface to all DDEve I/O actions
+  /// Event handler base class: Interface to all DDEve I/O actions
   /** 
-   * @author  M.Frank
-   * @version 1.0
+   * \author  M.Frank
+   * \version 1.0
+   * \ingroup DD4HEP_EVE
    */
   class EventHandler   {
   public:
@@ -80,12 +81,12 @@ namespace DD4hep {
 
   protected:
     /// Flag to indicate that a file is opened
-    bool m_hasFile;
+    bool m_hasFile = false;
     /// Flag to indicate that an event is loaded
-    bool m_hasEvent;
+    bool m_hasEvent = false;
   public:
     /// Standard constructor
-    EventHandler();
+    EventHandler() = default;
     /// Default destructor
     virtual ~EventHandler();
     /// Check if an event is present in memory
@@ -116,27 +117,26 @@ namespace DD4hep {
     ClassDef(EventHandler,0);
   };
 
-  /** @class EventConsumer  EventHandler.h DDEve/EventHandler.h
+  /// Event event consumer base class for DDEve: Interface class for event I/O
+  /**
    *
-   * @author  M.Frank
-   * @version 1.0
+   * \author  M.Frank
+   * \version 1.0
+   * \ingroup DD4HEP_EVE
    */
   class EventConsumer   {
   public:
     /// Standard constructor
-    EventConsumer();
+    EventConsumer() = default;
     /// Default destructor
     virtual ~EventConsumer();
     /// Consumer event data callback
-    virtual void OnNewEvent(EventHandler* /* handler */) {}
+    virtual void OnNewEvent(EventHandler& /* handler */) = 0;
     /// Consumer file open callback
-    virtual void OnFileOpen(EventHandler* /* handler */) {}
+    virtual void OnFileOpen(EventHandler& /* handler */) = 0;
 
     ClassDef(EventConsumer,0);
   };
-
-} /* End namespace DD4hep   */
-
-
+}      /* End namespace dd4hep        */
 #endif /* DD4HEP_DDEVE_EVENTHANDLER_H */
 

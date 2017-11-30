@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -34,8 +33,8 @@
 #include <regex.h>
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 
 namespace {
 
@@ -244,7 +243,7 @@ void Geant4PhysicsList::constructParticles(G4VUserPhysicsList* physics_pointer) 
         except("Failed to create particle type '%s' result=%d", ctor.c_str(), result);
       }
     }
-    info("Constructed Geant4 particle %s",ctor.c_str());
+    info("Constructed Geant4 particle %s [using signature long (*)()]",ctor.c_str());
   }
 }
 

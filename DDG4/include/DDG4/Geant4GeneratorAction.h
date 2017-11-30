@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -21,10 +20,10 @@
 class G4Event;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4GeneratorAction;
@@ -51,6 +50,8 @@ namespace DD4hep {
     protected:
       Callback m_calls;
     public:
+      /// Default constructor
+      Geant4GeneratorAction() = default;
       /// Standard constructor
       Geant4GeneratorAction(Geant4Context* context, const std::string& name);
       /// Default destructor
@@ -76,8 +77,10 @@ namespace DD4hep {
     class Geant4SharedGeneratorAction : public Geant4GeneratorAction {
     protected:
       /// Reference to the shared action
-      Geant4GeneratorAction* m_action;
+      Geant4GeneratorAction* m_action = 0;
     public:
+      /// Default constructor
+      Geant4SharedGeneratorAction() = default;
       /// Standard constructor
       Geant4SharedGeneratorAction(Geant4Context* context, const std::string& nam);
       /// Default destructor
@@ -114,6 +117,8 @@ namespace DD4hep {
       /// The list of action objects to be called
       Actors<Geant4GeneratorAction> m_actors;
     public:
+      /// Default constructor
+      Geant4GeneratorActionSequence() = default;
       /// Standard constructor
       Geant4GeneratorActionSequence(Geant4Context* context, const std::string& name);
       /// Default destructor
@@ -135,7 +140,7 @@ namespace DD4hep {
       virtual void operator()(G4Event* event);
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4GENERATORACTION_H

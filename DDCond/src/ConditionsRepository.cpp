@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,25 +13,28 @@
 
 // Framework include files
 #include "DDCond/ConditionsRepository.h"
+#include "DDCond/ConditionsManager.h"
 #include "DDCond/ConditionsIOVPool.h"
 #include "DDCond/ConditionsTags.h"
+#include "DD4hep/detail/ConditionsInterna.h"
 #include "DD4hep/Printout.h"
 #include "XML/DocumentHandler.h"
 #include "XML/XMLTags.h"
 
 // C/C++ include files
+#include <cstring>
 #include <fstream>
 #include <climits>
 #include <cerrno>
 #include <map>
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Conditions;
-typedef XML::Handle_t xml_h;
-typedef XML::Element xml_elt_t;
-typedef XML::Document xml_doc_t;
-typedef XML::Collection_t xml_coll_t;
+using namespace dd4hep;
+using namespace dd4hep::cond;
+typedef xml::Handle_t xml_h;
+typedef xml::Element xml_elt_t;
+typedef xml::Document xml_doc_t;
+typedef xml::Collection_t xml_coll_t;
 
 typedef map<Condition::key_type,Condition> AllConditions;
 
@@ -49,19 +51,19 @@ namespace {
   int createXML(const string& output, const AllConditions& all) {
     const char comment[] = "\n"
       "      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-      "      ++++   Linear collider detector description LCDD in C++  ++++\n"
-      "      ++++   DD4hep Detector description generator.            ++++\n"
+      "      ++++   Linear collider detector description Detector in C++  ++++\n"
+      "      ++++   dd4hep Detector description generator.            ++++\n"
       "      ++++                                                     ++++\n"
       "      ++++                                                     ++++\n"
       "      ++++                              M.Frank CERN/LHCb      ++++\n"
       "      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n  ";
-    DD4hep::XML::DocumentHandler docH;
+    dd4hep::xml::DocumentHandler docH;
     xml_doc_t doc = docH.create("collection", comment);
     xml_elt_t root = doc.root(), cond(0);
-    for(AllConditions::const_iterator i=all.begin(); i!=all.end(); ++i)  {
+    for( const auto& i : all )  {
       char text[32];
-      Condition c = (*i).second;
-      ::snprintf(text,sizeof(text),"0x%08X",c.key());
+      Condition c = i.second;
+      ::snprintf(text,sizeof(text),"0x%16llX",c.key());
       root.append(cond = xml_elt_t(doc, _U(ref)));
       cond.setAttr(_U(key), text);
       cond.setAttr(_U(name), c.name());
@@ -86,14 +88,14 @@ namespace {
         string key = element.attr<string>(_U(key));
         size_t cap = data.capacity();
         ConditionsRepository::Entry e;
-        ::sscanf(key.c_str(),"0x%08X",&e.key);
+        ::sscanf(key.c_str(),"0x%16llX",&e.key);
         e.name = element.attr<string>(_U(name));
         e.address = element.attr<string>(_U(ref));
         if ( data.size() == cap ) data.reserve(cap+500);
         data.push_back(e);
       }
     };
-    XML::DocumentHolder doc(XML::DocumentHandler().load(input));
+    xml::DocumentHolder doc(xml::DocumentHandler().load(input));
     xml_h root = doc.root();
     xml_coll_t(root, _U(ref)).for_each(Conv(data));
     return 1;
@@ -109,11 +111,11 @@ namespace {
              output.c_str(), errno, ::strerror(errno));
     }
     else if ( sep )  {
-      ::snprintf(fmt,sizeof(fmt),"%%08X%c%%s%c%%s%c",sep,sep,sep);
+      ::snprintf(fmt,sizeof(fmt),"%%16llX%c%%s%c%%s%c",sep,sep,sep);
     }
     else   {
-      for(AllConditions::const_iterator i=all.begin(); i!=all.end(); ++i)  {
-        Condition::Object* c = (*i).second.ptr();
+      for( const auto& i : all )  {
+        Condition::Object* c = i.second.ptr();
         size_t siz_n = c->name.length();
         size_t siz_a = c->address.length();
         if ( siz_nam < siz_n ) siz_nam = siz_n;
@@ -121,15 +123,15 @@ namespace {
         if ( siz_tot < (siz_n+siz_a) ) siz_tot = siz_n+siz_a;
       }
       siz_tot += 8+2+1;
-      ::snprintf(fmt,sizeof(fmt),"%%08X %%-%lds %%-%lds",long(siz_nam),long(siz_add));
+      ::snprintf(fmt,sizeof(fmt),"%%16llX %%-%lds %%-%lds",long(siz_nam),long(siz_add));
     }
     out << "dd4hep." << char(sep ? sep : '-')
         << "." << long(siz_nam)
         << "." << long(siz_add)
         << "." << long(siz_tot) << endl;
-    for(AllConditions::const_iterator i=all.begin(); i!=all.end(); ++i)  {
-      Condition c = (*i).second;
-      ::snprintf(text, sizeof(text), fmt, c.key(), c.name().c_str(), c.address().c_str());
+    for( const auto& i : all )  {
+      Condition c = i.second;
+      ::snprintf(text, sizeof(text), fmt, c.key(), c.name(), c.address().c_str());
       out << text << endl;
     }
     out.close();
@@ -155,26 +157,31 @@ namespace {
       if ( in.good() )  {
         if ( siz_tot )  {
           // Direct access mode with fixed record size
-          text[8] = text[9+siz_nam] = text[10+siz_nam+siz_add] = 0;
-          e.name = text+9;
-          e.address = text+10+siz_nam;  
-          if ( (idx=e.name.find(' ')) != string::npos )
-            e.name[idx] = 0;
-          if ( (idx=e.address.find(' ')) != string::npos )
-            e.address[idx] = 0;
+          if ( siz_nam+9 < (long)sizeof(text) )  {
+            text[8] = text[9+siz_nam] = text[10+siz_nam+siz_add] = 0;
+            e.name = text+9;
+            e.address = text+10+siz_nam;  
+            if ( (idx=e.name.find(' ')) != string::npos && idx < e.name.length() )
+              e.name[idx] = 0;
+            if ( (idx=e.address.find(' ')) != string::npos && idx < e.address.length() )
+              e.address[idx] = 0;
+          }
+          else  {
+            except("ConditionsRepository","+++ Invalid record encountered. [Sever error]");
+          }
         }
         else  {
           // Variable record size
           e.name=text+9;
-          if ( (idx=e.name.find(sep)) != string::npos )
+          if ( (idx=e.name.find(sep)) != string::npos && idx < sizeof(text)-9 )
             text[9+idx] = 0, e.address=text+idx+10, e.name=text+9;
-          if ( (idx=e.address.find(sep)) != string::npos )
+          if ( (idx=e.address.find(sep)) != string::npos && idx < e.address.length() )
             e.address[idx] = 0;
-          else if ( (idx=e.address.find('\n')) != string::npos )
+          else if ( (idx=e.address.find('\n')) != string::npos && idx < e.address.length() )
             e.address[idx] = 0;
         }
         size_t cap = data.capacity();
-        ::sscanf(text,"%08X",&e.key);
+        ::sscanf(text,"%16llX",&e.key);
         if ( data.size() == cap ) data.reserve(cap+500);
         data.push_back(e);
       }
@@ -186,23 +193,17 @@ namespace {
 
 /// Save the repository to file
 int ConditionsRepository::save(ConditionsManager manager, const string& output)  const  {
-  typedef vector<const IOVType*> _T;
-  typedef ConditionsIOVPool::Elements _E;
-  typedef RangeConditions _R;
   AllConditions all;
-  const _T types = manager.iovTypesUsed();
-  for( _T::const_iterator i = types.begin(); i != types.end(); ++i )    {
-    const IOVType* type = *i;
+  const auto types = manager.iovTypesUsed();
+  for( const IOVType* type : types )  {
     if ( type )   {
       ConditionsIOVPool* pool = manager.iovPool(*type);
       if ( pool )  {
-        const _E& e = pool->elements;
-        for (_E::const_iterator j=e.begin(); j != e.end(); ++j)  {
-          ConditionsPool* cp = (*j).second;
-          _R rc;
-          cp->select_all(rc);
-          for(_R::const_iterator ic=rc.begin(); ic!=rc.end(); ++ic)
-            all[(*ic).key()] = *ic;
+        for( const auto& cp : pool->elements )   {
+          RangeConditions rc;
+          cp.second->select_all(rc);
+          for( const auto cond : rc )
+            all[cond.key()] = cond;
         }
       }
     }

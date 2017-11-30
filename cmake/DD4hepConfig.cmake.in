@@ -17,7 +17,6 @@ set ( DD4hep_DIR         "$ENV{DD4hep_DIR}" )
 set ( DD4hep_ROOT        "$ENV{DD4hep_ROOT}" )
 set ( DD4hep_VERSION     "@DD4hep_VERSION@" )
 set ( DD4hep_SOVERSION   "@DD4hep_SOVERSION@" )
-set ( DD4HEP_USE_BOOST   "@DD4HEP_USE_BOOST@" )
 set ( DD4HEP_USE_GEANT4  "@DD4HEP_USE_GEANT4@" )
 set ( DD4HEP_USE_XERCESC "@DD4HEP_USE_XERCESC@" )
 set ( DD4HEP_USE_CXX11   "@DD4HEP_USE_CXX11@" )
@@ -27,7 +26,7 @@ set ( GEANT4_USE_CLHEP   "@GEANT4_USE_CLHEP@" )
 
 set ( ROOTSYS            "$ENV{ROOTSYS}" )
 set ( ROOT_DIR           "$ENV{ROOTSYS}/cmake" )
-set ( ROOT_VERSION_MAJOR "@ROOT_VERSION_MAJOR@" )
+set ( ROOT_VERSION       "@ROOT_VERSION@" )
 
 include ( ${DD4hep_DIR}/cmake/DD4hep.cmake )
 
@@ -40,7 +39,7 @@ set( DD4hep_INCLUDE_DIRS DD4hep_INCLUDE_DIRS-NOTFOUND )
 mark_as_advanced( DD4hep_INCLUDE_DIRS )
 
 find_path( DD4hep_INCLUDE_DIRS
-  NAMES DD4hep/Detector.h
+  NAMES DD4hep/DetElement.h
   PATHS ${DD4hep_DIR}/include
   NO_DEFAULT_PATH
 )

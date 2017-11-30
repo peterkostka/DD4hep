@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -17,16 +16,15 @@
 
 // Framework include files
 #include "XML/XMLElements.h"
-#include "DD4hep/Memory.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace containing utilities to parse XML files using XercesC or TinyXML
-  namespace XML {
+  namespace xml {
 
     // Forward declarations
-    class DocumentErrorHandler;
+    class DocumentErrorHandle_tr;
     class UriReader;
 
     /// Class supporting to read and parse XML documents.
@@ -44,8 +42,12 @@ namespace DD4hep {
       DocumentHandler();
       /// Default destructor
       virtual ~DocumentHandler();
+      /// Default comment string
+      static std::string defaultComment();
       // Create new XML document by parsing empty xml buffer
       Document create(const char* tag, const char* comment = 0) const;
+      // Create new XML document by parsing empty xml buffer
+      Document create(const std::string& tag, const std::string& comment) const;
       /// Load XML file and parse it.
       virtual Document load(const std::string& fname) const;
       /// Load XML file and parse it using URI resolver to read data.
@@ -74,5 +76,5 @@ namespace DD4hep {
 
     };
   }
-} /* End namespace DD4hep            */
+} /* End namespace dd4hep            */
 #endif    /* DD4HEP_XML_DOCUMENTHANDLER_H    */

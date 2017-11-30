@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -13,11 +12,11 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/Printout.h"
 #include "DD4hep/IDDescriptor.h"
 #include "DD4hep/InstanceCount.h"
-#include "DD4hep/objects/ObjectsInterna.h"
+#include "DD4hep/detail/ObjectsInterna.h"
 
 #include "TMap.h"
 #include "TROOT.h"
@@ -33,30 +32,30 @@
 #include <iomanip>
 
 using namespace std;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
 
 /// Constructor to be used when creating a new DOM tree
-Author::Author(LCDD& /* lcdd */) {
+Author::Author(Detector& /* description */) {
   m_element = new NamedObject("", "author");
 }
 
 /// Access the auhor's name
-std::string Author::authorName() const {
+string Author::authorName() const {
   return m_element->GetName();
 }
 
 /// Set the author's name
-void Author::setAuthorName(const std::string& nam) {
+void Author::setAuthorName(const string& nam) {
   m_element->SetName(nam.c_str());
 }
 
 /// Access the auhor's email address
-std::string Author::authorEmail() const {
+string Author::authorEmail() const {
   return m_element->GetTitle();
 }
 
 /// Set the author's email address
-void Author::setAuthorEmail(const std::string& addr) {
+void Author::setAuthorEmail(const string& addr) {
   m_element->SetTitle(addr.c_str());
 }
 
@@ -67,72 +66,72 @@ Header::Header(const string& author_name, const string& descr_url) {
 }
 
 /// Accessor to object name
-const std::string Header::name() const {
+const string Header::name() const {
   return m_element->GetName();
 }
 
 /// Accessor: set object name
-void Header::setName(const std::string& new_name) {
+void Header::setName(const string& new_name) {
   m_element->SetName(new_name.c_str());
 }
 
 /// Accessor to object title
-const std::string Header::title() const {
+const string Header::title() const {
   return m_element->GetTitle();
 }
 
 /// Accessor: set object title
-void Header::setTitle(const std::string& new_title) {
+void Header::setTitle(const string& new_title) {
   m_element->SetTitle(new_title.c_str());
 }
 
 /// Accessor to object url
-const std::string& Header::url() const {
+const string& Header::url() const {
   return data<Object>()->url;
 }
 
 /// Accessor: set object url
-void Header::setUrl(const std::string& new_url) {
+void Header::setUrl(const string& new_url) {
   data<Object>()->url = new_url;
 }
 
 /// Accessor to object author
-const std::string& Header::author() const {
+const string& Header::author() const {
   return data<Object>()->author;
 }
 
 /// Accessor: set object author
-void Header::setAuthor(const std::string& new_author) {
+void Header::setAuthor(const string& new_author) {
   data<Object>()->author = new_author;
 }
 
 /// Accessor to object status
-const std::string& Header::status() const {
+const string& Header::status() const {
   return data<Object>()->status;
 }
 
 /// Accessor: set object status
-void Header::setStatus(const std::string& new_status) {
+void Header::setStatus(const string& new_status) {
   data<Object>()->status = new_status;
 }
 
 /// Accessor to object version
-const std::string& Header::version() const {
+const string& Header::version() const {
   return data<Object>()->version;
 }
 
 /// Accessor: set object version
-void Header::setVersion(const std::string& new_version) {
+void Header::setVersion(const string& new_version) {
   data<Object>()->version = new_version;
 }
 
 /// Accessor to object comment
-const std::string& Header::comment() const {
+const string& Header::comment() const {
   return data<Object>()->comment;
 }
 
 /// Accessor: set object comment
-void Header::setComment(const std::string& new_comment) {
+void Header::setComment(const string& new_comment) {
   data<Object>()->comment = new_comment;
 }
 
@@ -151,7 +150,7 @@ string Constant::dataType() const   {
   if ( isValid() )  {
     return m_element->dataType;
   }
-  throw runtime_error("DD4hep: Attempt to access internals from invalid Constant handle!");
+  throw runtime_error("dd4hep: Attempt to access internals from invalid Constant handle!");
 }
 
 /// String representation of this object
@@ -181,64 +180,91 @@ double  Material::Z() const {
     TGeoMaterial* m = val->GetMaterial();
     if (m)
       return m->GetZ();
-    throw runtime_error("DD4hep: The medium " + string(val->GetName()) + " has an invalid material reference!");
+    throw runtime_error("dd4hep: The medium " + string(val->GetName()) + " has an invalid material reference!");
   }
-  throw runtime_error("DD4hep: Attempt to access proton number from invalid material handle!");
+  throw runtime_error("dd4hep: Attempt to access proton number from invalid material handle!");
 }
+
 /// atomic number of the underlying material
 double  Material::A() const {
-  Handle < TGeoMedium > val(*this);
-  if (val.isValid()) {
-    TGeoMaterial* m = val->GetMaterial();
+  if ( isValid() ) {
+    TGeoMaterial* m = ptr()->GetMaterial();
     if (m)
       return m->GetA();
-    throw runtime_error("DD4hep: The medium " + string(val->GetName()) + " has an invalid material reference!");
+    throw runtime_error("dd4hep: The medium " + string(ptr()->GetName()) + " has an invalid material reference!");
   }
-  throw runtime_error("DD4hep: Attempt to access atomic number from invalid material handle!");
+  throw runtime_error("dd4hep: Attempt to access atomic number from invalid material handle!");
 }
 
 /// density of the underlying material
 double  Material::density() const {
-  Handle < TGeoMedium > val(*this);
-  if (val.isValid()) {
-    TGeoMaterial* m = val->GetMaterial();
+  if ( isValid() )  {
+    TGeoMaterial* m = ptr()->GetMaterial();
     if (m)
       return m->GetDensity();
-    throw runtime_error("DD4hep: The medium " + string(val->GetName()) + " has an invalid material reference!");
+    throw runtime_error("dd4hep: The medium " + string(ptr()->GetName()) + " has an invalid material reference!");
   }
-  throw runtime_error("DD4hep: Attempt to access density from invalid material handle!");
+  throw runtime_error("dd4hep: Attempt to access density from invalid material handle!");
 }
 
 /// Access the radiation length of the underlying material
 double Material::radLength() const {
-  Handle < TGeoMedium > val(*this);
-  if (val.isValid()) {
-    TGeoMaterial* m = val->GetMaterial();
+  if ( isValid() ) {
+    TGeoMaterial* m = ptr()->GetMaterial();
     if (m)
       return m->GetRadLen();
-    throw runtime_error("DD4hep: The medium " + string(val->GetName()) + " has an invalid material reference!");
+    throw runtime_error("dd4hep: The medium " + string(ptr()->GetName()) + " has an invalid material reference!");
   }
-  throw runtime_error("DD4hep: Attempt to access radiation length from invalid material handle!");
+  throw runtime_error("dd4hep: Attempt to access radiation length from invalid material handle!");
 }
 
 /// Access the radiation length of the underlying material
 double Material::intLength() const {
-  Handle < TGeoMedium > val(*this);
-  if (val.isValid()) {
-    TGeoMaterial* m = val->GetMaterial();
+  if ( isValid() ) {
+    TGeoMaterial* m = ptr()->GetMaterial();
     if (m)
       return m->GetIntLen();
-    throw runtime_error("The medium " + string(val->GetName()) + " has an invalid material reference!");
+    throw runtime_error("The medium " + string(ptr()->GetName()) + " has an invalid material reference!");
   }
   throw runtime_error("Attempt to access interaction length from invalid material handle!");
 }
 
+/// Access the fraction of an element within the material
+double Material::fraction(Atom atom) const    {
+  double frac = 0e0, tot = 0e0;
+  TGeoElement* elt = atom.access();
+  TGeoMaterial* m = access()->GetMaterial();
+  for ( int i=0, n=m->GetNelements(); i<n; ++i )  {
+    TGeoElement* e = m->GetElement(i);
+    if ( m->IsMixture() )  {
+      TGeoMixture* mix = (TGeoMixture*)m;
+      tot  += mix->GetWmixt()[i];
+    }
+    else {
+      tot = 1e0;
+    }
+    if ( e == elt )   {
+      if ( m->IsMixture() )  {
+        TGeoMixture* mix = (TGeoMixture*)m;
+        frac += mix->GetWmixt()[i];
+      }
+      else  {
+        frac = 1e0;
+      }
+    }
+  }
+  return tot>1e-20 ? frac/tot : 0.0;
+}
+
 /// String representation of this object
 string Material::toString() const {
-  Handle < TGeoMedium > val(*this);
-  stringstream os;
-  os << val->GetName() << " " << val->GetTitle() << " id:" << hex << val->GetId() << " Pointer:" << val->GetPointerName();
-  return os.str();
+  if ( isValid() ) {
+    TGeoMedium* val = ptr();
+    stringstream os;
+    os << val->GetName() << " " << val->GetTitle() << " id:" << hex << val->GetId() << " Pointer:" << val->GetPointerName();
+    return os.str();
+  }
+  throw runtime_error("Attempt to convert invalid material handle to string!");
 }
 
 /// Constructor to be used when creating a new entity
@@ -351,49 +377,6 @@ string VisAttr::toString() const {
   return text;
 }
 
-/// Constructor to be used when creating a new aligment entry
-AlignmentEntry::AlignmentEntry(const string& path) {
-  TGeoPhysicalNode* obj = new TGeoPhysicalNode(path.c_str());
-  assign(obj, path, "*");
-}
-
-/// Align the PhysicalNode (translation only)
-int AlignmentEntry::align(const Position& pos, bool check, double overlap) {
-  return align(pos, RotationZYX(), check, overlap);
-}
-
-/// Align the PhysicalNode (rotation only)
-int AlignmentEntry::align(const RotationZYX& rot, bool check, double overlap) {
-  return align(Position(), rot, check, overlap);
-}
-
-/// Align the PhysicalNode (translation + rotation)
-int AlignmentEntry::align(const Position& pos, const RotationZYX& rot, bool check, double overlap) {
-
-  if (isValid()) {
-    TGeoHMatrix* new_matrix = dynamic_cast<TGeoHMatrix*>(m_element->GetOriginalMatrix()->MakeClone());
-    TGeoRotation rotation("", rot.Phi() * RAD_2_DEGREE, rot.Theta() * RAD_2_DEGREE, rot.Psi() * RAD_2_DEGREE);
-    TGeoCombiTrans m(pos.X(), pos.Y(), pos.Z(), 0);
-    m.SetRotation(rotation);
-    new_matrix->Multiply(&m);
-    m_element->Align(new_matrix, 0, check, overlap);
-    return 1;
-  }
-  throw runtime_error("DD4hep: Cannot align non existing physical node.");
-}
-
-/// Assignment operator
-Limit& Limit::operator=(const Limit& c) {
-  if (this != &c) {
-    particles = c.particles;
-    name = c.name;
-    unit = c.unit;
-    value = c.value;
-    content = c.content;
-  }
-  return *this;
-}
-
 /// Equality operator
 bool Limit::operator==(const Limit& c) const {
   return value == c.value && name == c.name && particles == c.particles;
@@ -444,6 +427,8 @@ Region::Region(const string& nam) {
   p->store_secondaries = false;
   p->threshold = 10.0;
   p->cut = 10.0;
+  p->use_default_cut = true;
+  p->was_threshold_set = false;
 }
 
 Region& Region::setStoreSecondaries(bool value) {
@@ -453,11 +438,13 @@ Region& Region::setStoreSecondaries(bool value) {
 
 Region& Region::setThreshold(double value) {
   object<Object>().threshold = value;
+  object<Object>().was_threshold_set = true;
   return *this;
 }
 
 Region& Region::setCut(double value) {
   object<Object>().cut = value;
+  object<Object>().use_default_cut = false;
   return *this;
 }
 
@@ -481,6 +468,14 @@ bool Region::storeSecondaries() const {
   return object<Object>().store_secondaries;
 }
 
+bool Region::useDefaultCut() const {
+  return object<Object>().use_default_cut;
+}
+
+bool Region::wasThresholdSet() const {
+  return object<Object>().was_threshold_set;
+}
+
 #undef setAttr
 
 #if 0
@@ -495,19 +490,18 @@ struct IDSpec : public Ref_t {
   template <typename Q>
   IDSpec(const Handle<Q>& e) : Ref_t(e) {}
   /// Constructor to be used when creating a new DOM tree
-  IDSpec(LCDD& doc, const std::string& name, const IDDescriptor& dsc);
-  void addField(const std::string& name, const std::pair<int,int>& field);
+  IDSpec(Detector& doc, const string& name, const IDDescriptor& dsc);
+  void addField(const string& name, const pair<int,int>& field);
 };
 
-IDSpec::IDSpec(LCDD& lcdd, const string& name, const IDDescriptor& dsc)
+IDSpec::IDSpec(Detector& description, const string& name, const IDDescriptor& dsc)
   : RefElement(doc,Tag_idspec,name)
 {
   const IDDescriptor::FieldIDs& f = dsc.ids();
   const IDDescriptor::FieldMap& m = dsc.fields();
   object<Object>().Attr_length = dsc.maxBit();
-  for(IDDescriptor::FieldIDs::const_iterator i=f.begin(); i!=f.end();++i) {
-    int ident = (*i).first;
-    const string& nam = (*i).second;
+  for(const auto& i : f )  {
+    const string& nam = i.second;
     const pair<int,int>& fld = m.find(nam)->second;
     addField(nam,fld);
   }

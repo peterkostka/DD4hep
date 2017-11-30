@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -42,40 +41,52 @@
 
 using CLHEP::MeV;
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 
-typedef ReferenceBitMask<int> PropertyMask;
+typedef detail::ReferenceBitMask<int> PropertyMask;
 
 /// Standard constructor
 Geant4ParticleHandler::Geant4ParticleHandler(Geant4Context* ctxt, const string& nam)
-: Geant4GeneratorAction(ctxt,nam), Geant4MonteCarloTruth(), m_userHandler(0), m_primaryMap(0)
+  : Geant4GeneratorAction(ctxt,nam), Geant4MonteCarloTruth(),
+    m_ownsParticles(false), m_userHandler(0), m_primaryMap(0)
 {
   InstanceCount::increment(this);
   //generatorAction().adopt(this);
-  eventAction().callAtBegin(this,&Geant4ParticleHandler::beginEvent);
-  eventAction().callAtEnd(this,&Geant4ParticleHandler::endEvent);
-  trackingAction().callAtFinal(this,&Geant4ParticleHandler::end,CallbackSequence::FRONT);
-  trackingAction().callUpFront(this,&Geant4ParticleHandler::begin,CallbackSequence::FRONT);
-  steppingAction().call(this,&Geant4ParticleHandler::step);
+  eventAction().callAtBegin(this,    &Geant4ParticleHandler::beginEvent);
+  eventAction().callAtEnd(this,      &Geant4ParticleHandler::endEvent);
+  trackingAction().callAtFinal(this, &Geant4ParticleHandler::end,CallbackSequence::FRONT);
+  trackingAction().callUpFront(this, &Geant4ParticleHandler::begin,CallbackSequence::FRONT);
+  steppingAction().call(this,        &Geant4ParticleHandler::step);
   m_globalParticleID = 0;
-  declareProperty("PrintEndTracking",    m_printEndTracking = false);
-  declareProperty("PrintStartTracking",  m_printStartTracking = false);
-  declareProperty("KeepAllParticles",    m_keepAll = false);
-  declareProperty("SaveProcesses",       m_processNames);
-  declareProperty("MinimalKineticEnergy",m_kinEnergyCut = 100e0*CLHEP::MeV);
-  declareProperty("MinDistToParentVertex",m_minDistToParentVertex = 2.2e-14*CLHEP::mm);//default tolerance for g4ThreeVector isNear
+  declareProperty("PrintEndTracking",      m_printEndTracking = false);
+  declareProperty("PrintStartTracking",    m_printStartTracking = false);
+  declareProperty("KeepAllParticles",      m_keepAll = false);
+  declareProperty("SaveProcesses",         m_processNames);
+  declareProperty("MinimalKineticEnergy",  m_kinEnergyCut = 100e0*CLHEP::MeV);
+  declareProperty("MinDistToParentVertex", m_minDistToParentVertex = 2.2e-14*CLHEP::mm);//default tolerance for g4ThreeVector isNear
   m_needsControl = true;
 }
 
 /// No default constructor
-Geant4ParticleHandler::Geant4ParticleHandler() : Geant4GeneratorAction(0,"") {
+Geant4ParticleHandler::Geant4ParticleHandler()
+  : Geant4GeneratorAction(0,""), Geant4MonteCarloTruth(),
+    m_ownsParticles(false), m_userHandler(0), m_primaryMap(0)
+{
+  m_globalParticleID = 0;
+  declareProperty("PrintEndTracking",      m_printEndTracking = false);
+  declareProperty("PrintStartTracking",    m_printStartTracking = false);
+  declareProperty("KeepAllParticles",      m_keepAll = false);
+  declareProperty("SaveProcesses",         m_processNames);
+  declareProperty("MinimalKineticEnergy",  m_kinEnergyCut = 100e0*CLHEP::MeV);
+  declareProperty("MinDistToParentVertex", m_minDistToParentVertex = 2.2e-14*CLHEP::mm);//default tolerance for g4ThreeVector isNear
+  m_needsControl = true;
 }
 
 /// Default destructor
 Geant4ParticleHandler::~Geant4ParticleHandler()  {
   clear();
-  releasePtr(m_userHandler);
+  detail::releasePtr(m_userHandler);
   InstanceCount::decrement(this);
 }
 
@@ -104,7 +115,7 @@ bool Geant4ParticleHandler::adopt(Geant4Action* action)    {
 
 /// Clear particle maps
 void Geant4ParticleHandler::clear()  {
-  releaseObjects(m_particleMap);
+  detail::releaseObjects(m_particleMap);
   m_particleMap.clear();
   m_equivalentTracks.clear();
 }
@@ -162,7 +173,7 @@ void Geant4ParticleHandler::mark(const G4Track* track)   {
 void Geant4ParticleHandler::operator()(G4Event* event)  {
   typedef Geant4MonteCarloTruth _MC;
   debug("+++ Event:%d Add EVENT extension of type Geant4ParticleHandler.....",event->GetEventID());
-  context()->event().addExtension((_MC*)this, typeid(_MC), 0);
+  context()->event().addExtension((_MC*)this, false);
   clear();
   /// Call the user particle handler
   if ( m_userHandler )  {
@@ -215,6 +226,7 @@ void Geant4ParticleHandler::begin(const G4Track* track)   {
     m_currTrack.reason       = prim_part->reason|reason;
     m_currTrack.mask         = prim_part->mask;
     m_currTrack.status       = prim_part->status;
+    m_currTrack.genStatus    = prim_part->genStatus;
     m_currTrack.spin[0]      = prim_part->spin[0];
     m_currTrack.spin[1]      = prim_part->spin[1];
     m_currTrack.spin[2]      = prim_part->spin[2];
@@ -230,6 +242,7 @@ void Geant4ParticleHandler::begin(const G4Track* track)   {
     m_currTrack.reason       = reason;
     m_currTrack.mask         = 0;
     m_currTrack.status       = G4PARTICLE_SIM_CREATED;
+    m_currTrack.genStatus    = 0;
     m_currTrack.spin[0]      = 0;
     m_currTrack.spin[1]      = 0;
     m_currTrack.spin[2]      = 0;
@@ -244,6 +257,7 @@ void Geant4ParticleHandler::begin(const G4Track* track)   {
   m_currTrack.steps       = 0;
   m_currTrack.secondaries = 0;
   m_currTrack.g4Parent    = h.parent();
+  m_currTrack.originalG4ID= h.id();
   m_currTrack.process     = h.creatorProcess();
   m_currTrack.time        = h.globalTime();
   m_currTrack.vsx         = v.x();
@@ -619,7 +633,7 @@ void Geant4ParticleHandler::checkConsistency()  const   {
     }
     // We assume that particles from the generator have consistent parents
     // For all other particles except the primaries, the parent must be contained in the record.
-    if ( !mask.isSet(G4PARTICLE_PRIMARY) && !status.anySet(G4PARTICLE_GEN_GENERATOR) )  {
+    if ( !mask.isSet(G4PARTICLE_PRIMARY) && !status.anySet(G4PARTICLE_GEN_STATUS) )  {
       TrackEquivalents::const_iterator eq_it = m_equivalentTracks.find(p->g4Parent);
       bool in_map = false, in_parent_list = false;
       int parent_id = -1;

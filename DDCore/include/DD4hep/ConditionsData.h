@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,23 +10,23 @@
 // Author     : M.Frank
 //
 //==========================================================================
-#ifndef DD4HEP_CONDITIONS_CONDITIONSDATA_H
-#define DD4HEP_CONDITIONS_CONDITIONSDATA_H
+#ifndef DD4HEP_DDCORE_CONDITIONSDATA_H
+#define DD4HEP_DDCORE_CONDITIONSDATA_H
 
 // Framework include files
 #include "DD4hep/Objects.h"
 #include "DD4hep/Conditions.h"
-#include "DD4hep/objects/ConditionsInterna.h"
+#include "DD4hep/detail/ConditionsInterna.h"
 
 // C/C++ include files
 #include <vector>
 #include <stdexcept>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the conditions part of the AIDA detector description toolkit
-  namespace Conditions   {
+  namespace cond   {
 
     /// Client data addition
     /**
@@ -41,7 +40,7 @@ namespace DD4hep {
       virtual void release() = 0;
     };
 
-    /// Conditions data block. Internally maps other objects to abstract data blocks
+    /// Conditions data block. Internaly maps other objects to abstract data blocks
     /**
      *   \author  M.Frank
      *   \version 1.0
@@ -71,44 +70,48 @@ namespace DD4hep {
       template <typename T> T* option()  const   {
         return static_cast<T*>(clientData);
       }
+      /// Access the number of contained blocks
+      size_t size()  const   {
+        return params.size();
+      }
       /// Simplify access to first item of the parameter list (const access)
       const Params::value_type& firstParam()  const   {
-        Params::const_iterator i=params.begin();
-        if ( i != params.end() ) return (*i);
+        Params::const_iterator i=std::begin(params);
+        if ( i != std::end(params) ) return (*i);
         throw std::runtime_error("AbstractMap: Failed to access non-existing first parameter");
       }
       /// Simplify access to first item of the parameter list
       Params::value_type& firstParam()   {
-        Params::iterator i=params.begin();
-        if ( i != params.end() ) return (*i);
+        Params::iterator i=std::begin(params);
+        if ( i != std::end(params) ) return (*i);
         throw std::runtime_error("AbstractMap: Failed to access non-existing first parameter");
       }
       /// Simplify access to first item of the parameter list (const access)
       template <typename T> const T& first()  const   {
-        Params::const_iterator i=params.begin();
-        if ( i != params.end() ) return (*i).second.get<T>();
+        Params::const_iterator i=std::begin(params);
+        if ( i != std::end(params) ) return (*i).second.get<T>();
         throw std::runtime_error("AbstractMap: Failed to access non-existing first item");
       }
       /// Simplify access to first item of the parameter list
       template <typename T> T& first()   {
-        Params::iterator i=params.begin();
-        if ( i != params.end() ) return (*i).second.get<T>();
+        Params::iterator i=std::begin(params);
+        if ( i != std::end(params) ) return (*i).second.get<T>();
         throw std::runtime_error("AbstractMap: Failed to access non-existing first item");
       }
       /// Simplify access to mapped item of the parameter list (const access)
       template <typename T> const T& operator[](const std::string& item)  const   {
         Params::const_iterator i=params.find(item);
-        if ( i != params.end() ) return (*i).second.get<T>();
+        if ( i != std::end(params) ) return (*i).second.get<T>();
         throw std::runtime_error("AbstractMap: Failed to access non-existing item:"+item);
       }
       /// Simplify access to mapped item of the parameter list
       template <typename T> T& operator[](const std::string& item)   {
         Params::iterator i=params.find(item);
-        if ( i != params.end() ) return (*i).second.get<T>();
+        if ( i != std::end(params) ) return (*i).second.get<T>();
         throw std::runtime_error("AbstractMap: Failed to access non-existing item:"+item);
       }
     };
 
-  } /* End namespace Conditions             */
-} /* End namespace DD4hep                   */
-#endif    /* DD4HEP_CONDITIONS_CONDITIONSDATA_H    */
+  } /* End namespace cond             */
+} /* End namespace dd4hep                   */
+#endif    /* DD4HEP_DDCORE_CONDITIONSDATA_H    */

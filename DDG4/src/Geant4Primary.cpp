@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -24,8 +23,8 @@
 #include <stdexcept>
 #include <cstdio>
 
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 
 /// Default destructor
 PrimaryExtension::~PrimaryExtension() {
@@ -33,7 +32,7 @@ PrimaryExtension::~PrimaryExtension() {
 
 /// Default destructor
 Geant4PrimaryMap::~Geant4PrimaryMap()   {
-  releaseObjects(m_primaryMap);
+  detail::releaseObjects(m_primaryMap);
 }
 
 /// Add a new object pair (G4 primary particle, DDG4 particle) into the maps
@@ -53,28 +52,15 @@ const Geant4Particle* Geant4PrimaryMap::get(const G4PrimaryParticle* particle) c
   return i != m_primaryMap.end() ? (*i).second : 0;
 }
 
-/// Default constructor
-Geant4PrimaryInteraction::Geant4PrimaryInteraction()
-  : mask(0), locked(0), next_particle_identifier(-1)
-{
-}
-
-/// Copy constructor
-Geant4PrimaryInteraction::Geant4PrimaryInteraction(const Geant4PrimaryInteraction&)
-  : mask(0), locked(0), next_particle_identifier(-1)
-{
-}
-
-/// Assignment operator
-Geant4PrimaryInteraction& Geant4PrimaryInteraction::operator=(const Geant4PrimaryInteraction& c)  {
-  if ( &c == this ) {}
-  return *this;
-}
-
 /// Default destructor
 Geant4PrimaryInteraction::~Geant4PrimaryInteraction()   {
-  releaseObjects(vertices);
-  releaseObjects(particles);
+
+  Geant4PrimaryInteraction::VertexMap::iterator iv, ivend;
+  for( iv=vertices.begin(), ivend=vertices.end(); iv != ivend; ++iv ){
+    for( Geant4Vertex* vtx : (*iv).second ) 
+      detail::ReleaseObject<Geant4Vertex*>()( vtx ); 
+  } 
+  detail::releaseObjects(particles);
 }
 
 /// Access a new particle identifier within the interaction
@@ -89,38 +75,24 @@ void Geant4PrimaryInteraction::setNextPID(int new_value)   {
 
 /// Apply mask to all contained vertices and particles
 bool Geant4PrimaryInteraction::applyMask()   {
-  if ( vertices.size() <= 1 )  {
-    Geant4PrimaryInteraction::ParticleMap::iterator ip, ipend;
-    for( ip=particles.begin(), ipend=particles.end(); ip != ipend; ++ip )
-      (*ip).second->mask = mask;
 
-    Geant4PrimaryInteraction::VertexMap::iterator iv, ivend;
-    for( iv=vertices.begin(), ivend=vertices.end(); iv != ivend; ++iv )
-      (*iv).second->mask = mask;
-    return true;
+  Geant4PrimaryInteraction::ParticleMap::iterator ip, ipend;
+  for( ip=particles.begin(), ipend=particles.end(); ip != ipend; ++ip )
+    (*ip).second->mask = mask;
+  
+  Geant4PrimaryInteraction::VertexMap::iterator iv, ivend;
+  for( iv=vertices.begin(), ivend=vertices.end(); iv != ivend; ++iv ){
+    for( auto vtx : (*iv).second )
+      vtx->mask = mask;
   }
-  return false;
-}
 
-/// Default constructor
-Geant4PrimaryEvent::Geant4PrimaryEvent()
-{
-}
-
-/// Copy constructor
-Geant4PrimaryEvent::Geant4PrimaryEvent(const Geant4PrimaryEvent&)
-{
-}
-
-/// Assignment operator
-Geant4PrimaryEvent& Geant4PrimaryEvent::operator=(const Geant4PrimaryEvent& c)  {
-  if ( &c == this ) {}
-  return *this;
+  return true;
+  
 }
 
 /// Default destructor
 Geant4PrimaryEvent::~Geant4PrimaryEvent()   {
-  destroyObjects(m_interactions);
+  detail::destroyObjects(m_interactions);
 }
 
 /// Add a new interaction object to the event

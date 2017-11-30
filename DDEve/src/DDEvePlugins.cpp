@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,7 +13,7 @@
 
 
 // Framework include files
-#include "DD4hep/Plugins.inl"
+#include "DD4hep/detail/Plugins.inl"
 #include "DDEve/Factories.h"
 
-DD4HEP_IMPLEMENT_PLUGIN_REGISTRY(DD4hep::View*, (DD4hep::Display*, const char*))
+DD4HEP_IMPLEMENT_PLUGIN_REGISTRY(dd4hep::View*, (dd4hep::Display*, const char*))

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -21,10 +20,10 @@
 #include "LCIOEventReader.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep  {
+namespace dd4hep  {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation  {
+  namespace sim  {
 
     /// Base class to read StdHep files with lcio
     /**
@@ -49,12 +48,11 @@ namespace DD4hep  {
 
     };
   }     /* End namespace lcio   */
-}       /* End namespace DD4hep */
+}       /* End namespace dd4hep */
 #endif  /* DD4HEP_DDG4_LCIOSTDHEPREADER_H */
 
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -70,9 +68,9 @@ namespace DD4hep  {
 #include "DDG4/Factories.h"
 
 // Factory entry
-DECLARE_GEANT4_EVENT_READER_NS(DD4hep::Simulation,LCIOStdHepReader)
+DECLARE_GEANT4_EVENT_READER_NS(dd4hep::sim,LCIOStdHepReader)
 
-using namespace DD4hep::Simulation;
+using namespace dd4hep::sim;
 
 /// Initializing constructor
 LCIOStdHepReader::LCIOStdHepReader(const std::string& nam)
@@ -82,7 +80,7 @@ LCIOStdHepReader::LCIOStdHepReader(const std::string& nam)
 
 /// Default destructor
 LCIOStdHepReader::~LCIOStdHepReader()    {
-  DD4hep::deletePtr(m_reader);
+  dd4hep::detail::deletePtr(m_reader);
 }
 
 
@@ -94,7 +92,7 @@ LCIOStdHepReader::moveToEvent(int event_number) {
     printout(INFO,"LCIOStdHepReader::moveToEvent","Event number before skipping: %d", m_currEvent );
     while ( m_currEvent < event_number ) {
       EVENT::LCCollection* particles = m_reader->readEvent();
-      if ( 0 == particles ) return EVENT_READER_ERROR;
+      if ( 0 == particles ) return EVENT_READER_EOF;
       delete particles;
       ++m_currEvent;
     }
@@ -110,6 +108,6 @@ LCIOStdHepReader::readParticleCollection(int /*event_number*/, EVENT::LCCollecti
   *particles = m_reader->readEvent();
   ++m_currEvent;
 
-  if ( 0 == *particles ) return EVENT_READER_ERROR;
+  if ( 0 == *particles ) return EVENT_READER_EOF;
   return EVENT_READER_OK;
 }

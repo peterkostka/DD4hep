@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,15 +14,15 @@
 #define DD4HEP_DDG4_GEANT4ESCAPECOUNTER_H
 
 // Framework include files
-#include "DD4hep/Detector.h"
+#include "DD4hep/DetElement.h"
 #include "DDG4/Geant4SensDetAction.h"
 #include "DDG4/Geant4SteppingAction.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     /// Class to measure the energy of escaping tracks
     /** Class to measure the energy of escaping tracks of a detector using Geant 4
@@ -36,27 +35,32 @@ namespace DD4hep {
     class Geant4EscapeCounter : /* virtual public Geant4SteppingAction, virtual */ public Geant4Sensitive {
       /// Collection identifiers
       size_t m_collectionID;
+      /// Detector name set
       std::vector<std::string> m_detectorNames;
     public:
       /// Standard constructor
-      Geant4EscapeCounter(Geant4Context* ctxt, const std::string& name, DetElement det, LCDD& lcdd);
+      Geant4EscapeCounter(Geant4Context* ctxt, const std::string& name, DetElement det, Detector& description);
       /// Default destructor
       virtual ~Geant4EscapeCounter();
       /// G4VSensitiveDetector interface: Method for generating hit(s) using the information of G4Step object.
-      virtual bool process(G4Step* step, G4TouchableHistory* history);
+      virtual bool process(G4Step* step, G4TouchableHistory* history)  override;
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif /* DD4HEP_DDG4_GEANT4ESCAPECOUNTER_H */
 
-// $Id: Geant4Converter.cpp 603 2013-06-13 21:15:14Z markus.frank $
 //====================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------
+// Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
+// All rights reserved.
 //
-//  Author     : M.Frank
+// For the licensing terms see $DD4hepINSTALL/LICENSE.
+// For the list of contributors see $DD4hepINSTALL/doc/CREDITS.
+//
+// Author     : M.Frank
 //
 //====================================================================
 #include "DD4hep/Printout.h"
@@ -72,12 +76,12 @@ namespace DD4hep {
 #include "G4VProcess.hh"
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 
 /// Standard constructor
-Geant4EscapeCounter::Geant4EscapeCounter(Geant4Context* ctxt, const string& nam, DetElement det, LCDD& lcdd_ref)
-  : Geant4Sensitive(ctxt, nam, det, lcdd_ref)
+Geant4EscapeCounter::Geant4EscapeCounter(Geant4Context* ctxt, const string& nam, DetElement det, Detector& description_ref)
+  : Geant4Sensitive(ctxt, nam, det, description_ref)
 {
   string coll_name = name()+"Hits";
   m_needsControl = true;
@@ -98,8 +102,8 @@ bool Geant4EscapeCounter::process(G4Step* step, G4TouchableHistory* /* history *
   Geant4TouchableHandler handler(step);
   string   hdlr_path  = handler.path();
   Position prePos     = h.prePos();
-  HitCollection* coll = collection(m_collectionID);
-  SimpleTracker::Hit* hit = new SimpleTracker::Hit(th.id(),th.pdgID(),h.deposit(),th.time());
+  Geant4HitCollection* coll = collection(m_collectionID);
+  SimpleTracker::Hit*  hit = new SimpleTracker::Hit(th.id(),th.pdgID(),h.deposit(),th.time());
   hit->cellID        = volumeID(step);
   hit->energyDeposit = th.energy();
   hit->position      = prePos;

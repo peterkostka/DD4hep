@@ -1,4 +1,5 @@
-//  AIDA Detector description implementation for LCD
+//==========================================================================
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,7 +12,6 @@
 //  \version  1.0
 //
 //==========================================================================
-// $Id$
 #ifndef DD4HEP_ERRORS_H 
 #define DD4HEP_ERRORS_H 1
 
@@ -19,7 +19,7 @@
 #include <string>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Utility namespace: Errors
   namespace Errors  {
@@ -51,5 +51,5 @@ namespace DD4hep {
     
   }
 
-} /* End namespace DD4hep             */
+} /* End namespace dd4hep             */
 #endif  // DD4HEP_ERRORS_H

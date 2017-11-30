@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -28,10 +27,10 @@ class G4VModularPhysicsList;
 class G4VUserPhysicsList;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     /// Concrete basic implementation of a Geant4 physics list action
     /**
@@ -66,19 +65,16 @@ namespace DD4hep {
       typedef std::map<std::string, ParticleProcesses> PhysicsProcesses;
 
       /// Structure describing a G4 particle constructor
-      class ParticleConstructor: public std::string {
+      class ParticleConstructor : public std::string {
       public:
         /// Default constructor
-        ParticleConstructor()
-          : std::string() {
-        }
+        ParticleConstructor() = default;
+        /// Default constructor
+        ParticleConstructor(const ParticleConstructor& copy) = default;
         /// Initalizing constructor
-        ParticleConstructor(const std::string& s)
-          : std::string(s) {
-        }
-        /// Default destructor
-        ~ParticleConstructor() {
-        }
+        ParticleConstructor(const std::string& s) : std::string(s) { }
+        /// Assignment operator
+        ParticleConstructor& operator=(const ParticleConstructor& c) = default;
       };
       typedef std::vector<ParticleConstructor> ParticleConstructors;
 
@@ -91,23 +87,16 @@ namespace DD4hep {
       class PhysicsConstructor: public std::string {
       public:
         /// Pointer to physics constructor object
-        G4VPhysicsConstructor* pointer;
+        G4VPhysicsConstructor* pointer = 0;
       public:
         /// Default constructor
-        PhysicsConstructor()
-          : std::string(), pointer(0) {
-        }
+        PhysicsConstructor() = default;
         /// Copy constructor
-        PhysicsConstructor(const PhysicsConstructor& c)
-          : std::string(c), pointer(c.pointer)  {
-        }
+        PhysicsConstructor(const PhysicsConstructor& c) = default;
         /// Initalizing constructor
-        PhysicsConstructor(const std::string& s)
-          : std::string(s), pointer(0)  {
-        }
-        /// Default destructor
-        ~PhysicsConstructor() {
-        }
+        PhysicsConstructor(const std::string& s) : std::string(s), pointer(0)  {}
+        /// Assignment operator
+        PhysicsConstructor& operator=(const PhysicsConstructor& c) = default;
       };
       typedef std::vector<PhysicsConstructor> PhysicsConstructors;
 
@@ -261,7 +250,7 @@ namespace DD4hep {
       G4VUserPhysicsList* extensionList();
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4PHYSICSLIST_H

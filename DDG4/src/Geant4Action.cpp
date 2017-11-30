@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -27,8 +26,8 @@
 #include <algorithm>
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 
 TypeName TypeName::split(const string& type_name, const string& delim) {
   size_t idx = type_name.find(delim);
@@ -156,7 +155,7 @@ void Geant4Action::print(const char* fmt, ...) const   {
   if ( level >= printLevel() )  {
     va_list args;
     va_start(args, fmt);
-    DD4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
+    dd4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
     va_end(args);
   }
 }
@@ -167,7 +166,7 @@ void Geant4Action::printM1(const char* fmt, ...) const   {
   if ( level >= printLevel() )  {
     va_list args;
     va_start(args, fmt);
-    DD4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
+    dd4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
     va_end(args);
   }
 }
@@ -178,7 +177,7 @@ void Geant4Action::printM2(const char* fmt, ...) const   {
   if ( level >= printLevel() )  {
     va_list args;
     va_start(args, fmt);
-    DD4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
+    dd4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
     va_end(args);
   }
 }
@@ -189,7 +188,7 @@ void Geant4Action::printP1(const char* fmt, ...) const   {
   if ( level >= printLevel() )  {
     va_list args;
     va_start(args, fmt);
-    DD4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
+    dd4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
     va_end(args);
   }
 }
@@ -200,7 +199,7 @@ void Geant4Action::printP2(const char* fmt, ...) const   {
   if ( level >= printLevel() )  {
     va_list args;
     va_start(args, fmt);
-    DD4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
+    dd4hep::printout((PrintLevel)level, m_name.c_str(), fmt, args);
     va_end(args);
   }
 }
@@ -209,7 +208,7 @@ void Geant4Action::printP2(const char* fmt, ...) const   {
 void Geant4Action::debug(const char* fmt, ...) const {
   va_list args;
   va_start(args, fmt);
-  DD4hep::printout(DD4hep::DEBUG, m_name, fmt, args);
+  dd4hep::printout(dd4hep::DEBUG, m_name, fmt, args);
   va_end(args);
 }
 
@@ -217,7 +216,7 @@ void Geant4Action::debug(const char* fmt, ...) const {
 void Geant4Action::info(const char* fmt, ...) const {
   va_list args;
   va_start(args, fmt);
-  DD4hep::printout(DD4hep::INFO, m_name, fmt, args);
+  dd4hep::printout(dd4hep::INFO, m_name, fmt, args);
   va_end(args);
 }
 
@@ -225,7 +224,7 @@ void Geant4Action::info(const char* fmt, ...) const {
 void Geant4Action::warning(const char* fmt, ...) const {
   va_list args;
   va_start(args, fmt);
-  DD4hep::printout(DD4hep::WARNING, m_name, fmt, args);
+  dd4hep::printout(dd4hep::WARNING, m_name, fmt, args);
   va_end(args);
 }
 
@@ -233,7 +232,7 @@ void Geant4Action::warning(const char* fmt, ...) const {
 void Geant4Action::error(const char* fmt, ...) const {
   va_list args;
   va_start(args, fmt);
-  DD4hep::printout(DD4hep::ERROR, m_name, fmt, args);
+  dd4hep::printout(dd4hep::ERROR, m_name, fmt, args);
   va_end(args);
 }
 
@@ -241,7 +240,7 @@ void Geant4Action::error(const char* fmt, ...) const {
 bool Geant4Action::return_error(bool return_value, const char* fmt, ...) const {
   va_list args;
   va_start(args, fmt);
-  DD4hep::printout(DD4hep::ERROR, m_name, fmt, args);
+  dd4hep::printout(dd4hep::ERROR, m_name, fmt, args);
   va_end(args);
   return return_value;
 }
@@ -250,7 +249,7 @@ bool Geant4Action::return_error(bool return_value, const char* fmt, ...) const {
 void Geant4Action::fatal(const char* fmt, ...) const {
   va_list args;
   va_start(args, fmt);
-  DD4hep::printout(DD4hep::FATAL, m_name, fmt, args);
+  dd4hep::printout(dd4hep::FATAL, m_name, fmt, args);
   va_end(args);
 }
 
@@ -258,8 +257,8 @@ void Geant4Action::fatal(const char* fmt, ...) const {
 void Geant4Action::except(const char* fmt, ...) const {
   va_list args;
   va_start(args, fmt);
-  DD4hep::printout(DD4hep::FATAL, m_name, fmt, args);
-  string err = DD4hep::format(m_name, fmt, args);
+  dd4hep::printout(dd4hep::FATAL, m_name, fmt, args);
+  string err = dd4hep::format(m_name, fmt, args);
   va_end(args);
   throw runtime_error(err);
 }
@@ -270,7 +269,7 @@ void Geant4Action::abortRun(const string& exception, const char* fmt, ...) const
   string issuer = name()+" ["+typ+"]";
   va_list args;
   va_start(args, fmt);
-  desc = DD4hep::format("*** Geant4Action:", fmt, args);
+  desc = dd4hep::format("*** Geant4Action:", fmt, args);
   va_end(args);
   G4Exception(issuer.c_str(),exception.c_str(),RunMustBeAborted,desc.c_str());
   //throw runtime_error(issuer+"> "+desc);

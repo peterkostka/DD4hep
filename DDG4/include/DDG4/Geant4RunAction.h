@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -22,10 +21,10 @@
 class G4Run;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4RunAction;
@@ -46,6 +45,15 @@ namespace DD4hep {
     class Geant4RunAction: public Geant4Action {
     public:
       typedef Geant4SharedRunAction shared_type;
+
+    protected:
+      /// Inhibit default constructor
+      Geant4RunAction() = default;
+      /// Inhibit copy constructor
+      Geant4RunAction(const Geant4RunAction& copy) = delete;
+      /// Inhibit assignment operator
+      Geant4RunAction& operator=(const Geant4RunAction& copy) = delete;
+
     public:
       /// Standard constructor
       Geant4RunAction(Geant4Context* context, const std::string& nam);
@@ -73,8 +81,18 @@ namespace DD4hep {
     class Geant4SharedRunAction : public Geant4RunAction {
     protected:
       /// Reference to the shared action
-      Geant4RunAction* m_action;
+      Geant4RunAction* m_action = 0;
+
+    protected:
+      /// Inhibit default constructor
+      Geant4SharedRunAction() = default;
+      /// Inhibit copy constructor
+      Geant4SharedRunAction(const Geant4SharedRunAction& copy) = delete;
+      /// Inhibit assignment operator
+      Geant4SharedRunAction& operator=(const Geant4SharedRunAction& copy) = delete;
+
     public:
+      /// Inhibit default constructor
       /// Standard constructor
       Geant4SharedRunAction(Geant4Context* context, const std::string& nam);
       /// Default destructor
@@ -105,6 +123,7 @@ namespace DD4hep {
      *  \ingroup DD4HEP_SIMULATION
      */
     class Geant4RunActionSequence: public Geant4Action {
+
     protected:
       /// Callback sequence for begin-run action
       CallbackSequence m_begin;
@@ -112,6 +131,15 @@ namespace DD4hep {
       CallbackSequence m_end;
       /// The list of action objects to be called
       Actors<Geant4RunAction> m_actors;
+
+    protected:
+      /// Inhibit default constructor
+      Geant4RunActionSequence() = default;
+      /// Inhibit copy constructor
+      Geant4RunActionSequence(const Geant4RunActionSequence& copy) = delete;
+      /// Inhibit assignment operator
+      Geant4RunActionSequence& operator=(const Geant4RunActionSequence& copy) = delete;
+
     public:
       /// Standard constructor
       Geant4RunActionSequence(Geant4Context* context, const std::string& nam);
@@ -141,7 +169,7 @@ namespace DD4hep {
       virtual void end(const G4Run* run);
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4RUNACTION_H

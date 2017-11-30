@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,130 +10,86 @@
 // Author     : M.Frank
 //
 //==========================================================================
-#ifndef DD4HEP_GEOMETRY_SEGMENTATIONS_H
-#define DD4HEP_GEOMETRY_SEGMENTATIONS_H
+#ifndef DD4HEP_DDCORE_SEGMENTATIONS_H
+#define DD4HEP_DDCORE_SEGMENTATIONS_H
 
 // Framework include files
-#include "DD4hep/Objects.h"
 #include "DD4hep/Handle.h"
-#include "DD4hep/IDDescriptor.h"
+#include "DD4hep/Objects.h"
+#include "DD4hep/BitFieldCoder.h"
 #include "DDSegmentation/Segmentation.h"
-#include "DDSegmentation/SegmentationFactory.h"
-
-// C/C++ include files
-#include <cmath>
-#include <vector>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Geometry {
+  /// Forward declarations
+  class DetElementObject;
+  class SegmentationObject;
+  class SensitiveDetectorObject;
+  template <typename T> class SegmentationWrapper;
 
-    /// Implementation class supporting generic Segmentation of sensitive detectors
-    /**
-     * \author  M.Frank
-     * \version 1.0
-     * \ingroup DD4HEP_GEOMETRY
-     */
-    class SegmentationObject : public DDSegmentation::Segmentation {
-    public:
-      typedef DDSegmentation::Segmentation BaseSegmentation;
-      typedef DDSegmentation::Parameters Parameters;
-      typedef DDSegmentation::Parameter Parameter;
-    public:
-      /// Magic word to check object integrity
-      unsigned long magic;
-      /// Flag to use segmentation for hit positioning
-      unsigned char useForHitPosition;
-      /// determine the local position based on the cell ID
-      DDSegmentation::Vector3D position(const long64& cellID) const;
-      /// determine the cell ID based on the local position
-      long64 cellID(const DDSegmentation::Vector3D& localPosition, const DDSegmentation::Vector3D& globalPosition, const long64& volumeID) const;
-      /// Standard constructor
-      SegmentationObject(BaseSegmentation* s = 0);
-      /// Default destructor
-      virtual ~SegmentationObject();
-      /// Access the encoding string
-      std::string fieldDescription() const;
-      /// Access the segmentation name
-      const std::string& name() const;
-      /// Set the segmentation name
-      void setName(const std::string& value);
-      /// Access the segmentation type
-      const std::string& type() const;
-      /// Access the description of the segmentation
-      const std::string& description() const;
-      /// Access the underlying decoder
-      BitField64* decoder();
-      /// Set the underlying decoder
-      void setDecoder(BitField64* decoder);
-      /// Access to parameter by name
-      Parameter parameter(const std::string& parameterName) const;
-      /// Access to all parameters
-      Parameters parameters() const;
-      /// Set all parameters from an existing set of parameters
-      void setParameters(const Parameters& parameters);
-      /// Reference to base segmentation
-      BaseSegmentation* segmentation;
-    };
-
-
-    /// Handle class supporting generic Segmentation of sensitive detectors
-    /**
-     *
-     *   \author  M.Frank
-     *   \version 1.0
-     *   \ingroup DD4HEP_GEOMETRY
-     */
-    class Segmentation: public Handle<SegmentationObject> {
-    public:
-      typedef SegmentationObject Object;
-      typedef DDSegmentation::Segmentation BaseSegmentation;
-      typedef DDSegmentation::Parameter Parameter;
-      typedef DDSegmentation::Parameters Parameters;
-
-    public:
-      /// Initializing constructor creating a new object of the given DDSegmentation type
-      Segmentation(const std::string& type, const std::string& name);
-      /// Default constructor
-      Segmentation()
-        : Handle<Implementation>() {
-      }
-      /// Copy Constructor from object
-      Segmentation(const Segmentation& e)
-        : Handle<Object>(e) {
-      }
+  /// Handle class supporting generic Segmentations of sensitive detectors
+  /**
+   *   This basic segmentation implementation supports "generic" access
+   *   to specific segmentations exporting the common abstract interface.
+   *   Mostly used in simulation.
+   *
+   *   \author  M.Frank
+   *   \version 1.0
+   *   \ingroup DD4HEP_CORE
+   */
+  class Segmentation : public Handle<SegmentationObject> {
+  public:
+    /// Initializing constructor creating a new object of the given DDSegmentation type
+    Segmentation(const std::string& type, const std::string& name, const BitFieldCoder* decoder);
+    /// Default constructor
+    Segmentation() = default;
+    /// Copy Constructor from object
+    Segmentation(const Segmentation& e) = default;
 #ifndef __CINT__
-      /// Copy Constructor from handle
-      Segmentation(const Handle<SegmentationObject>& e)
-        : Handle<Object>(e) {
-      }
+    /// Copy Constructor from handle
+    Segmentation(const Handle<Object>& e) : Handle<Object>(e) { }
 #endif
-      /// Constructor to be used when reading the already parsed object
-      template <typename Q> Segmentation(const Handle<Q>& e)
-        : Handle<Implementation>(e) {
-      }
-      /// Assignment operator
-      Segmentation& operator=(const Segmentation& seg)  {
-        if ( &seg == this ) return *this;
-        m_element = seg.m_element;
-        return *this;
-      }
-      /// Access flag for hit positioning
-      bool useForHitPosition() const;
-      /// Accessor: Segmentation type
-      std::string type() const;
-      /// Access segmentation object
-      BaseSegmentation* segmentation() const;
-      /// Access to the parameters
-      Parameters parameters() const;
-      /// determine the local position based on the cell ID
-      Position position(const long64& cellID) const;
-      /// determine the cell ID based on the local position
-      long64 cellID(const Position& localPosition, const Position& globalPosition, const long64& volumeID) const;
-    };
-
-  } /* End namespace Geometry              */
-} /* End namespace DD4hep                */
-#endif    /* DD4HEP_GEOMETRY_SEGMENTATIONS_H     */
+    /// Constructor to be used when reading the already parsed object
+    template <typename Q> Segmentation(const Handle<Q>& e) : Handle<Object>(e) { }
+    /// Assignment operator
+    Segmentation& operator=(const Segmentation& seg) = default;
+    /// Access flag for hit positioning
+    bool useForHitPosition() const;
+    /// Accessor: Segmentation type
+    const char* name() const;
+    /// Accessor: Segmentation type
+    std::string type() const;
+    /// Access to the parameters
+    DDSegmentation::Parameters parameters() const;
+    /// Access to parameter by name
+    DDSegmentation::Parameter  parameter(const std::string& parameterName) const;
+    /// Access the main detector element using this segmetnation object
+    Handle<DetElementObject> detector() const;
+    /// Access the sensitive detector using this segmetnation object
+    Handle<SensitiveDetectorObject> sensitive() const;
+    /// Access the underlying decoder
+    const BitFieldCoder* decoder() const;
+    /// Set the underlying decoder
+    void setDecoder(const BitFieldCoder* decoder) const;
+    /// determine the local position based on the cell ID
+    Position position(const long64& cellID) const;
+    /// determine the cell ID based on the local position
+    long64 cellID(const Position& localPosition, const Position& globalPosition, const long64& volumeID) const;
+    /// Determine the volume ID from the full cell ID by removing all local fields
+    VolumeID volumeID(const CellID& cellID) const;
+    /// Calculates the neighbours of the given cell ID and adds them to the list of neighbours
+    void neighbours(const CellID& cellID, std::set<CellID>& neighbours) const;
+    /** \brief Returns a vector<double> of the cellDimensions of the given cell ID
+     *  in natural order of dimensions, e.g., dx/dy/dz, or dr/r*dPhi
+     *
+     *   \param cellID cellID of the cell for which parameters are returned
+     *   \return vector<double> in natural order of dimensions, e.g., dx/dy/dz, or dr/r*dPhi
+     */
+    std::vector<double> cellDimensions(const CellID& cellID) const;
+      
+    /// Access to the base DDSegmentation object. WARNING: Deprecated call!
+    DDSegmentation::Segmentation* segmentation() const;
+  };
+} /* End namespace dd4hep                */
+#endif    /* DD4HEP_DDCORE_SEGMENTATIONS_H     */

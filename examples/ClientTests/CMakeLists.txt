@@ -1,6 +1,5 @@
-# $Id: $
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -9,7 +8,7 @@
 # For the list of contributors see $DD4hepINSTALL/doc/CREDITS.
 #
 #==========================================================================
-cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 include ( ${DD4hep_DIR}/cmake/DD4hep.cmake )
 
 #--------------------------------------------------------------------------
@@ -20,7 +19,10 @@ dd4hep_package (ClientTests MAJOR 0 MINOR 0 PATCH 1
   OPTIONAL     XERCESC
   INCLUDE_DIRS include )
 #--------------------------------------------------------------------------
-dd4hep_add_plugin( ClientTests SOURCES src/*.cpp  )
+dd4hep_add_plugin( ClientTests SOURCES src/*.cpp
+  OPTIONAL       [BOOST SOURCES src_boost/*.cpp]
+  )
+#
 dd4hep_install_dir( compact scripts DESTINATION ${DD4hep_DIR}/examples/ClientTests )
 #--------------------------------------------------------------------------
 
@@ -28,14 +30,124 @@ dd4hep_install_dir( compact scripts DESTINATION ${DD4hep_DIR}/examples/ClientTes
 dd4hep_configure_scripts( ClientTests DEFAULT_SETUP WITH_TESTS)
 #---  Testing  ------------------------------------------------------------
 #
+#  Test JSON based parser
+dd4hep_add_test_reg( ClientTests_MiniTel_JSON_Dump
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun -destroy -plugin DD4hep_JsonDumper
+  ${CMAKE_CURRENT_SOURCE_DIR}/compact/MiniTel.json
+  REGEX_PASS "Successfully dumped json input"
+  REGEX_FAIL "Exception"
+  REGEX_FAIL "FAILED"
+  )
+#
+#  Test JSON based detector construction
+dd4hep_add_test_reg( ClientTests_MiniTel_JSON_Detector
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun -volmgr -destroy -plugin DD4hep_XMLLoader
+  file:${CMAKE_CURRENT_SOURCE_DIR}/compact/MiniTel_json.xml
+  REGEX_PASS "Successfully processed JSON input"
+  REGEX_FAIL "Exception"
+  REGEX_FAIL "FAILED"
+  )
+#
+#  Test JSON based detector construction
+dd4hep_add_test_reg( ClientTests_DumpMaterials
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/MiniTel.xml
+  -volmgr -destroy -plugin DD4hep_MaterialTable -type xml
+  REGEX_PASS "material name=\"PEEK\""
+  REGEX_FAIL "Exception"
+  REGEX_FAIL "FAILED"
+  )
+#
+#  Test readout strings of the form: <id>system:8,barrel:-2</id>
+dd4hep_add_test_reg( ClientTests_DumpElements
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/MiniTel.xml
+  -volmgr -destroy -plugin DD4hep_ElementTable -type xml
+  REGEX_PASS "formula=\"UUB\" name=\"UUB\""
+  REGEX_FAIL "Exception"
+  REGEX_FAIL "FAILED"
+  )
+#
+#  Test long volume IDs Detector setups with placements of
+#  identical volumes at different levels of the hierarchy
+dd4hep_add_test_reg( ClientTests_MultiPlace
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/SiBarrelMultiSensitiveLongVolID.xml -volmgr -destroy
+  -plugin DD4hep_VolumeMgrTest SiTrackerBarrel
+
+  REGEX_PASS "Volume:component1_1                                       IDDesc:OK  \\[S\\]  vid:00200668000000ff system:00ff barrel:0000 layer:0001 module:0033 sensor:0001"
+  REGEX_FAIL "FAILED: World transformation DIFFER"
+  )
+#
+#  Test long volume IDs exceeding 32 bit addressing of the form: <id>system:32,barrel:16:-5....</id>
+dd4hep_add_test_reg( ClientTests_Bitfield64_LongVoldID
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/SiBarrelMultiSensitiveLongVolID.xml -volmgr -destroy
+  -plugin DD4hep_VolumeMgrTest SiTrackerBarrel
+
+  REGEX_PASS "Volume:component1_1                                       IDDesc:OK  \\[S\\]  vid:00200668000000ff system:00ff barrel:0000 layer:0001 module:0033 sensor:0001"
+  REGEX_FAIL "FAILED: World transformation DIFFER"
+  )
+#
+#  Test readout strings of the form: <id>system:8,barrel:-2</id>
+dd4hep_add_test_reg( ClientTests_Bitfield64_BarrelSides
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/Bitfield_SidesTest.xml -volmgr -destroy
+  -plugin DD4hep_DetectorVolumeDump
+  -plugin DD4hep_VolumeDump volids
+  -plugin DD4hep_VolumeMgrTest all
+  REGEX_PASS "Volume:Shell_2                                            IDDesc:OK  \\[S\\]  vid:0000000000000102 system:0002 barrel:0001")
+#
+#  Test readout strings of the form: <id>system:16,barrel:16:-5</id>
+dd4hep_add_test_reg( ClientTests_Bitfield64_BarrelSides2
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/Bitfield_SidesTest2.xml -volmgr -destroy
+  -plugin DD4hep_DetectorVolumeDump
+  -plugin DD4hep_VolumeDump volids
+  -plugin DD4hep_VolumeMgrTest all
+  REGEX_PASS "Volume:Shell_2                                            IDDesc:OK  \\[S\\]  vid:0000000000010002 system:0002 barrel:0001")
+#
+#  Test handle casting procedures.
+dd4hep_add_test_reg( ClientTests_Check_Handle_Casts
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -volmgr -destroy -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/Check_Handles.xml
+  -plugin DD4hep_DetectorVolumeDump
+  REGEX_PASS "|   164  casts PASSED     90 casts FAILED                         |")
+#
+#  Test saving geometry to file
+dd4hep_add_test_reg( ClientTests_Save_ROOT_MiniTel_LONGTEST
+  COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+  EXEC_ARGS  geoPluginRun
+  -volmgr -destroy -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/MiniTel.xml
+  -plugin DD4hep_Geometry2ROOT -output MiniTel_geometry.root
+  REGEX_PASS "\\+\\+\\+ Successfully saved geometry data to file.")
 #
 #
 foreach (test Assemblies BoxTrafos IronCylinder LheD_tracker MagnetFields MaterialTester 
-              MiniTel SectorBarrelCalorimeter SiliconBlock NestedSimple NestedDetectors 
-              MultiCollections MultiSegmentations )
+    MiniTel SectorBarrelCalorimeter SiliconBlock NestedSimple NestedDetectors 
+    MultiCollections MultiSegmentations )
+
+  # Test materials in volumes. Test here the proper access to the materials from the volumes,
+  # which was broken at some point.
+  dd4hep_add_test_reg( ClientTests_volume_materials_${test}
+      COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
+      EXEC_ARGS  geoPluginRun -print WARNING -volmgr -destroy
+      -input  file:${CMAKE_CURRENT_SOURCE_DIR}/compact/${test}.xml
+      -plugin DD4hep_VolumeDump -materials
+      REGEX_PASS "\\+\\+\\+ Checked [1-9][0-9]* materials in volume placements.   0 are BAD." )
+            
   # Test format conversions
-  foreach( type lcdd gdml vis )
-    dd4hep_add_test_reg( ClientTests_${test}_converter_${type}
+  foreach( type description gdml vis )
+    dd4hep_add_test_reg( ClientTests_converter_${type}_${test}
       COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
       EXEC_ARGS  geoConverter -compact2${type}
                               -input file:${CMAKE_CURRENT_SOURCE_DIR}/compact/${test}.xml
@@ -53,14 +165,14 @@ foreach (test Assemblies BoxTrafos LheD_tracker MagnetFields MiniTel SiliconBloc
          NestedSimple NestedDetectors MultiCollections )
   #
   # Test material scans in [origine to 10 meters in y]
-  dd4hep_add_test_reg( ClientTests_${test}_material_scan
+  dd4hep_add_test_reg( ClientTests_material_scan_${test}
     COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
     EXEC_ARGS  materialScan file:${CMAKE_CURRENT_SOURCE_DIR}/compact/${test}.xml 0 0 0 0 10000 0
     REGEX_PASS " Average Material " )
   #
   # Geant4 material scan. From position=0,0,0 to end-of-world 
   if (DD4HEP_USE_GEANT4)
-    dd4hep_add_test_reg( ClientTests_${test}_g4material_scan
+    dd4hep_add_test_reg( ClientTests_g4material_scan_${test}_LONGTEST
       COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
       EXEC_ARGS  python ${DD4hep_DIR}/python/g4MaterialScan.py
                         --compact=file:${CMAKE_CURRENT_SOURCE_DIR}/compact/${test}.xml
@@ -74,7 +186,7 @@ endforeach()
 foreach (test BoxTrafos IronCylinder MiniTel SiliconBlock NestedSimple MultiCollections )
   #
   # ROOT Geometry checks
-  dd4hep_add_test_reg( ClientTests_${test}_check_geometry
+  dd4hep_add_test_reg( ClientTests_check_geometry_${test}_LONGTEST
     COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
     EXEC_ARGS  python ${DD4hep_DIR}/python/checkGeometry.py
                       --compact=file:${CMAKE_CURRENT_SOURCE_DIR}/compact/${test}.xml
@@ -82,7 +194,7 @@ foreach (test BoxTrafos IronCylinder MiniTel SiliconBlock NestedSimple MultiColl
     REGEX_PASS " Execution finished..." )
   #
   # ROOT Geometry overlap checks
-  dd4hep_add_test_reg( ClientTests_${test}_check_overlaps
+  dd4hep_add_test_reg( ClientTests_check_overlaps_${test}_LONGTEST
     COMMAND    "${CMAKE_INSTALL_PREFIX}/bin/run_test_ClientTests.sh"
     EXEC_ARGS  python ${DD4hep_DIR}/python/checkOverlaps.py 
                       --compact=file:${CMAKE_CURRENT_SOURCE_DIR}/compact/${test}.xml

@@ -1,7 +1,6 @@
 #=================================================================================
-#  $Id: $
 #
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #---------------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -20,22 +19,6 @@ if(CMAKE_INSTALL_PREFIX)
 endif()
 
 #---------------------------------------------------------------------------------------------------
-#  Need this fix, since the cmake name is Geant4 and on GEANT4
-if(DD4HEP_USE_GEANT4)
-  set ( DD4HEP_USE_BOOST ON )    # Boost is required !
-endif()
-#---------------------------------------------------------------------------------------------------
-if(DD4HEP_USE_BOOST)
-  #message(FATAL_ERROR "Boost is required   ${DD4HEP_USE_BOOST}")
-  if ( "${Boost_INCLUDE_DIRS}" STREQUAL "" )
-    find_package( Boost REQUIRED ) 
-    ##include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
-  endif()
-  add_definitions( -DDD4HEP_USE_BOOST )
-  add_definitions( -DBOOST_SPIRIT_USE_PHOENIX_V3 )
-else()
-  set ( DD4HEP_USE_BOOST OFF )
-endif()
 # Main functional include file
 if ( "${DD4hepBuild_included}" STREQUAL "" )
   include ( DD4hepBuild )
@@ -105,11 +88,7 @@ function(dd4hep_generate_rootmap_notapple library)
     SET ( DD4hep_DIR ${CMAKE_SOURCE_DIR} )
   endif()
   find_package(ROOT QUIET)
-if( ${ROOT_VERSION_MAJOR} GREATER 5 )
   set(rootmapfile ${CMAKE_SHARED_MODULE_PREFIX}${library}.components)
-else()
-  set(rootmapfile ${CMAKE_SHARED_MODULE_PREFIX}${library}.rootmap)
-endif()
 
   set(libname ${CMAKE_SHARED_MODULE_PREFIX}${library}${CMAKE_SHARED_LIBRARY_SUFFIX})
   #message(STATUS "DD4hep_DIR = ${DD4hep_DIR}" )
@@ -117,21 +96,26 @@ endif()
                      POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -Dlibname=${libname} -Drootmapfile=${rootmapfile}
                              -Dgenmap_install_dir=${LIBRARY_OUTPUT_PATH}
-                             -DROOT_VERSION_MAJOR=${ROOT_VERSION_MAJOR}
+                             -DROOT_VERSION=${ROOT_VERSION}
                              -DDD4hep_DIR=${DD4hep_DIR}
-                             -P ${DD4hep_DIR}/cmake/MakeRootMap.cmake)
+                             -P ${DD4hep_DIR}/cmake/MakeGaudiMap.cmake)
 
   #add_custom_command(OUTPUT ${rootmapfile}
   #                   COMMAND ${CMAKE_COMMAND} -Dlibname=${libname} -Drootmapfile=${rootmapfile}
   #                           -Dgenmap_install_dir=${LIBRARY_OUTPUT_PATH}
-  #                           -DROOT_VERSION_MAJOR=${ROOT_VERSION_MAJOR}
+  #                           -DROOT_VERSION=${ROOT_VERSION}
   #                           -DDD4hep_DIR=${DD4hep_DIR}
   #                           -P ${DD4hep_DIR}/cmake/MakeRootMap.cmake
   #                   DEPENDS ${library})
   ##add_custom_target(${library}Rootmap ALL DEPENDS ${rootmapfile})
 
+  SET( install_destination "lib" )
+  if( CMAKE_INSTALL_LIBDIR )
+    SET( install_destination ${CMAKE_INSTALL_LIBDIR} )
+  endif()
+
   install(FILES ${LIBRARY_OUTPUT_PATH}/${rootmapfile}
-    DESTINATION lib
+    DESTINATION ${install_destination}
   )
 endfunction()
 #

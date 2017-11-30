@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -21,10 +20,37 @@
 using namespace CLHEP;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation   {
+  namespace sim   {
+
+    namespace {
+      struct Geant4VoidSensitive {};
+    }
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //               Geant4SensitiveAction<Geant4VoidSensitive>
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    /** \addtogroup Geant4SDActionPlugin
+     *
+     * @{
+     * \package Geant4VoidSensitiveAction
+     * \brief Void Sensitive detector action to skip the processing of a detector
+     *        without changing the entire DDG4 setup.
+     *
+     * @}
+     */
+
+    /// Define collections created by this sensitivie action object
+    template <> void Geant4SensitiveAction<Geant4VoidSensitive>::defineCollections()    {
+      m_collectionID = -1;
+    }
+
+    /// Method for generating hit(s) using the information of G4Step object.
+    template <> bool Geant4SensitiveAction<Geant4VoidSensitive>::process(G4Step* /*step*/,G4TouchableHistory* /*hist*/ ) {
+      return true;
+    }
+    typedef Geant4SensitiveAction<Geant4VoidSensitive> Geant4VoidSensitiveAction;
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //               Geant4SensitiveAction<Geant4Tracker>
@@ -33,9 +59,7 @@ namespace DD4hep {
      *
      * @{
      * \package Geant4TrackerAction
-     *
      * \brief Sensitive detector meant for tracking detectors, will produce one hit per step
-
      *
      * @}
      */
@@ -48,7 +72,7 @@ namespace DD4hep {
     /// Method for generating hit(s) using the information of G4Step object.
     template <> bool Geant4SensitiveAction<Geant4Tracker>::process(G4Step* step,G4TouchableHistory* /*hist*/ ) {
       typedef Geant4Tracker::Hit Hit;
-      StepHandler h(step);
+      Geant4StepHandler h(step);
       Position prePos    = h.prePos();
       Position postPos   = h.postPos();
       Position direction = postPos - prePos;
@@ -95,7 +119,6 @@ namespace DD4hep {
      *
      * @}
      */
-
     /// Define collections created by this sensitivie action object
     template <> void Geant4SensitiveAction<Geant4Calorimeter>::defineCollections() {
       m_collectionID = declareReadoutFilteredCollection<Geant4Calorimeter::Hit>();
@@ -104,9 +127,9 @@ namespace DD4hep {
     /// Method for generating hit(s) using the information of G4Step object.
     template <> bool Geant4SensitiveAction<Geant4Calorimeter>::process(G4Step* step,G4TouchableHistory*) {
       typedef Geant4Calorimeter::Hit Hit;
-      StepHandler h(step);
+      Geant4StepHandler h(step);
       HitContribution contrib = Hit::extractContribution(step);
-      HitCollection*  coll    = collection(m_collectionID);
+      Geant4HitCollection*  coll    = collection(m_collectionID);
       VolumeID cell = 0;
 
       try {
@@ -157,22 +180,20 @@ namespace DD4hep {
     //               Geant4SensitiveAction<OpticalCalorimeter>
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    /// Helper class to define properties of optical calorimeters. UNTESTED
     /**
      *  \author  M.Frank
      *  \version 1.0
      *  \ingroup DD4HEP_SIMULATION
-     
-     * \addtogroup Geant4SDActionPlugin
+     *  \addtogroup Geant4SDActionPlugin
      *
      * @{
      * \package Geant4OpticalCalorimeterAction
      *
      * \brief Sensitive detector meant for optical calorimeters
-
      *
      * @}
      */
+    /// Helper class to define properties of optical calorimeters. UNTESTED
     struct Geant4OpticalCalorimeter {};
 
     /// Define collections created by this sensitivie action object
@@ -192,8 +213,8 @@ namespace DD4hep {
       }
       else {
         typedef Geant4Calorimeter::Hit Hit;
-        StepHandler h(step);
-        HitCollection*  coll    = collection(m_collectionID);
+        Geant4StepHandler h(step);
+        Geant4HitCollection*  coll    = collection(m_collectionID);
         HitContribution contrib = Hit::extractContribution(step);
         Position        pos     = h.prePos();
         Hit* hit = coll->find<Hit>(PositionCompare<Hit,Position>(pos));
@@ -222,19 +243,17 @@ namespace DD4hep {
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-    /** \addtogroup Geant4SDActionPlugin
+    /* \addtogroup Geant4SDActionPlugin
      *
      * @{
      * \package Geant4ScintillatorCalorimeterAction
-     *
      * \brief Sensitive detector meant for scintillator calorimeters
-
-     This sensitive action will apply Birks' law to the energy deposits
-
+     *
+     * This sensitive action will apply Birks' law to the energy deposits
      *
      * @}
      */
-
+    /// Class to implement the standard sensitive detector for scintillator calorimeters
     struct Geant4ScintillatorCalorimeter {};
 
     /// Define collections created by this sensitivie action object
@@ -244,9 +263,9 @@ namespace DD4hep {
     /// Method for generating hit(s) using the information of G4Step object.
     template <> bool Geant4SensitiveAction<Geant4ScintillatorCalorimeter>::process(G4Step* step,G4TouchableHistory*) {
       typedef Geant4Calorimeter::Hit Hit;
-      StepHandler h(step);
+      Geant4StepHandler h(step);
       HitContribution contrib = Hit::extractContribution(step,true);
-      HitCollection*  coll    = collection(m_collectionID);
+      Geant4HitCollection*  coll    = collection(m_collectionID);
       VolumeID cell = 0;
       try {
         cell = cellID(step);
@@ -291,18 +310,9 @@ namespace DD4hep {
     }
     typedef Geant4SensitiveAction<Geant4ScintillatorCalorimeter> Geant4ScintillatorCalorimeterAction;
 
-    /// Geant4 sensitive detector combining all deposits of one G4Track within one sensitive element.
     /**
-     *  Geant4SensitiveAction<TrackerCombine>
      *
-     *
-     *  \author  M.Frank
-     *  \version 1.0
-     *  \ingroup DD4HEP_SIMULATION
-     */
-
-    /** \addtogroup Geant4SDActionPlugin
-     *
+     * \addtogroup Geant4SDActionPlugin
      * @{
      * \package Geant4TrackerCombineAction
      *
@@ -313,10 +323,16 @@ namespace DD4hep {
      *
      * @}
      */
-
-
+    /// Geant4 sensitive detector combining all deposits of one G4Track within one sensitive element.
+    /**
+     *  Geant4SensitiveAction<TrackerCombine>
+     *
+     *
+     *  \author  M.Frank
+     *  \version 1.0
+     *  \ingroup DD4HEP_SIMULATION
+     */
     struct TrackerCombine {
-      typedef Geant4HitCollection HitCollection;
       Geant4Tracker::Hit  pre, post;
       Position          mean_pos;
       Geant4Sensitive*  sensitive;
@@ -481,15 +497,18 @@ namespace DD4hep {
 
     typedef Geant4SensitiveAction<TrackerCombine>  Geant4TrackerCombineAction;
 
-    typedef Geant4TrackerAction Geant4SimpleTrackerAction;
-    typedef Geant4CalorimeterAction Geant4SimpleCalorimeterAction;
-    typedef Geant4OpticalCalorimeterAction Geant4SimpleOpticalCalorimeterAction;
+    typedef Geant4TrackerAction                    Geant4SimpleTrackerAction;
+    typedef Geant4CalorimeterAction                Geant4SimpleCalorimeterAction;
+    typedef Geant4OpticalCalorimeterAction         Geant4SimpleOpticalCalorimeterAction;
   }
 }
 
-using namespace DD4hep::Simulation;
+using namespace dd4hep::sim;
 
 #include "DDG4/Factories.h"
+// Special void entry point
+DECLARE_GEANT4SENSITIVE(Geant4VoidSensitiveAction)
+// Standard factories used for simulation
 DECLARE_GEANT4SENSITIVE(Geant4TrackerAction)
 DECLARE_GEANT4SENSITIVE(Geant4TrackerCombineAction)
 DECLARE_GEANT4SENSITIVE(Geant4CalorimeterAction)

@@ -37,7 +37,7 @@ dd4hep_add_path()   {
 	path_value=${path_prefix};
     fi; 
     eval export ${path_name}=${path_value};
-    ## echo "dd4hep_add_path: ${path_name}=${path_value}";
+    ## echo "DD4hep_add_path: ${path_name}=${path_value}";
 }
 #-----------------------------------------------------------------------------
 dd4hep_add_library_path()    {
@@ -45,9 +45,11 @@ dd4hep_add_library_path()    {
     if [ @USE_DYLD@ ];
     then
         if [ ${DYLD_LIBRARY_PATH} ]; then
-	    export DYLD_LIBRARY_PATH=${path_prefix}:$DYLD_LIBRARY_PATH;
+            export DYLD_LIBRARY_PATH=${path_prefix}:$DYLD_LIBRARY_PATH;
+            export DD4HEP_LIBRARY_PATH=${path_prefix}:$DD4HEP_LIBRARY_PATH;
         else
             export DYLD_LIBRARY_PATH=${path_prefix};
+            export DD4HEP_LIBRARY_PATH=${path_prefix};
         fi;
     else
         if [ ${LD_LIBRARY_PATH} ]; then
@@ -63,9 +65,12 @@ dd4hep_parse_this ${BASH_ARGV[0]} DD4hep;
 #
 # These 3 are the main configuration variables: ROOT, Geant4 and XercesC
 # --> LCIO & Co. are handled elsewhere!
-export ROOTSYS=@ROOT_ROOT@;
+
+if [ -z $ROOTSYS ]; then
+    export ROOTSYS=`dirname @ROOT_DIR@`
+fi;
 export Geant4_DIR=@Geant4_DIR@;
-export XERECESCINSTALL=@XERCESC_ROOT_DIR@;
+export XERCESCINSTALL=@XERCESC_ROOT_DIR@;
 #
 #----DD4hep installation directory--------------------------------------------
 export DD4hepINSTALL=${THIS};
@@ -86,8 +91,10 @@ if [ ${Geant4_DIR} ]; then
     #---- if geant4 was built with external CLHEP we have to extend the dynamic search path
     if [ @GEANT4_USE_CLHEP@ ] ; then
 	dd4hep_add_library_path @CLHEP_LIBRARY_PATH@;
-	export CLHEP_DIR=@CLHEP_DIR@
     fi;
+    export CLHEP_DIR=@CLHEP_ROOT_DIR@;
+    export CLHEP_ROOT_DIR=@CLHEP_ROOT_DIR@;
+    export CLHEP_LIBRARY_PATH=@CLHEP_LIBRARY_PATH@;
     dd4hep_add_library_path ${G4LIB_DIR};
     unset G4ENV_INIT;
     unset G4LIB_DIR;
@@ -107,6 +114,13 @@ dd4hep_add_library_path    ${THIS}/lib;
 dd4hep_add_path PYTHONPATH ${THIS}/python;
 #----ROOT_INCLUDE_PATH--------------------------------------------------------
 dd4hep_add_path ROOT_INCLUDE_PATH ${THIS}/include;
+#-----------------------------------------------------------------------------
+if [ @USE_DYLD@ ];
+then
+    export DD4HEP_LIBRARY_PATH=${DYLD_LIBRARY_PATH};
+else
+    export DD4HEP_LIBRARY_PATH=${LD_LIBRARY_PATH};
+fi;
 #-----------------------------------------------------------------------------
 #
 unset ROOTENV_INIT;

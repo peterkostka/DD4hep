@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -19,6 +18,7 @@
 #include "DDG4/Geant4Vertex.h"
 #include "DDG4/Geant4Particle.h"
 #include "DDG4/Geant4GeneratorAction.h"
+#include "DDParsers/Parsers.h"
 
 // C/C++ include files
 #include <vector>
@@ -28,10 +28,10 @@
 class G4Event;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep  {
+namespace dd4hep  {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation  {
+  namespace sim  {
 
     /// Basic geant4 event reader class. This interface/base-class must be implemented by concrete readers.
     /**
@@ -48,6 +48,7 @@ namespace DD4hep  {
       typedef Geant4Vertex   Vertex;
       typedef Geant4Particle Particle;
       typedef std::vector<Particle*> Particles;
+      typedef std::vector<Vertex*> Vertices;
       /// Status codes of the event reader object. Anything with NOT low-bit set is an error.
       enum EventReaderStatus {
         EVENT_READER_ERROR=0,
@@ -55,7 +56,8 @@ namespace DD4hep  {
         EVENT_READER_NO_DIRECT=2,
         EVENT_READER_NO_PRIMARIES=4,
         EVENT_READER_NO_FACTORY=6,
-        EVENT_READER_IO_ERROR=8
+        EVENT_READER_IO_ERROR=8,
+        EVENT_READER_EOF=10
       };
     protected:
       /// File name to be opened and read
@@ -64,17 +66,35 @@ namespace DD4hep  {
       bool m_directAccess;
       /// Current event number
       int  m_currEvent;
+
+      /// transform the string parameter value into the type of parameter
+      /**
+       * removes parameter from the parameters map
+       */
+      template <typename T>
+      void _getParameterValue( std::map< std::string, std::string > & parameters,
+			       std::string const& parameterName,
+			       T& parameter, T defaultValue ) {
+
+	if( parameters.find( parameterName ) != parameters.end() ) {
+	  dd4hep::Parsers::parse( parameter, parameters.at( parameterName ) );
+	  parameters.erase( parameterName );
+	} else {
+	  parameter = defaultValue;
+	}
+      }
+
     public:
       /// Initializing constructor
       Geant4EventReader(const std::string& nam);
       /// Default destructor
       virtual ~Geant4EventReader();
       /// File name
-      const std::string& name()  const   {  return m_name;   }
+      const std::string& name()  const   {  return m_name;         }
       /// Flag if direct event access (by event sequence number) is supported (Default: false)
-      bool hasDirectAccess() const  {  return m_directAccess; }
+      bool hasDirectAccess() const       {  return m_directAccess; }
       /// return current Event Number
-      int currentEventNumber() const { return m_currEvent; }
+      int currentEventNumber() const     {  return m_currEvent;    }
       /// Move to the indicated event number.
       /** For pure sequential access, the default implementation
        *  will skip events one by one.
@@ -90,8 +110,14 @@ namespace DD4hep  {
       /** The additional argument
        */
       virtual EventReaderStatus readParticles(int event_number, 
-                                              Vertex& primary_vertex,
+                                              Vertices&  vertices,
                                               Particles& particles) = 0;
+
+      /// pass parameters to the event reader object
+      virtual EventReaderStatus setParameters( std::map< std::string, std::string > & ) {return EVENT_READER_OK; }
+
+      /// make sure that all parameters have been processed, otherwise throw exceptions
+      virtual void checkParameters( std::map< std::string, std::string >& );
     };
 
     /// Generic input action capable of using the Geant4EventReader class.
@@ -110,6 +136,7 @@ namespace DD4hep  {
       typedef Geant4Vertex   Vertex;
       typedef Geant4Particle Particle;
       typedef std::vector<Particle*> Particles;
+      typedef std::vector<Vertex*> Vertices;
     protected:
       /// Property: input file
       std::string         m_input;
@@ -123,10 +150,16 @@ namespace DD4hep  {
       Geant4EventReader*  m_reader;
       /// current event number without initially skipped events
       int m_currentEventNumber;
+      /// Flag to call abortEvent in case of failure (default: true)
+      bool m_abort;
+      /// Property: named parameters to configure file readers or input actions
+      std::map< std::string, std::string> m_parameters;
 
     public:
       /// Read an event and return a LCCollectionVec of MCParticles.
-      int readParticles(int event_number, Vertex& primary_vertex, Particles& particles);
+      int readParticles(int event_number,
+			Vertices&  vertices,
+			Particles& particles);
       /// helper to report Geant4 exceptions
       std::string issue(int i) const;
 
@@ -139,6 +172,6 @@ namespace DD4hep  {
       /// Callback to generate primary particles
       virtual void operator()(G4Event* event);
     };
-  }     /* End namespace Simulation   */
-}       /* End namespace DD4hep */
+  }     /* End namespace sim   */
+}       /* End namespace dd4hep */
 #endif  /* DD4HEP_DDG4_GEANT4INPUTACTION_H  */

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -22,7 +21,7 @@
 class TEveWindowPack;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// class MultiView  MultiView.h DDEve/MultiView.h
   /*
@@ -37,11 +36,9 @@ namespace DD4hep {
     /// Default destructor
     virtual ~MultiView();
     /// Build the 3d view and map it to the given slot
-    virtual View& Build(TEveWindow* slot);
+    virtual View& Build(TEveWindow* slot)  override;
     /// Root implementation macro
-    ClassDef(MultiView,0);
+    ClassDefOverride(MultiView,0);
   };
-} /* End namespace DD4hep   */
-
-
+}      /* End namespace dd4hep     */
 #endif /* DD4HEP_DDEVE_MULTIVIEW_H */

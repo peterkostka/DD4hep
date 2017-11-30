@@ -1,4 +1,4 @@
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -40,6 +40,7 @@ namespace  {
   public:
     STR ( float val ) : _val(val), _str(_to_string(val))  {   }
     std::string str() const { return _str ; }
+    float value() const     { return _val;  }
     bool operator==( const STR& s2) const {
       return this->str() == s2.str() ;
     }

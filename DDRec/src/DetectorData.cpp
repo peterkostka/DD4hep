@@ -1,15 +1,20 @@
 #include "DDRec/DetectorData.h"
 
-namespace DD4hep {
-  namespace DDRec {
+#include <boost/io/ios_state.hpp>
+
+namespace dd4hep {
+  namespace rec {
 
 
     std::ostream& operator<<( std::ostream& io , const FixedPadSizeTPCData& d ){
+      boost::io::ios_base_all_saver ifs(io);
+
       io <<  " --FixedPadSizeTPCData: "  << std::scientific << std::endl ; 
       io <<  "   zHalf : "              <<  d.zHalf  << std::endl ; 
       io <<  "   rMin : "               <<  d.rMin << std::endl ; 
       io <<  "   rMax : "               <<  d.rMax << std::endl ; 
-      io <<  "   driftLength : "        <<  d.driftLength << std::endl ; 
+      io <<  "   driftLength : "        <<  d.driftLength << std::endl ;
+      io <<  "   zMinReadout : "        <<  d.zMinReadout << std::endl ;
       io <<  "   rMinReadout : "        <<  d.rMinReadout << std::endl ; 
       io <<  "   rMaxReadout : "        <<  d.rMaxReadout << std::endl ; 
       io <<  "   innerWallThickness : " <<  d.innerWallThickness << std::endl ; 
@@ -25,6 +30,7 @@ namespace DD4hep {
 
 
     std::ostream& operator<<( std::ostream& io , const ZPlanarData& d ) {
+      boost::io::ios_base_all_saver ifs(io);
 
       io <<  " -- ZPlanarData: "  << std::scientific << std::endl ; 
       io <<  " zHalfShell  : " <<  d.zHalfShell  << std::endl ; 
@@ -63,12 +69,12 @@ namespace DD4hep {
 	   << " " << l.zHalfSensitive
 	   << std::endl ;
       }
-
-      
+   
       return io ;
     }
 
     std::ostream& operator<<( std::ostream& io , const ZDiskPetalsData& d ) {
+      boost::io::ios_base_all_saver ifs(io);
 
       io <<  " -- ZDiskPetalsData: "  << std::scientific << std::endl ; 
       io <<  "  widthStrip : " <<  d.widthStrip  << std::endl ; 
@@ -109,13 +115,15 @@ namespace DD4hep {
 	   << " " << l.lengthSensitive
 	   << std::endl ;
       }
-      
+
       io <<  " nP:petalNumber  n:sensorsPerPetal  d:DoubleSided  p: Pixel "  << std::endl ;
+
       return io ;
     }
 
     
     std::ostream& operator<<( std::ostream& io , const ConicalSupportData& d ) {
+      boost::io::ios_base_all_saver ifs(io);
 
       io <<  " -- ConicalSupportData : "  << std::scientific << std::endl ; 
       io <<  "  isSymmetricInZ : " <<  d.isSymmetricInZ  << std::endl ; 
@@ -139,12 +147,16 @@ namespace DD4hep {
 
     
     std::ostream& operator<<( std::ostream& io , const LayeredCalorimeterData& d ) {
-
+      boost::io::ios_base_all_saver ifs(io);
+      
       io <<  " -- LayeredCalorimeterData : "  << std::scientific << std::endl ; 
-      io <<  "  LayoutType : " <<  ( d.layoutType == LayeredCalorimeterStruct::BarrelLayout ?
-				     "BarrelLayout" : "EndcapLayout" ) << std::endl ; 
-      io <<  "  extent[ rmin, rmax, zmin, zmax ] : " 
-	 <<  d.extent[0] << " "  << d.extent[1] << " "  << d.extent[2] << " " << d.extent[3]  << std::endl ; 
+      switch (d.layoutType){
+      case LayeredCalorimeterStruct::BarrelLayout: { io <<  " LayoutType : BarrelLayout "  << std::endl ;  io <<  "  extent[ rmin, rmax, zmin, zmax ] : " 
+							<<  d.extent[0] << " "  << d.extent[1] << " "  << d.extent[2] << " " << d.extent[3]  << std::endl ;  break; }
+      case LayeredCalorimeterStruct::EndcapLayout: { io <<  " LayoutType : EndcapLayout "  << std::endl ;  io <<  "  extent[ rmin, rmax, zmin, zmax ] : " 
+							<<  d.extent[0] << " "  << d.extent[1] << " "  << d.extent[2] << " " << d.extent[3]  << std::endl ;  break; }
+      case LayeredCalorimeterStruct::ConicalLayout: { io <<  " LayoutType : ConicalLayout "  << std::endl ; io <<  "  extent[ rmin, rmax, zmin, zmax, rEndMin, rEndMax ] : " 	                                             <<  d.extent[0] << " "  << d.extent[1] << " "  << d.extent[2] << " " << d.extent[3] << " "  << d.extent[4] << " " << d.extent[5] << std::endl ;   break;}
+      }
       io <<  " outer_symmetry : " <<  d.outer_symmetry  << std::endl ; 
       io <<  " inner_symmetry : " <<  d.inner_symmetry  << std::endl ; 
       io <<  " outer_phi0 : " <<  d.outer_phi0  << std::endl ; 
@@ -155,9 +167,8 @@ namespace DD4hep {
       std::vector<LayeredCalorimeterData::Layer> layers = d.layers ;
 
       io <<  " Layers : " << std::endl 
-	 <<  "  distance      inner_nX0   outer_nX0    inner_nInt    outer_nInt  inner_thick outer_thick   sense_thick" 
+	 <<  "  distance      inner_nX0   outer_nX0    inner_nInt    outer_nInt  inner_thick outer_thick   sense_thick  cellSize0  cellSize1" 
 	 << std::endl ;
-      //"distance inner_nX0   outer_nX0 inner_nLambda outer_nLambda inner_thick outer_thick sensitive_thick" << std::endl ;
 
       for(unsigned i=0,N=layers.size() ; i<N ; ++i){
 
@@ -171,12 +182,24 @@ namespace DD4hep {
 	   << " " << l.inner_thickness
 	   << " " << l.outer_thickness
 	   << " " << l.sensitive_thickness
+	   << " " << l.cellSize0
+	   << " " << l.cellSize1
 	   << std::endl ;
       }
 
       return io ;
     }
 
+
+
+    std::ostream& operator<<( std::ostream& io , const NeighbourSurfacesData& d ){
+      boost::io::ios_base_all_saver ifs(io);
+
+      io <<  " --NeighbourSurfacesData: "  << std::scientific << std::endl ; 
+      io <<  "   sameLayer.size() : " << d.sameLayer.size() << std::endl ; 
+      return io ;
+    }
+ 
 
   } // namespace
 }

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,15 +10,15 @@
 // Author     : M.Frank
 //
 //==========================================================================
-#ifndef DD4HEP_GEOMETRY_INSTANCECOUNT_H
-#define DD4HEP_GEOMETRY_INSTANCECOUNT_H
+#ifndef DD4HEP_DDCORE_INSTANCECOUNT_H
+#define DD4HEP_DDCORE_INSTANCECOUNT_H
 
 // Framework include files
 #include <typeinfo>
 #include <string>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Helper to support object counting when debugging memory leaks
   /**
@@ -34,7 +33,10 @@ namespace DD4hep {
     typedef long long int counter_t;
     /// Enumeration to steer the output
     enum {
-      NONE = 1 << 0, STRING = 1 << 1, TYPEINFO = 1 << 2, ALL = STRING | TYPEINFO
+      NONE     = 1 << 0,
+      STRING   = 1 << 1,
+      TYPEINFO = 1 << 2,
+      ALL      = STRING | TYPEINFO
     };
 
     /// Internal class to could object constructions and destructions
@@ -48,23 +50,18 @@ namespace DD4hep {
     class Counter {
     private:
       /// Reference counter value
-      counter_t m_count;
+      counter_t m_count = 0;
       /// Increment counter value
-      counter_t m_tot;
+      counter_t m_tot = 0;
       /// Maximum number of simultaneous instances
-      counter_t m_max;
+      counter_t m_max = 0;
     public:
       /// Default constructor
-      Counter()
-        : m_count(0), m_tot(0), m_max(0) {
-      }
+      Counter() = default;
       /// Copy constructor
-      Counter(const Counter& c)
-        : m_count(c.m_count), m_tot(c.m_tot), m_max(c.m_max) {
-      }
+      Counter(const Counter& c) = default;
       /// Destructor
-      ~Counter() {
-      }
+      ~Counter() = default;
       /// Increment counter
       void increment() {
         ++m_count;
@@ -145,9 +142,9 @@ namespace DD4hep {
    */
   template <typename T> struct Increment {
     static int& counter() { static int cnt=0; return cnt; }
-    Increment() { ++counter(); }
-    ~Increment() { --counter(); }
+    Increment()   { ++counter();   }
+    ~Increment()  { --counter();   }
   };
 
-} /* End namespace DD4hep             */
-#endif    /* DD4HEP_GEOMETRY_INSTANCECOUNT_H     */
+} /* End namespace dd4hep             */
+#endif    /* DD4HEP_DDCORE_INSTANCECOUNT_H     */

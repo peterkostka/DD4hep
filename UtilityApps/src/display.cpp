@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -17,5 +16,5 @@
 
 //______________________________________________________________________________
 int main(int argc,char** argv)  {
-  return main_default("DD4hepGeometryDisplay",argc,argv);
+  return main_default("DD4hep_GeometryDisplay",argc,argv);
 }

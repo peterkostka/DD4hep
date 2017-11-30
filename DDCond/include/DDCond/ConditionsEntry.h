@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,13 +15,13 @@
 
 // Framework include files
 #include "DD4hep/NamedObject.h"
-#include "DD4hep/Detector.h"
+#include "DD4hep/DetElement.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Conditions {
+  /// Namespace for implementation details of the AIDA detector description toolkit
+  namespace cond {
 
     // Forward declarations
     class Entry;
@@ -37,17 +36,17 @@ namespace DD4hep {
     class Entry : public NamedObject  {
     public:
       /// Reference to the detector element
-      Geometry::DetElement detector;
+      DetElement detector;
       /// The actual conditions data
       std::string value;
       /// The validity string to be interpreted by the updating engine
       std::string validity;
       /// Hash value of the name for fast identification
-      int hash;
+      int hash = 0;
       /// Default constructor
-      Entry() {}
+      Entry();
       /// Initializing constructor
-      Entry(const Geometry::DetElement& det, const std::string& nam, const std::string& typ, const std::string& valid, int hash);
+      Entry(const DetElement& det, const std::string& nam, const std::string& typ, const std::string& valid, int hash);
       /// Copy constructor
       Entry(const Entry& c);
       /// Default destructor
@@ -57,7 +56,7 @@ namespace DD4hep {
     };
 
 
-  } /* End namespace Conditions             */
-} /* End namespace DD4hep                   */
+  } /* End namespace cond             */
+} /* End namespace dd4hep                   */
 
 #endif     /* DDCOND_CONDITIONSENTRY_H    */

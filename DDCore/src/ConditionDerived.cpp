@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -19,34 +18,47 @@
 
 // C/C++ include files
 
-using namespace DD4hep;
-using namespace DD4hep::Conditions;
+using namespace dd4hep;
+using namespace dd4hep::cond;
+
+/// Standard destructor
+ConditionUpdateCall::ConditionUpdateCall() : m_refCount(1)  {
+  InstanceCount::increment(this);
+}
 
 /// Standard destructor
 ConditionUpdateCall::~ConditionUpdateCall()  {
+  InstanceCount::decrement(this);
 }
 
 /// Standard destructor
 ConditionResolver::~ConditionResolver()  {
 }
 
-/// Default constructor
-ConditionDependency::ConditionDependency(const ConditionKey& tar, 
-                                         const Dependencies deps, 
-                                         ConditionUpdateCall* call)
-  : m_refCount(0), target(tar), dependencies(deps), callback(call)
-{
-  InstanceCount::increment(this);
-  if ( callback ) callback->addRef();
+/// Throw exception on conditions access failure
+void ConditionUpdateContext::accessFailure(const ConditionKey& key_value)  const   {
+  except("ConditionUpdateCall",
+         "%s [%016llX]: FAILED to access non-existing item:%s [%016llX]",
+         dependency.target.name.c_str(), dependency.target.hash,
+         key_value.name.c_str(), key_value.hash);
 }
 
 /// Initializing constructor
-ConditionDependency::ConditionDependency(const ConditionKey& tar, 
+ConditionDependency::ConditionDependency(DetElement de,
+                                         unsigned int         item_key,
                                          ConditionUpdateCall* call)
-  : m_refCount(0), target(tar), callback(call)
+  : m_refCount(0), detector(de), target(de, item_key), callback(call)
 {
   InstanceCount::increment(this);
-  if ( callback ) callback->addRef();
+}
+
+/// Initializing constructor
+ConditionDependency::ConditionDependency(DetElement de,
+                                         const std::string&   item, 
+                                         ConditionUpdateCall* call)
+  : m_refCount(0), detector(de), target(de, item), callback(call)
+{
+  InstanceCount::increment(this);
 }
 
 /// Default constructor
@@ -56,40 +68,31 @@ ConditionDependency::ConditionDependency()
   InstanceCount::increment(this);
 }
 
-/// Copy constructor
-ConditionDependency::ConditionDependency(const ConditionDependency& c)
-  : m_refCount(0), target(c.target), dependencies(c.dependencies), callback(c.callback)
-{
-  InstanceCount::increment(this);
-  if ( callback ) callback->addRef();
-  except("Dependency",
-         "++ Condition: %s. Dependencies may not be assigned or copied!",
-         target.name.c_str());
-}
-
 /// Default destructor
 ConditionDependency::~ConditionDependency()  {
   InstanceCount::decrement(this);
-  releasePtr(callback);
-}
-
-/// Assignment operator
-ConditionDependency& ConditionDependency::operator=(const ConditionDependency& )  {
-  except("Dependency",
-         "++ Condition: %s. Dependencies may not be assigned or copied!",
-         target.name.c_str());
-  return *this;
+  detail::releasePtr(callback);
 }
 
 /// Initializing constructor
-DependencyBuilder::DependencyBuilder(const ConditionKey& target, ConditionUpdateCall* call)
-  : m_dependency(new ConditionDependency(target,call))
+DependencyBuilder::DependencyBuilder(DetElement de,
+                                     unsigned int         item_key,
+                                     ConditionUpdateCall* call)
+  : m_dependency(new ConditionDependency(de,item_key,call))
+{
+}
+
+/// Initializing constructor
+DependencyBuilder::DependencyBuilder(DetElement de,
+                                     const std::string&   item,
+                                     ConditionUpdateCall* call)
+  : m_dependency(new ConditionDependency(de,item,call))
 {
 }
 
 /// Default destructor
 DependencyBuilder::~DependencyBuilder()   {
-  releasePtr(m_dependency);
+  detail::releasePtr(m_dependency);
 }
 
 /// Add a new dependency

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -22,10 +21,10 @@
 class G4Event;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4EventAction;
@@ -54,6 +53,16 @@ namespace DD4hep {
     class Geant4EventAction : public Geant4Action {
     public:
       typedef Geant4SharedEventAction shared_type;
+    protected:
+      /// Inhibit copy constructor
+      Geant4EventAction() = default;
+      /// Inhibit move constructor
+      Geant4EventAction(Geant4EventAction&& copy) = delete;
+      /// Inhibit copy constructor
+      Geant4EventAction(const Geant4EventAction& copy) = delete;
+      /// Inhibit assignment operator
+      Geant4EventAction& operator=(const Geant4EventAction& copy) = delete;
+
     public:
       /// Standard constructor
       Geant4EventAction(Geant4Context* context, const std::string& nam);
@@ -81,7 +90,16 @@ namespace DD4hep {
     class Geant4SharedEventAction : public Geant4EventAction {
     protected:
       /// Reference to the shared action
-      Geant4EventAction* m_action;
+      Geant4EventAction* m_action = 0;
+
+    protected:
+      /// Inhibit copy constructor
+      Geant4SharedEventAction() = default;
+      /// Inhibit copy constructor
+      Geant4SharedEventAction(const Geant4SharedEventAction& copy) = delete;
+      /// Inhibit assignment operator
+      Geant4SharedEventAction& operator=(const Geant4SharedEventAction& copy) = delete;
+
     public:
       /// Standard constructor
       Geant4SharedEventAction(Geant4Context* context, const std::string& nam);
@@ -122,6 +140,15 @@ namespace DD4hep {
       CallbackSequence m_final;
       /// The list of action objects to be called
       Actors<Geant4EventAction> m_actors;
+
+    protected:
+      /// Inhibit copy constructor
+      Geant4EventActionSequence() = default;
+      /// Inhibit copy constructor
+      Geant4EventActionSequence(const Geant4EventActionSequence& copy) = delete;
+      /// Inhibit assignment operator
+      Geant4EventActionSequence& operator=(const Geant4EventActionSequence& copy) = delete;
+
     public:
       /// Standard constructor
       Geant4EventActionSequence(Geant4Context* context, const std::string& nam);
@@ -156,7 +183,6 @@ namespace DD4hep {
       virtual void end(const G4Event* event);
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
-
+  }    // End namespace sim
+}      // End namespace dd4hep
 #endif // DD4HEP_DDG4_GEANT4EVENTACTION_H

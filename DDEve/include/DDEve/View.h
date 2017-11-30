@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,7 +14,7 @@
 #define DD4HEP_DDEVE_VIEW_H
 
 // Framework include files
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DDEve/DisplayConfiguration.h"
 
 // Eve include files
@@ -31,7 +30,7 @@ class TEveManager;
 class TEveElementList;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   // Forward declarations
   class Display;
@@ -45,9 +44,6 @@ namespace DD4hep {
    */
   class View   {
   public:
-    typedef Geometry::LCDD LCDD;
-    typedef Geometry::DetElement DetElement;
-    typedef Geometry::SensitiveDetector SensitiveDetector;
     typedef std::map<std::string, TEveElementList*> Topics;
   protected:
     Display               *m_eve;
@@ -156,7 +152,5 @@ namespace DD4hep {
     /// Root implementation macro
     ClassDef(View,0);
   };
-} /* End namespace DD4hep   */
-
-
-#endif /* DD4HEP_DDEVE_VIEW_H */
+}      /* End namespace dd4hep   */
+#endif /* DD4HEP_DDEVE_VIEW_H    */

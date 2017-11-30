@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -12,12 +11,12 @@
 //
 //==========================================================================
 
-#include "DD4hep/Handle.inl"
 #include "DD4hep/Fields.h"
 #include "DD4hep/InstanceCount.h"
+#include "DD4hep/detail/Handle.inl"
 
 using namespace std;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
 
 typedef CartesianField::Object CartesianFieldObject;
 DD4HEP_INSTANTIATE_HANDLE(CartesianFieldObject);
@@ -27,8 +26,7 @@ DD4HEP_INSTANTIATE_HANDLE(OverlayedFieldObject);
 
 namespace {
   void calculate_combined_field(vector<CartesianField>& v, const double* pos, double* field) {
-    for (vector<CartesianField>::iterator i = v.begin(); i != v.end(); ++i)
-      (*i).value(pos, field);
+    for (const auto& i : v ) i.value(pos, field);
   }
 }
 

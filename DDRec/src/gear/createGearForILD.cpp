@@ -1,11 +1,10 @@
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/Factories.h"
 #include "DD4hep/DD4hepUnits.h" 
 
 #include "DDRec/DetectorData.h"
 #include "DDRec/DDGear.h"
 #include "DDRec/MaterialManager.h"
-#include "DDRec/API/Calorimeter.h"
 
 #include "DDSurfaces/Vector3D.h"
 
@@ -19,10 +18,10 @@
 
 #include <iostream>
 
-namespace DD4hep{
-  namespace DDRec{
+namespace dd4hep{
+  namespace rec{
     
-    using namespace Geometry ;
+    using namespace detail ;
     //    using namespace gear ;
     using DDSurfaces::Vector3D ;
 
@@ -37,7 +36,7 @@ namespace DD4hep{
      *  @version $Id: $
      */
     
-    static long createGearForILD(LCDD& lcdd, int /*argc*/, char** /*argv*/) {
+    static long createGearForILD(Detector& description, int /*argc*/, char** /*argv*/) {
       
       std::cout << " **** running plugin createGearForILD ! " <<  std::endl ;
       
@@ -46,13 +45,13 @@ namespace DD4hep{
       // global parameters:
       
       double crossing_angle(0.) ;
-      try{ crossing_angle = lcdd.constant<double>("ILC_Main_Crossing_Angle") ; } catch(std::runtime_error&e) {std::cerr << " >>>> " << e.what() << std::endl ;} 
+      try{ crossing_angle = description.constant<double>("ILC_Main_Crossing_Angle") ; } catch(std::runtime_error&e) {std::cerr << " >>>> " << e.what() << std::endl ;} 
       
       
       //========= TPC ==============================================================================
       try{
 
-	DetElement tpcDE = lcdd.detector("TPC") ;
+	DetElement tpcDE = description.detector("TPC") ;
 	
 	FixedPadSizeTPCData* tpc = tpcDE.extension<FixedPadSizeTPCData>() ;
 	
@@ -75,7 +74,7 @@ namespace DD4hep{
       //========= VXD ==============================================================================
       
       try{
-	DetElement vxdDE = lcdd.detector("VXD") ;
+	DetElement vxdDE = description.detector("VXD") ;
 	
 	ZPlanarData* vxd = vxdDE.extension<ZPlanarData>() ;
 	
@@ -86,9 +85,9 @@ namespace DD4hep{
 	
 	for(unsigned i=0,n=vxd->layers.size() ; i<n; ++i){
 	  
-	  const DDRec::ZPlanarData::LayerLayout& l = vxd->layers[i] ;
+	  const rec::ZPlanarData::LayerLayout& l = vxd->layers[i] ;
 	  
-	  // FIXME set rad lengths to 0 -> need to get from DD4hep ....
+	  // FIXME set rad lengths to 0 -> need to get from dd4hep ....
 	  gearVXD->addLayer( l.ladderNumber, l.phi0, 
 			     l.distanceSupport/dd4hep::mm,   l.offsetSupport/dd4hep::mm,   l.thicknessSupport/dd4hep::mm,   l.zHalfSupport/dd4hep::mm,   l.widthSupport/dd4hep::mm,   0. , 
 			     l.distanceSensitive/dd4hep::mm, l.offsetSensitive/dd4hep::mm, l.thicknessSensitive/dd4hep::mm, l.zHalfSensitive/dd4hep::mm, l.widthSensitive/dd4hep::mm, 0. )  ;
@@ -103,7 +102,7 @@ namespace DD4hep{
 	// -------- better: get right averaged material from first ladder:  ------------------
 	MaterialManager matMgr ;
       
-	const DDRec::ZPlanarData::LayerLayout& l = vxd->layers[0] ;
+	const rec::ZPlanarData::LayerLayout& l = vxd->layers[0] ;
 	
 	Vector3D a( l.distanceSupport                      , l.phi0 , 0. ,  Vector3D::cylindrical ) ;
 	Vector3D b( l.distanceSupport + l.thicknessSupport , l.phi0 , 0. ,  Vector3D::cylindrical ) ;
@@ -132,7 +131,7 @@ namespace DD4hep{
       
       try{ 
 
-	DetElement sitDE = lcdd.detector("SIT") ;
+	DetElement sitDE = description.detector("SIT") ;
 	
 	ZPlanarData* sit = sitDE.extension<ZPlanarData>() ;
 	
@@ -144,9 +143,9 @@ namespace DD4hep{
 	
 	for(unsigned i=0,n=sit->layers.size() ; i<n; ++i){
 	  
-	  const DDRec::ZPlanarData::LayerLayout& l = sit->layers[i] ;
+	  const rec::ZPlanarData::LayerLayout& l = sit->layers[i] ;
 	  
-	  // FIXME set rad lengths to 0 -> need to get from DD4hep ....
+	  // FIXME set rad lengths to 0 -> need to get from dd4hep ....
 	  gearSIT->addLayer( l.ladderNumber, l.phi0, 
 			     l.distanceSupport/dd4hep::mm,   l.offsetSupport/dd4hep::mm,   l. thicknessSupport/dd4hep::mm,   l.zHalfSupport/dd4hep::mm,   l.widthSupport/dd4hep::mm,   0. , 
 			     l.distanceSensitive/dd4hep::mm, l.offsetSensitive/dd4hep::mm, l. thicknessSensitive/dd4hep::mm, l.zHalfSensitive/dd4hep::mm, l.widthSensitive/dd4hep::mm, 0. )  ;
@@ -173,7 +172,7 @@ namespace DD4hep{
 
       try {
 
-	DetElement setDE = lcdd.detector("SET") ;
+	DetElement setDE = description.detector("SET") ;
 	
 	ZPlanarData* set = setDE.extension<ZPlanarData>() ;
 	
@@ -186,9 +185,9 @@ namespace DD4hep{
 	
 	for(unsigned i=0,n=set->layers.size() ; i<n; ++i){
 	  
-	  const DDRec::ZPlanarData::LayerLayout& l = set->layers[i] ;
+	  const rec::ZPlanarData::LayerLayout& l = set->layers[i] ;
 	  
-	  // FIXME set rad lengths to 0 -> need to get from DD4hep ....
+	  // FIXME set rad lengths to 0 -> need to get from dd4hep ....
 	  gearSET->addLayer( l.ladderNumber, l.phi0, 
 			     l.distanceSupport/dd4hep::mm,   l.offsetSupport/dd4hep::mm,   l. thicknessSupport/dd4hep::mm,   l.zHalfSupport/dd4hep::mm,   l.widthSupport/dd4hep::mm,   0. , 
 			     l.distanceSensitive/dd4hep::mm, l.offsetSensitive/dd4hep::mm, l. thicknessSensitive/dd4hep::mm, l.zHalfSensitive/dd4hep::mm, l.widthSensitive/dd4hep::mm, 0. )  ;
@@ -215,7 +214,7 @@ namespace DD4hep{
 
       try {
 
-	DetElement ftdDE = lcdd.detector("FTD") ;
+	DetElement ftdDE = description.detector("FTD") ;
 	
 	ZDiskPetalsData* ftd = ftdDE.extension<ZDiskPetalsData>() ;
 	
@@ -223,15 +222,15 @@ namespace DD4hep{
 	
 	for(unsigned i=0,n=ftd->layers.size() ; i<n; ++i){
 	  
-	  const DDRec::ZDiskPetalsData::LayerLayout& l = ftd->layers[i] ;
+	  const rec::ZDiskPetalsData::LayerLayout& l = ftd->layers[i] ;
 	  
 	  
-	  bool isDoubleSided  = l.typeFlags[ DDRec::ZDiskPetalsStruct::SensorType::DoubleSided ] ;
+	  bool isDoubleSided  = l.typeFlags[ rec::ZDiskPetalsStruct::SensorType::DoubleSided ] ;
 	  
 	  // avoid 'undefined reference' at link time ( if built w/o optimization ):
 	  static const int PIXEL = gear::FTDParameters::PIXEL ;
 	  static const int STRIP = gear::FTDParameters::STRIP ;
-	  int  sensorType   = ( l.typeFlags[ DDRec::ZDiskPetalsStruct::SensorType::Pixel ] ? PIXEL : STRIP ) ;
+	  int  sensorType   = ( l.typeFlags[ rec::ZDiskPetalsStruct::SensorType::Pixel ] ? PIXEL : STRIP ) ;
 	  //			      gear::FTDParameters::PIXEL :  gear::FTDParameters::STRIP ) ;
 	  
 	  double zoffset = fabs( l.zOffsetSupport ) ;
@@ -251,7 +250,7 @@ namespace DD4hep{
 			     0. ) ;
 	  
 	  
-	  // FIXME set rad lengths to 0 -> need to get from DD4hep ....
+	  // FIXME set rad lengths to 0 -> need to get from dd4hep ....
 	}
 	
 	gearFTD->setDoubleVal("strip_width_mm"  , ftd->widthStrip / dd4hep::mm ) ;
@@ -270,7 +269,7 @@ namespace DD4hep{
 
       try {
 	
-	DetElement coilDE = lcdd.detector("Coil") ;
+	DetElement coilDE = description.detector("Coil") ;
 	
 	gear::GearParametersImpl* gearCOIL = new gear::GearParametersImpl();
 	
@@ -290,7 +289,7 @@ namespace DD4hep{
 
       try {
 
-	DetElement tubeDE = lcdd.detector("Tube") ;
+	DetElement tubeDE = description.detector("Tube") ;
 	
 	ConicalSupportData* tube = tubeDE.extension<ConicalSupportData>() ;
 	
@@ -312,7 +311,7 @@ namespace DD4hep{
 	  rOuter[i] = s.rOuter/ dd4hep::mm  ; 
 	  zStart[i] = s.zPos  / dd4hep::mm  ; 
 	  
-	  // FIXME set rad lengths to 0 -> need to get from DD4hep ....
+	  // FIXME set rad lengths to 0 -> need to get from dd4hep ....
 	}
 	
 	gearTUBE->setDoubleVals("RInner" , rInner ) ;
@@ -353,7 +352,7 @@ namespace DD4hep{
 
 	try {
 
-	  DetElement caloDE = lcdd.detector( it->first ) ;
+	  DetElement caloDE = description.detector( it->first ) ;
 	
 	  LayeredCalorimeterData* calo = caloDE.extension<LayeredCalorimeterData>() ;
 	  
@@ -368,7 +367,7 @@ namespace DD4hep{
 	    
 	    LayeredCalorimeterData::Layer& l = calo->layers[i] ;
 	    
-            //Do some arithmetic to get thicknesses and (approximate) absorber thickneses from "new" DDRec structures
+            //Do some arithmetic to get thicknesses and (approximate) absorber thickneses from "new" rec structures
             //The positioning should come out right, but the absorber thickness should be overestimated due to the presence of 
             //other less dense material
 	    if( i == 0 ) {
@@ -401,13 +400,13 @@ namespace DD4hep{
 	    try{
 	      // additional parameters needed by BCalReco
 	      
-	      SensitiveDetector sD = lcdd.sensitiveDetector( it->first   )   ;
+	      SensitiveDetector sD = description.sensitiveDetector( it->first   )   ;
 	      Readout readOut = sD.readout() ;
 	      Segmentation seg = readOut.segmentation() ;
 	      
-	      //	    DDSegmentation::DoubleVecParameter rPar =  dynamic_cast<DDSegmentation::DoubleVecParameter>( seg.segmentation()->parameter("grid_r_values"));
-	      DDSegmentation::DoubleVecParameter pPar =  dynamic_cast<DDSegmentation::DoubleVecParameter>( seg.segmentation()->parameter("grid_phi_values"));
-	      DDSegmentation::DoubleParameter    oPPar=  dynamic_cast<DDSegmentation::DoubleParameter>(    seg.segmentation()->parameter("offset_phi"));
+	      //	    DDSegmentation::DoubleVecParameter rPar =  dynamic_cast<DDSegmentation::DoubleVecParameter>( seg.parameter("grid_r_values"));
+	      DDSegmentation::DoubleVecParameter pPar =  dynamic_cast<DDSegmentation::DoubleVecParameter>( seg.parameter("grid_phi_values"));
+	      DDSegmentation::DoubleParameter    oPPar=  dynamic_cast<DDSegmentation::DoubleParameter>(    seg.parameter("offset_phi"));
 	      
 
 	      //offset_phi="-180*degree+(360*degree-BCal_SpanningPhi)*0.5"
@@ -449,7 +448,7 @@ namespace DD4hep{
       //*  test gear interface w/ LayeredExtensionImpl extension
       //**********************************************************
       
-      // DetElement calo2DE = lcdd.detector("EcalBarrel") ;
+      // DetElement calo2DE = description.detector("EcalBarrel") ;
       
       // Calorimeter calo2( calo2DE ) ;
       
@@ -479,11 +478,11 @@ namespace DD4hep{
 
 
 
-      // --- LCDD::apply() expects return code 1 if all went well ! ----
+      // --- Detector::apply() expects return code 1 if all went well ! ----
       return 1;
     }
   }
 }
-DECLARE_APPLY( GearForILD, DD4hep::DDRec::createGearForILD )
+DECLARE_APPLY( GearForILD, dd4hep::rec::createGearForILD )
 
 

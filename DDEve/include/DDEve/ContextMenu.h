@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -24,14 +23,16 @@
 #include <string>
 
 /*
- *   DD4hep namespace declaration
+ *   dd4hep namespace declaration
  */
-namespace DD4hep {
+namespace dd4hep {
 
+  /// DD4hep specific handler for TEve context menus
   /** @class ContextMenuHandler  ContextMenu.h DDEve/ContextMenu.h
    *
-   * @author  M.Frank
-   * @version 1.0
+   *  \author  M.Frank
+   *  \version 1.0
+   *  \ingroup DD4HEP_EVE
    */
   class ContextMenuHandler : public TObject {
   protected:
@@ -49,14 +50,16 @@ namespace DD4hep {
     /// Callback
     void Context(TObject* target);
     /// Root implementation macro
-    ClassDef(ContextMenuHandler,0);    
+    ClassDefOverride(ContextMenuHandler,0);    
   };
 
 
+  /// DD4hep specific TEve context menu
   /** @class ContextMenu  ContextMenu.h DDEve/ContextMenu.h
    *
-   * @author  M.Frank
-   * @version 1.0
+   *  \author  M.Frank
+   *  \version 1.0
+   *  \ingroup DD4HEP_EVE
    */
   class ContextMenu  {
     typedef std::vector<ContextMenuHandler*> Handlers;
@@ -88,7 +91,7 @@ namespace DD4hep {
   };
 
 
-} /* End namespace DD4hep   */
+} /* End namespace dd4hep   */
 
 
 #endif /* DD4HEP_DDEVE_CONTEXTMENU_H */

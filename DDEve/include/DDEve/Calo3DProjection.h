@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -25,7 +24,7 @@ class TEveCalo3D;
 class TEveCaloDataHist;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// 3D projection for calorimeters
   /*
@@ -40,13 +39,12 @@ namespace DD4hep {
     /// Default destructor
     virtual ~Calo3DProjection();
     /// Build the projection view and map it to the given slot
-    virtual View& Build(TEveWindow* slot);
+    virtual View& Build(TEveWindow* slot)  override;
 
     /// Root implementation macro
-    ClassDef(Calo3DProjection,0);
+    ClassDefOverride(Calo3DProjection,0);
   };
 
-} /* End namespace DD4hep   */
-
+}      /* End namespace dd4hep            */
 #endif /* DD4HEP_DDEVE_CALO3DPROJECTION_H */
 

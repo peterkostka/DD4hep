@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,15 +13,16 @@
 
 // Framework include files
 #include "DD4hep/Readout.h"
-#include "DD4hep/objects/ObjectsInterna.h"
+#include "DD4hep/detail/SegmentationsInterna.h"
+#include "DD4hep/detail/ObjectsInterna.h"
+#include "DD4hep/detail/Handle.inl"
 #include "DD4hep/InstanceCount.h"
 #include "DD4hep/DD4hepUnits.h"
-#include "DD4hep/LCDD.h"
-#include "DD4hep/Handle.inl"
+#include "DD4hep/Detector.h"
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
+using namespace dd4hep::detail;
 
 /// Copy constructor
 HitCollection::HitCollection(const HitCollection& c)
@@ -58,7 +58,7 @@ size_t Readout::numCollections() const   {
     Object& ro = object<Object>();
     return ro.hits.size();
   }
-  throw runtime_error("DD4hep: Readout::numCollections: Cannot access object data [Invalid Handle]");
+  throw runtime_error("dd4hep: Readout::numCollections: Cannot access object data [Invalid Handle]");
 }
 
 /// Access names of hit collections
@@ -67,12 +67,12 @@ vector<string> Readout::collectionNames()  const   {
   if ( isValid() ) {
     Object& ro = object<Object>();
     if ( !ro.hits.empty() )  {
-      for(Object::Collections::const_iterator i=ro.hits.begin(); i!=ro.hits.end(); ++i)
-        colls.push_back((*i).name);
+      for(const auto& hit : ro.hits )
+        colls.push_back(hit.name);
     }
     return colls;
   }
-  throw runtime_error("DD4hep: Readout::collectionsNames: Cannot access object data [Invalid Handle]");
+  throw runtime_error("dd4hep: Readout::collectionsNames: Cannot access object data [Invalid Handle]");
 }
 
 /// Access hit collections
@@ -81,28 +81,28 @@ vector<const HitCollection*> Readout::collections()  const   {
   if ( isValid() ) {
     Object& ro = object<Object>();
     if ( !ro.hits.empty() )  {
-      for(Object::Collections::const_iterator i=ro.hits.begin(); i!=ro.hits.end(); ++i)
-        colls.push_back(&(*i));
+      for(const auto& hit : ro.hits )
+        colls.push_back(&hit);
     }
     return colls;
   }
-  throw runtime_error("DD4hep: Readout::collections: Cannot access object data [Invalid Handle]");
+  throw runtime_error("dd4hep: Readout::collections: Cannot access object data [Invalid Handle]");
 }
 
 /// Assign IDDescription to readout structure
 void Readout::setIDDescriptor(const Ref_t& new_descriptor) const {
-  if ( isValid() ) {                    // Remember: segmentation is NOT owned by readout structure!
+  if ( isValid() ) {                  // The ID descriptor is NOT owned by the readout!
     if (new_descriptor.isValid()) {   // Do NOT delete!
       data<Object>()->id = new_descriptor;
       Segmentation seg = data<Object>()->segmentation;
-      IDDescriptor id = new_descriptor;
-      if (seg.isValid()) {
-        seg.segmentation()->setDecoder(id.decoder());
+      IDDescriptor id  = new_descriptor;
+      if ( seg.isValid() ) {
+        seg.setDecoder(id.decoder());
       }
       return;
     }
   }
-  throw runtime_error("DD4hep: Readout::setIDDescriptor: Cannot assign ID descriptor [Invalid Handle]");
+  throw runtime_error("dd4hep: Readout::setIDDescriptor: Cannot assign ID descriptor [Invalid Handle]");
 }
 
 /// Access IDDescription structure
@@ -114,16 +114,16 @@ IDDescriptor Readout::idSpec() const {
 void Readout::setSegmentation(const Segmentation& seg) const {
   if ( isValid() ) {
     Object& ro = object<Object>();
-    Segmentation::Implementation* e = ro.segmentation.ptr();
-    if (e) {      // Remember: segmentation is owned by readout structure!
-      delete e;   // Need to delete the segmentation object
-    }
-    if (seg.isValid()) {
+    Segmentation::Object* e = ro.segmentation.ptr();
+    if ( e && e != seg.ptr() ) {      // Remember:
+      delete e;                       // The segmentation is owned by the readout!
+    }                                 // Need to delete the segmentation object
+    if ( seg.isValid() ) {
       ro.segmentation = seg;
       return;
     }
   }
-  throw runtime_error("DD4hep: Readout::setSegmentation: Cannot assign segmentation [Invalid Handle]");
+  throw runtime_error("dd4hep: Readout::setSegmentation: Cannot assign segmentation [Invalid Handle]");
 }
 
 /// Access segmentation structure

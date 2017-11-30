@@ -1,6 +1,5 @@
-# $Id: $
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -32,19 +31,24 @@ def compileAClick(dictionary,g4=True):
   ###print dic
   gInterpreter.ProcessLine('.L '+dic+'+')
   #####gInterpreter.Load('DDG4Dict_C.so')
-  from ROOT import DD4hep as module
+  from ROOT import dd4hep as module
   return module
 
-def loadDD4hep():
+def loaddd4hep():
   import os, sys
   # Add ROOT to the python path in case it is not yet there....
   sys.path.append(os.environ['ROOTSYS']+os.sep+'lib')
   import ROOT
   from ROOT import gSystem
+
+  import platform
+  if platform.system()=="Darwin":
+    gSystem.SetDynamicPath(os.environ['DD4HEP_LIBRARY_PATH'])
+
   result = gSystem.Load("libDDCore")
-  if 0 != result:
-    raise Exception('DDG4.py: Failed to load the Geant4 library libDDCore: '+gSystem.GetErrorStr())
-  from ROOT import DD4hep as module
+  if result < 0:
+    raise Exception('dd4hep.py: Failed to load the dd4hep library libDDCore: '+gSystem.GetErrorStr())
+  from ROOT import dd4hep as module
   return module
 
 # We are nearly there ....
@@ -62,12 +66,12 @@ def import_root(nam):
 #---------------------------------------------------------------------------
 #
 try:
-  DD4hep = loadDD4hep() 
+  dd4hep = loaddd4hep() 
   import ROOT
 except Exception,X:
   import sys
   print '+--%-100s--+'%(100*'-',)
-  print '|  %-100s  |'%('Failed to load DDG4 library:',)
+  print '|  %-100s  |'%('Failed to load dd4hep base library:',)
   print '|  %-100s  |'%(str(X),)
   print '+--%-100s--+'%(100*'-',)
   sys.exit(1)
@@ -83,75 +87,89 @@ class _Levels:
     self.ALWAYS=7
 
 OutputLevel = _Levels()
+#------------------------Generic STL stuff can be accessed using std:  -----
+#
+#-- e.g. Create an instance of std::vector<dd4hep::sim::Geant4Vertex*>:
+#    >>> v=dd4hep.vector('dd4hep::sim::Geant4Vertex*')()
+#                          
 #---------------------------------------------------------------------------
-Core       = DD4hep
-Geo        = DD4hep.Geometry
-Geometry   = DD4hep.Geometry
-Conditions = DD4hep.Conditions
-Alignments = DD4hep.Alignments
+import cppyy
+std = cppyy.gbl.std
+std_vector = std.vector
+std_list   = std.list
+std_map    = std.map
+std_pair   = std.pair
+#---------------------------------------------------------------------------
+core   = dd4hep
+cond   = dd4hep.cond
+align  = dd4hep.align
+detail = dd4hep.detail
 
 import_root('XmlTools')
 import_namespace_item('XmlTools','Evaluator')
 #---------------------------------------------------------------------------
-import_namespace_item('Core','NamedObject')
-import_namespace_item('Core','run_interpreter')
+import_namespace_item('core','NamedObject')
+import_namespace_item('core','run_interpreter')
 
 def import_geometry():
-  import_namespace_item('Core','setPrintLevel')
-  import_namespace_item('Core','setPrintFormat')
-  import_namespace_item('Core','printLevel')
-  import_namespace_item('Geo','LCDD')
-  import_namespace_item('Core','evaluator')
-  import_namespace_item('Core','g4Evaluator')
+  import_namespace_item('core','setPrintLevel')
+  import_namespace_item('core','setPrintFormat')
+  import_namespace_item('core','printLevel')
+  import_namespace_item('core','Detector')
+  import_namespace_item('core','evaluator')
+  import_namespace_item('core','g4Evaluator')
   
-  import_namespace_item('Geo','VolumeManager')
-  import_namespace_item('Geo','OverlayedField')
-  import_namespace_item('Geo','Ref_t')
+  import_namespace_item('core','VolumeManager')
+  import_namespace_item('core','OverlayedField')
+  import_namespace_item('core','Ref_t')
 
   #// Objects.h
-  import_namespace_item('Geo','Author')
-  import_namespace_item('Geo','Header')
-  import_namespace_item('Geo','Constant')
-  import_namespace_item('Geo','Atom')
-  import_namespace_item('Geo','Material')
-  import_namespace_item('Geo','VisAttr')
-  import_namespace_item('Geo','AlignmentEntry')
-  import_namespace_item('Geo','Limit')
-  import_namespace_item('Geo','LimitSet')
-  import_namespace_item('Geo','Region')
+  import_namespace_item('core','Author')
+  import_namespace_item('core','Header')
+  import_namespace_item('core','Constant')
+  import_namespace_item('core','Atom')
+  import_namespace_item('core','Material')
+  import_namespace_item('core','VisAttr')
+  import_namespace_item('core','Limit')
+  import_namespace_item('core','LimitSet')
+  import_namespace_item('core','Region')
 
   #// Readout.h
-  import_namespace_item('Geo','Readout')
-  import_namespace_item('Alignments','Alignment')
-  import_namespace_item('Alignments','Container')
-  import_namespace_item('Conditions','Condition')
-  import_namespace_item('Conditions','Container')
+  import_namespace_item('core','Readout')
+
+  #// Alignments.h
+  import_namespace_item('core','Alignment')
+  import_namespace_item('core','AlignmentCondition')
+
+  #// Conditions.h
+  import_namespace_item('core','Condition')
+  import_namespace_item('core','ConditionKey')
 
   #// DetElement.h
-  import_namespace_item('Geo','World')
-  import_namespace_item('Geo','DetElement')
-  import_namespace_item('Geo','SensitiveDetector')
+  import_namespace_item('core','World')
+  import_namespace_item('core','DetElement')
+  import_namespace_item('core','SensitiveDetector')
 
   #// Volume.h
-  import_namespace_item('Geo','Volume')
-  import_namespace_item('Geo','PlacedVolume')
+  import_namespace_item('core','Volume')
+  import_namespace_item('core','PlacedVolume')
 
   #// Shapes.h
-  import_namespace_item('Geo','Polycone')
-  import_namespace_item('Geo','ConeSegment')
-  import_namespace_item('Geo','Box')
-  import_namespace_item('Geo','Torus')
-  import_namespace_item('Geo','Cone')
-  import_namespace_item('Geo','Tube')
-  import_namespace_item('Geo','Trap')
-  import_namespace_item('Geo','Trapezoid')
-  import_namespace_item('Geo','Sphere')
-  import_namespace_item('Geo','Paraboloid')
-  import_namespace_item('Geo','PolyhedraRegular')
-  import_namespace_item('Geo','BooleanSolid')
-  import_namespace_item('Geo','SubtractionSolid')
-  import_namespace_item('Geo','UnionSolid')
-  import_namespace_item('Geo','IntersectionSolid')
+  import_namespace_item('core','Polycone')
+  import_namespace_item('core','ConeSegment')
+  import_namespace_item('core','Box')
+  import_namespace_item('core','Torus')
+  import_namespace_item('core','Cone')
+  import_namespace_item('core','Tube')
+  import_namespace_item('core','Trap')
+  import_namespace_item('core','Trapezoid')
+  import_namespace_item('core','Sphere')
+  import_namespace_item('core','Paraboloid')
+  import_namespace_item('core','PolyhedraRegular')
+  import_namespace_item('core','BooleanSolid')
+  import_namespace_item('core','SubtractionSolid')
+  import_namespace_item('core','UnionSolid')
+  import_namespace_item('core','IntersectionSolid')
 
 
 def import_tgeo():

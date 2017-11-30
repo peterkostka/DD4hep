@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -13,7 +12,7 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "XML/Conversions.h"
 #include "XML/XMLElements.h"
 #include "XML/DocumentHandler.h"
@@ -23,59 +22,71 @@
 
 #include "DDCond/ConditionsTags.h"
 #include "DDCond/ConditionsEntry.h"
+#include "DDCond/ConditionsManager.h"
 #include "DDCond/ConditionsDataLoader.h"
 
-// C/C++ include files
-#include <stdexcept>
-
 /*
- *   DD4hep namespace declaration
+ *   dd4hep namespace declaration
  */
-namespace DD4hep  {
+namespace dd4hep  {
 
   namespace {
     /// Some utility class to specialize the converters:
     class include;
     class arbitrary;
     class conditions;
+
+    class iov;
+    class iov_type;
+    class manager;
+    class repository;
+    class detelement;
+    class align_conditions;
+    class align_arbitrary;
+    /// Conditions types
+    class value;
+    class mapping;
+    class sequence;
+    class alignment;
+    class position;
+    class rotation;
+    class pivot;
   }
-  /// Forward declarations for all specialized converters
   template <> void Converter<include>::operator()(xml_h seq)  const;
   template <> void Converter<arbitrary>::operator()(xml_h seq)  const;
   template <> void Converter<conditions>::operator()(xml_h seq)  const;
 }
-
-using namespace DD4hep;
-using namespace DD4hep::Conditions;
-using Geometry::DetElement;
+  
 using std::string;
+using namespace dd4hep;
+using namespace dd4hep::cond;
 
-namespace DD4hep {
+namespace dd4hep {
+
   struct ConversionArg {
-    DetElement detector;
-    ConditionsStack* stack;
-    ConversionArg(DetElement det, ConditionsStack* s) : detector(det), stack(s) {}
+    DetElement         detector;
+    ConditionsStack*   stack;
+    ConversionArg(DetElement det, ConditionsStack* stk)
+      : detector(det), stack(stk)
+    {
+    }
   };
 
   /// Helper: Extract the validity from the xml element
   string _getValidity(xml_h elt)  {
     if ( !elt.ptr() )
       return "Infinite";
-    else if ( !elt.hasAttr(_U(validity)) )
+    else if ( !elt.hasAttr(_UC(validity)) )
       return _getValidity(elt.parent());
-    return elt.attr<string>(_U(validity));
+    return elt.attr<string>(_UC(validity));
   }
 
-  ConversionArg* _getArgs(void* param)   {
-    ConversionArg* arg = static_cast<ConversionArg*>(param);
-    return arg;
-  }
   /// Helper: Extract the required detector element from the parsing information
   DetElement _getDetector(void* param, xml_h e)  {
-    ConversionArg* arg  = _getArgs(param);
+    ConversionArg* arg  = static_cast<ConversionArg*>(param);
     DetElement detector = arg ? arg->detector : DetElement();
     string     subpath  = e.hasAttr(_U(path)) ? e.attr<string>(_U(path)) : string();
-    return subpath.empty() ? detector : Geometry::DetectorTools::findDaughterElement(detector,subpath);
+    return subpath.empty() ? detector : detail::tools::findDaughterElement(detector,subpath);
   }
 
   /// Helper: Extract the string value from the xml element 
@@ -83,9 +94,10 @@ namespace DD4hep {
     xml_comp_t e(element);
     DetElement elt = _getDetector(param, element);
     string name = e.hasAttr(_U(name)) ? e.nameStr() : e.tag();
-    return new Entry(elt,name,e.tag(),_getValidity(element),hash32(name));
+    return new Entry(elt,name,e.tag(),_getValidity(element),detail::hash32(name));
   }
 
+  
   /** Convert arbitrary conditon objects containing standard tags
    *
    *    Function entry expects as a parameter a valid DetElement handle
@@ -120,29 +132,38 @@ namespace DD4hep {
   template <> void Converter<arbitrary>::operator()(xml_h e) const {
     xml_comp_t elt(e);
     string tag = elt.tag();
-    if ( tag == "open_transaction" )
+    ConversionArg* arg  = _param<ConversionArg>();
+    if ( !arg )
+      except("ConditionsParser","++ Invalid parser argument [Internal Error]");
+    else if ( tag == "conditions" )  
+      Converter<conditions>(description,param,optional)(e);
+    else if ( arg->stack && tag == "detelement" )
+      Converter<conditions>(description,param,optional)(e);
+    else if ( tag == "open_transaction" )
       return;
     else if ( tag == "close_transaction" ) 
       return;
     else if ( tag == "include" )
-      Converter<include>(lcdd,param)(e);
-    else if ( tag == "conditions" )  
-      Converter<conditions>(lcdd,param)(e);
-    else if ( tag == "detelement" )
-      Converter<conditions>(lcdd,param)(e);
-    else if ( tag == "subdetectors" )
-      xml_coll_t(e,_U(star)).for_each(Converter<conditions>(lcdd,param));
+      Converter<include>(description,param,optional)(e);
     else if ( tag == "detelements" )
-      xml_coll_t(e,_U(star)).for_each(Converter<conditions>(lcdd,param));
+      xml_coll_t(e,_U(star)).for_each(Converter<conditions>(description,param,optional));
+    else if ( tag == "subdetectors" )
+      xml_coll_t(e,_U(star)).for_each(Converter<conditions>(description,param,optional));
     else if ( tag == "alignment" )   {
       dd4hep_ptr<Entry> val(_createStackEntry(param,e));
       val->value = elt.attr<string>(_U(ref));
-      _getArgs(param)->stack->push_back(val.release());
+      if ( !arg->stack )
+        except("ConditionsParser","Non-existing Conditions stack:%s %d",__FILE__, __LINE__);
+      else
+        arg->stack->push_back(val.release());
     }
     else  {
       dd4hep_ptr<Entry> val(_createStackEntry(param,e));
       val->value = elt.hasAttr(_U(value)) ? elt.valueStr() : e.text();
-      _getArgs(param)->stack->push_back(val.release());
+      if ( !arg->stack )
+        except("ConditionsParser","Non-existing Conditions stack:%s %d",__FILE__, __LINE__);
+      else
+        arg->stack->push_back(val.release());
     }
   }
 
@@ -153,8 +174,8 @@ namespace DD4hep {
    *  @date    01/04/2014
    */
   template <> void Converter<include>::operator()(xml_h element) const {
-    XML::DocumentHolder doc(XML::DocumentHandler().load(element, element.attr_value(_U(ref))));
-    xml_coll_t(doc.root(),_U(star)).for_each(Converter<arbitrary>(lcdd,param));
+    xml::DocumentHolder doc(xml::DocumentHandler().load(element, element.attr_value(_U(ref))));
+    xml_coll_t(doc.root(),_U(star)).for_each(Converter<arbitrary>(description,param,optional));
   }
 
   /** Convert objects containing standard conditions tags
@@ -173,29 +194,29 @@ namespace DD4hep {
    *  @date    01/04/2014
    */
   template <> void Converter<conditions>::operator()(xml_h e) const {
-    ConversionArg* arg  = _getArgs(param);
+    ConversionArg* arg  = _param<ConversionArg>();
     DetElement elt = arg->detector;
     arg->detector = _getDetector(param,e);
-    xml_coll_t(e,_U(star)).for_each(Converter<arbitrary>(lcdd,param));
+    xml_coll_t(e,_U(star)).for_each(Converter<arbitrary>(description,param,optional));
     arg->detector = elt;
   }
 }
 
-/** Basic entry point to read conditions files
+/** Basic entry point to read global conditions files
  *
  *  @author  M.Frank
  *  @version 1.0
  *  @date    01/04/2014
  */
-static void* setup_Conditions(lcdd_t& lcdd, int argc, char** argv)  {
+static void* setup_global_Conditions(Detector& description, int argc, char** argv)  {
   if ( argc == 2 )  {
     xml_h e = xml_h::Elt_t(argv[0]);
     ConditionsStack* stack = (ConditionsStack*)argv[1];
-    ConversionArg args(lcdd.world(), stack);
-    (DD4hep::Converter<DD4hep::conditions>(lcdd,&args))(e);
-    return &lcdd;
+    ConversionArg args(description.world(), stack);
+    (dd4hep::Converter<conditions>(description,&args))(e);
+    return &description;
   }
-  except("XML_DOC_READER","Invalid number of arguments to interprete conditions.");
+  except("XML_DOC_READER","Invalid number of arguments to interprete conditions: %d != %d.",argc,2);
   return 0;
 }
-DECLARE_LCDD_CONSTRUCTOR(XMLConditionsParser,setup_Conditions)
+DECLARE_DD4HEP_CONSTRUCTOR(XMLConditionsParser,setup_global_Conditions)

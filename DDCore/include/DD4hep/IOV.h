@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,16 +10,17 @@
 // Author     : M.Frank
 //
 //==========================================================================
-#ifndef DD4HEP_CONDITIONS_IOV_H
-#define DD4HEP_CONDITIONS_IOV_H
+#ifndef DD4HEP_DDCORE_IOV_H
+#define DD4HEP_DDCORE_IOV_H
 
 // C/C++ include files
 #include <string>
 #include <algorithm>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
+  // Forward declarations
   class IOVType;
   class IOV;
 
@@ -33,12 +33,24 @@ namespace DD4hep {
    */
   class IOVType   {
   public:
-    enum { UNKNOWN_IOV = ~0x0 } _IOVTypes;
-
-    unsigned int type;
+    enum _IOVTypes { UNKNOWN_IOV = ~0x0 };
+    /// integer identifier ised internally
+    unsigned int type = UNKNOWN_IOV;
+    /// String name
     std::string  name;
-    IOVType() : type(UNKNOWN_IOV), name() {}
-    ~IOVType() {}
+    /// Standard Constructor
+    IOVType() = default;
+    /// Standard Destructor
+    ~IOVType() = default;
+    /// Copy constructor
+    IOVType(const IOVType& copy) = default; //: type(copy.type), name(copy.name) {}
+    /// Move constructor
+    IOVType(IOVType&& copy) = default;
+    /// Assignment operator
+    IOVType& operator=(const IOVType& copy) = default;
+    /// Move assignment operator
+    IOVType& operator=(IOVType&& copy) = default;
+    /// Conversion to string
     std::string str() const;
   };
 
@@ -52,7 +64,7 @@ namespace DD4hep {
   class IOV   {
   private:
     /// Initializing constructor: Does not set reference to IOVType !
-    explicit IOV();
+    explicit IOV() = delete;
   public:
     /// Key definition
     typedef long Key_first_type;
@@ -67,13 +79,20 @@ namespace DD4hep {
 
     /// Initializing constructor
     explicit IOV(const IOVType* typ);
-    /// Specialized copy constructor
+    /// Specialized copy constructor for range IOVs
     explicit IOV(const IOVType* typ, const Key& key);
+    /// Specialized copy constructor for discrete IOVs
+    explicit IOV(const IOVType* typ, Key_first_type iov_value);
     /// Copy constructor
-    IOV(const IOV& copy);
-
+    IOV(const IOV& copy) = default;
+    /// Move constructor
+    IOV(IOV&& copy) = default;
     /// Standard Destructor
-    ~IOV();
+    ~IOV() = default;
+    /// Assignment operator
+    IOV& operator=(const IOV& c) = default;
+    /// Move assignment operator
+    IOV& operator=(IOV&& c) = default;
     /// Move the data content: 'from' will be reset to NULL
     void move(IOV& from);
     /// Create string representation of the IOV
@@ -116,7 +135,7 @@ namespace DD4hep {
       return typ1 == typ2;
     }
     /// Check if IOV 'test' is fully contained in IOV 'key'
-    static bool key_is_contained(const Key& key, const Key& test)         
+    static bool key_is_contained(const Key& key, const Key& test)
     {   return key.first >= test.first && key.second <= test.second;      }
     /// Same as above, but reverse logic. Gives sometimes more understandable logic.
     static bool key_contains_range(const Key& key, const Key& test)
@@ -143,5 +162,5 @@ namespace DD4hep {
     {   return same_type(iov,test) && key_partially_contained(iov.keyData,test.keyData);      }
   };
     
-} /* End namespace DD4hep                   */
-#endif    /* DD4HEP_CONDITIONS_IOV_H        */
+} /* End namespace dd4hep                   */
+#endif    /* DD4HEP_DDCORE_IOV_H        */

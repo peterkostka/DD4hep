@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,7 +14,7 @@
 #define DD4HEP_DDREC_SURFACEINSTALLER_H 1
 
 // Framework include files
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/DetectorTools.h"
 #include "DD4hep/DetFactoryHelper.h"
 
@@ -23,24 +22,28 @@
 #include <map>
 #include <algorithm>
 
-/// Namespace for the tracking surfaces of the AIDA detector description toolkit
-namespace DDSurfaces  {
-  /// Class describing the surface types
-  class SurfaceType;
+
+
+namespace dd4hep{
+  namespace rec{
+    class VolSurfaceBase;
+    class SurfaceType;
+  }
 }
 
+
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep  {
+namespace dd4hep  {
   
   /// Namespace for the reconstruction part of the AIDA detector description toolkit
-  namespace DDRec  {
+  namespace rec  {
     /// Class describing surface data
     //    class SurfaceData;
     class VolSurfaceBase;
   }
   
-  /** Base class to implement surface installers for known detector patterns
-   *
+  /// Base class to implement surface installers for known detector patterns
+  /*
    *  The class scans the geometry of a subdetector and gives callbacks
    *  to user classes, which then should install in the proper callback
    *  routines the surface instances to the detector elements.
@@ -51,18 +54,14 @@ namespace DD4hep  {
    */
   class SurfaceInstaller  {
   protected:
-    typedef Geometry::LCDD         LCDD;
-    typedef Geometry::DetElement   DetElement;
-    typedef Geometry::Volume       Volume;
-    typedef Geometry::PlacedVolume PlacedVolume;
-    typedef Geometry::DetectorTools::ElementPath   ElementPath;
-    typedef Geometry::DetectorTools::PlacementPath PlacementPath;
-    typedef DDRec::VolSurfaceBase      SurfaceData;
-    typedef DDSurfaces::SurfaceType SurfaceType;
-
+    typedef detail::tools::ElementPath   ElementPath;
+    typedef detail::tools::PlacementPath PlacementPath;
+    typedef rec::VolSurfaceBase        SurfaceData;
+    typedef rec::SurfaceType      SurfaceType;
     typedef std::map<TGeoVolume*, SurfaceData* > Surfaces;
-    /// Reference to the LCDD instance
-    LCDD&         m_lcdd;
+    
+    /// Reference to the Detector instance
+    Detector&         m_detDesc;
     /// Reference to the detector element of the subdetector
     DetElement    m_det;
     /// Map of surface instances keyed by the logical volume
@@ -73,10 +72,16 @@ namespace DD4hep  {
     void scan(DetElement de);
 
   public:
+    /// No default constructor
+    SurfaceInstaller() = delete;
+    /// No copy constructor
+    SurfaceInstaller(const SurfaceInstaller& copy) = delete;
     /// Initializing constructor
-    SurfaceInstaller(LCDD& lcdd, int argc, char** argv);
+    SurfaceInstaller(Detector& description, int argc, char** argv);
     /// Default destructor
-    virtual ~SurfaceInstaller() {}
+    virtual ~SurfaceInstaller() = default;
+    /// No assignment
+    SurfaceInstaller& operator=(const SurfaceInstaller& copy) = delete;
     /// Set flag to stop scanning volumes and detector elements
     void stopScanning()   {  m_stopScanning = true;   }
     /// Indicate error message and throw exception
@@ -90,23 +95,23 @@ namespace DD4hep  {
     /// Install volume information. Default implementation only prints!
     virtual void install(DetElement e, PlacedVolume pv);
     /// Executor
-    template <typename T> static long run(LCDD& lcdd,int argc,char** argv);
+    template <typename T> static long run(Detector& description,int argc,char** argv);
   };
 
   /// Action routine to execute the test
-  template <typename T> inline long SurfaceInstaller::run(Geometry::LCDD& lcdd,int argc,char** argv)  {
-    T installer(lcdd, argc, argv);
+  template <typename T> inline long SurfaceInstaller::run(Detector& description,int argc,char** argv)  {
+    T installer(description, argc, argv);
     installer.scan();
     return 1;
   }
 
 #define DECLARE_SURFACE_INSTALLER(name,class)                           \
-  namespace DD4hep {                                                    \
-    template long SurfaceInstaller::run< class >(Geometry::LCDD& lcdd,int argc,char** argv); \
+  namespace dd4hep {                                                    \
+    template long SurfaceInstaller::run< class >(Detector& description,int argc,char** argv); \
   }                                                                     \
   DECLARE_APPLY(name,SurfaceInstaller::run< class >)
 
-}   // End namespace DD4hep
+}   // End namespace dd4hep
 
 
 #if defined(DD4HEP_USE_SURFACEINSTALL_HELPER)
@@ -130,57 +135,63 @@ typedef void* SURFACEINSTALLER_DATA;
  */
 namespace {
 
-  /** Install class template to create surface installer plugins
-   *
+  /// Installer class template to create surface installer plugins
+  /*
    *  See the base class SurfaceInstaller for further details.
    *
    *  \author  M.Frank
    *  \version 1.0
    *  \ingroup DD4HEP
    */
-  template <typename UserData> class Installer : public DD4hep::SurfaceInstaller {
+  template <typename UserData> class Installer : public dd4hep::SurfaceInstaller {
   public:
-    typedef DD4hep::DDRec::Vector3D     Vector3D;
-    typedef DD4hep::DDRec::VolSurface   VolSurface;
-    typedef DD4hep::DDRec::VolPlane     VolPlane;
-    typedef DDSurfaces::SurfaceType     Type;
+    typedef dd4hep::rec::Vector3D     Vector3D;
+    typedef dd4hep::rec::VolSurface   VolSurface;
+    typedef dd4hep::rec::VolPlane     VolPlane;
+    typedef dd4hep::rec::SurfaceType     Type;
     UserData data;
 
     /// Default (empty argument handler
     void handle_arguments(int argc, char** argv);
   public:
+    /// No default constructor
+    Installer() = delete;
+    /// No copy constructor
+    Installer(const Installer& copy) = delete;
     /// Initializing constructor
-    Installer(LCDD& lcdd, int argc, char** argv);
+    Installer(dd4hep::Detector& description, int argc, char** argv);
     /// Default destructor
-    virtual ~Installer() {}
+    virtual ~Installer() = default;
+    /// No assignment
+    Installer& operator=(const Installer& copy) = delete;
     /// Install volume information. Default implementation only prints!
-    virtual void install(DetElement component, PlacedVolume pv);
+    virtual void install(dd4hep::DetElement component, dd4hep::PlacedVolume pv);
     /// Try to handle surface using the surface cache
-    bool handleUsingCache(DetElement comp, Volume vol)  const;
+    bool handleUsingCache(dd4hep::DetElement comp, dd4hep::Volume vol)  const;
     /// Add a new surface to the surface manager and the local cache
-    void addSurface(DetElement component, const DD4hep::DDRec::VolSurface& surf);
+    void addSurface(dd4hep::DetElement component, const dd4hep::rec::VolSurface& surf);
     template <typename T> bool checkShape(const T& shape) const   {
       if ( shape.isValid() ) return true;
-      invalidInstaller("Shape is not of the required type:"+DD4hep::typeName(typeid(T)));
+      invalidInstaller("Shape is not of the required type:"+dd4hep::typeName(typeid(T)));
       return false;
     }
   };
 
   /// Initializing constructor
   template <typename UserData>
-  Installer<UserData>::Installer(LCDD& lcdd, int argc, char** argv)
-    : DD4hep::SurfaceInstaller(lcdd, argc, argv) 
+  Installer<UserData>::Installer(dd4hep::Detector& description, int argc, char** argv)
+    : dd4hep::SurfaceInstaller(description, argc, argv), data()
   {
     handle_arguments(argc, argv);
   }
 
   /// Handle surface installation using cached surfaces.
   template <typename UserData>
-  bool Installer<UserData>::handleUsingCache(DetElement comp, Volume vol)  const  {
+  bool Installer<UserData>::handleUsingCache(dd4hep::DetElement comp, dd4hep::Volume vol)  const  {
     Surfaces::const_iterator is = m_surfaces.find(vol.ptr());
     if ( is != m_surfaces.end() )  {
       VolSurface surf((*is).second);
-      DD4hep::DDRec::volSurfaceList(comp)->push_back(surf);
+      dd4hep::rec::volSurfaceList(comp)->push_back(surf);
       return true;
     }
     return false;
@@ -188,9 +199,9 @@ namespace {
 
   /// Add a new surface to the surface manager and the local cache
   template <typename UserData>
-  void Installer<UserData>::addSurface(DetElement component, const DD4hep::DDRec::VolSurface& surf)   {
+  void Installer<UserData>::addSurface(dd4hep::DetElement component, const dd4hep::rec::VolSurface& surf)   {
     m_surfaces.insert(std::make_pair(surf.volume().ptr(),surf.ptr()));
-    DD4hep::DDRec::volSurfaceList(component)->push_back(surf);
+    dd4hep::rec::volSurfaceList(component)->push_back(surf);
   }
 
   /// Default (empty argument handler
@@ -204,5 +215,4 @@ typedef Installer<SURFACEINSTALLER_DATA> InstallerClass;
 DECLARE_SURFACE_INSTALLER(DD4HEP_USE_SURFACEINSTALL_HELPER,InstallerClass)
 
 #endif /* defined(DD4HEP_USE_SURFACEINSTALL_HELPER) */
-
-#endif /* DD4HEP_DDREC_SURFACEINSTALLER_H */
+#endif /* DD4HEP_DDREC_SURFACEINSTALLER_H           */

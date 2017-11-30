@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,9 +13,8 @@
 
 // Framework include files
 #include "XML/XMLTags.h"
+#include "XML/XMLElements.h"
 
 // Define unicode tags
-#ifndef UNICODE
-#define UNICODE(x)  DECLARE_UNICODE_TAG(x)
-#endif
+#define UNICODE(x)  extern const ::dd4hep::xml::Tag_t Unicode_##x ( #x )
 #include "DDCond/ConditionsTags.h"

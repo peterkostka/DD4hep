@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,8 +15,9 @@
 #include "DDG4/Geant4StepHandler.h"
 #include "DDSegmentation/Segmentation.h"
 #include "DD4hep/DD4hepUnits.h"
-
-using namespace DD4hep::Simulation;
+namespace units = dd4hep;
+using namespace dd4hep;
+using namespace dd4hep::sim;
 
 /// Returns the step status in form of a string
 const char* Geant4StepHandler::stepStatus(G4StepStatus status) {
@@ -114,9 +114,10 @@ G4ThreeVector Geant4StepHandler::globalToLocalG4(const G4ThreeVector& global)  c
 /// Apply BirksLaw
 double Geant4StepHandler::birkAttenuation() const    {
 #if G4VERSION_NUMBER >= 1001
-  static G4EmSaturation s_emSaturation(0);
+  static G4EmSaturation s_emSaturation(1);
 #else
   static G4EmSaturation s_emSaturation();
+  s_emSaturation.SetVerbose(1);
 #endif
 
   double energyDeposition = step->GetTotalEnergyDeposit();

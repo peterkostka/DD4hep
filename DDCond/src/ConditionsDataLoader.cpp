@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -13,19 +12,20 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/Handle.inl"
-#include "DD4hep/Printout.h"
-#include "DDCond/ConditionsInterna.h"
 #include "DDCond/ConditionsDataLoader.h"
+#include "DDCond/ConditionsManagerObject.h"
+#include "DD4hep/detail/Handle.inl"
+#include "DD4hep/Printout.h"
 
 using std::string;
-using namespace DD4hep::Conditions;
+using namespace dd4hep::cond;
 
 DD4HEP_INSTANTIATE_HANDLE_NAMED(ConditionsDataLoader);
 
 /// Default constructor
-ConditionsDataLoader::ConditionsDataLoader(LCDD& lcdd, ConditionsManager mgr, const string nam) 
-  : NamedObject(nam,"ConditionsDataLoader"), m_lcdd(lcdd), m_mgr(mgr)  {
+ConditionsDataLoader::ConditionsDataLoader(Detector& description, ConditionsManager mgr, const string nam) 
+  : NamedObject(nam,"ConditionsDataLoader"), m_detDesc(description), m_mgr(mgr)
+{
   if ( m_mgr.isValid() ) return;
   except("ConditionsDataLoader","+++ Cannot create loader without a valid conditions manager handle!");
 }
@@ -39,10 +39,15 @@ void ConditionsDataLoader::addSource(const string& source, const IOV& iov)   {
   m_sources.push_back(make_pair(source,iov));
 }
 
-/// Queue update to manager.
-Condition ConditionsDataLoader::queueUpdate(Entry* data)   {
-  return m_mgr->__queue_update(data);
+/// Add data source definition to loader
+void ConditionsDataLoader::addSource(const string& source)   {
+  m_sources.push_back(make_pair(source,IOV(0,0)));
 }
+
+/// Queue update to manager.
+//Condition ConditionsDataLoader::queueUpdate(Entry* data)   {
+//  return m_mgr->__queue_update(data);
+//}
 
 /// Push update to manager.
 void ConditionsDataLoader::pushUpdates()   {

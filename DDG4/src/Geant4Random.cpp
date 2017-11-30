@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -27,7 +26,7 @@
 #include <cmath>
 
 using namespace std;
-using namespace DD4hep::Simulation;
+using namespace dd4hep::sim;
 
 namespace CLHEP   {
   unsigned long crc32ul(const std::string& s);
@@ -53,6 +52,15 @@ namespace    {
     virtual  void SetSeed(UInt_t seed=0)    {
       fSeed = seed;
       m_generator->setSeed((long)seed);
+    }
+    /// Set new seed
+    virtual  void SetSeed(ULong_t seed=0)    {
+      fSeed = seed;
+      m_generator->setSeed((long)seed);
+    }
+    /// Single shot random number creation
+    virtual Double_t Rndm()  {
+      return m_engine->flat();
     }
     /// Single shot random number creation
     virtual Double_t Rndm(Int_t)  {
@@ -97,7 +105,7 @@ Geant4Random::~Geant4Random()  {
   // Reset instance pointer
   if (  s_instance == this ) s_instance = 0;
   // Finally delete the TRandom instance wrapper
-  deletePtr(m_rootRandom);
+  detail::deletePtr(m_rootRandom);
   InstanceCount::decrement(this);
 }
 
@@ -240,9 +248,13 @@ void Geant4Random::showStatus() const    {
   printP2("   Instance is %sidentical to ROOT's gRandom instance.",
           gRandom == m_rootRandom ? "" : "NOT ");
 
-  if ( gRandom != m_rootRandom )  {
+  if ( gRandom != m_rootRandom )   {
     printP2("      Local TRandom: 0x%p  gRandom: 0x%p",m_rootRandom,gRandom);
-  }  
+  }
+  if ( 0 == m_engine )   {
+    error("   Geant4Random instance has not engine attached!");
+    return;
+  }
   m_engine->showStatus();
 }
 

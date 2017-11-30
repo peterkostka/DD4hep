@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -13,21 +12,23 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/Handle.inl"
+#include "DDCond/ConditionsPool.h"
+#include "DDCond/ConditionsManagerObject.h"
 #include "DD4hep/Printout.h"
 #include "DD4hep/InstanceCount.h"
-#include "DDCond/ConditionsPool.h"
-#include "DDCond/ConditionsInterna.h"
+#include "DD4hep/detail/Handle.inl"
+#include "DD4hep/detail/ConditionsInterna.h"
 
 using std::string;
-using namespace DD4hep;
-using namespace DD4hep::Conditions;
+using namespace dd4hep;
+using namespace dd4hep::cond;
 
+DD4HEP_INSTANTIATE_HANDLE_NAMED(UpdatePool);
 DD4HEP_INSTANTIATE_HANDLE_NAMED(ConditionsPool);
 
 /// Default constructor
 ConditionsPool::ConditionsPool(ConditionsManager mgr)
-  : NamedObject(), m_manager(mgr), iovType(0), iov(0), age_value(AGE_NONE)
+  : NamedObject(), m_manager(mgr), iov(0), age_value(AGE_NONE)
 {
   InstanceCount::increment(this);
 }
@@ -39,9 +40,15 @@ ConditionsPool::~ConditionsPool()   {
 }
 
 /// Print pool basics
+void ConditionsPool::print()   const  {
+  printout(INFO,"ConditionsPool","+++ Conditions for pool with IOV: %-32s age:%3d [%4d entries]",
+           iov->str().c_str(), age_value, size());
+}
+
+/// Print pool basics
 void ConditionsPool::print(const string& opt)   const  {
-  printout(INFO,"Example","+++ %s Conditions for pool with IOV: %-32s age:%3d [%4d entries]",
-	   opt.c_str(), iov->str().c_str(), age_value, count());
+  printout(INFO,"ConditionsPool","+++ %s Conditions for pool with IOV: %-32s age:%3d [%4d entries]",
+           opt.c_str(), iov->str().c_str(), age_value, size());
 }
 
 /// Listener invocation when a condition is registered to the cache
@@ -64,8 +71,8 @@ UpdatePool::~UpdatePool()   {
 }
 
 /// Default constructor
-UserPool::UserPool(ConditionsManager mgr, ConditionsIOVPool* pool)
-  : m_iov(0), m_manager(mgr), m_iovPool(pool)
+UserPool::UserPool(ConditionsManager mgr)
+  : m_iov(0), m_manager(mgr)
 {
   InstanceCount::increment(this);
 }

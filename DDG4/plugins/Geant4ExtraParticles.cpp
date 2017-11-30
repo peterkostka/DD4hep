@@ -1,10 +1,8 @@
 //
 // Authors: Tomohiko Tanabe <tomohiko@icepp.s.u-tokyo.ac.jp>
 //          Taikan Suehara <suehara@icepp.s.u-tokyo.ac.jp>
-// Proted from Mokka by A.Sailer (CERN )
+// Ported from Mokka by A.Sailer (CERN )
 //
-// $Id$
-// $Name: $
 
 /** \addtogroup Geant4PhysicsConstructor
  *
@@ -38,7 +36,7 @@
 
 #include "G4RunManager.hh"
 
-using namespace DD4hep::Simulation;
+using namespace dd4hep::sim;
 
 Geant4ExtraParticles::Geant4ExtraParticles(Geant4Context* ctxt, const std::string& nam)
   : Geant4PhysicsConstructor(ctxt, nam), m_decay(0), m_ionise(0), m_scatter(0)
@@ -47,9 +45,9 @@ Geant4ExtraParticles::Geant4ExtraParticles(Geant4Context* ctxt, const std::strin
 }
 
 Geant4ExtraParticles::~Geant4ExtraParticles()   {
-  deletePtr(m_decay);
-  deletePtr(m_ionise);
-  deletePtr(m_scatter);
+  detail::deletePtr(m_decay);
+  detail::deletePtr(m_ionise);
+  detail::deletePtr(m_scatter);
 }
 
 // bool Geant4ExtraParticles::FileExists() {

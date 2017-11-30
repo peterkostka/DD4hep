@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -19,8 +18,8 @@
 #include "XML/Layering.h"
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
+using namespace dd4hep::detail;
 
 static void placeStaves(DetElement& parent, DetElement& stave, double rmin, int numsides, double total_thickness,
                         Volume envelopeVolume, double innerAngle, Volume sectVolume) {
@@ -46,13 +45,13 @@ static void placeStaves(DetElement& parent, DetElement& stave, double rmin, int 
   }
 }
 
-static Ref_t create_detector(LCDD& lcdd, xml_h e, SensitiveDetector sens) {
+static Ref_t create_detector(Detector& description, xml_h e, SensitiveDetector sens) {
   xml_det_t x_det = e;
   Layering layering(x_det);
   xml_comp_t staves = x_det.staves();
   xml_dim_t dim = x_det.dimensions();
   string det_name = x_det.nameStr();
-  Material air = lcdd.air();
+  Material air = description.air();
   double totalThickness = layering.totalThickness();
   double gap = xml_dim_t(x_det).gap();
   int numSides = dim.numsides();
@@ -60,7 +59,7 @@ static Ref_t create_detector(LCDD& lcdd, xml_h e, SensitiveDetector sens) {
   double rmin = dim.rmin();
   DetElement sdet(det_name, x_det.id());
   DetElement stave("stave1", x_det.id());
-  Volume motherVol = lcdd.pickMotherVolume(sdet);
+  Volume motherVol = description.pickMotherVolume(sdet);
 
 #if 0
   int totalRepeat = 0;
@@ -98,8 +97,8 @@ static Ref_t create_detector(LCDD& lcdd, xml_h e, SensitiveDetector sens) {
   //#### LayeringExtensionImpl* layeringExtension = new LayeringExtensionImpl();
   //#### Position layerNormal(0,0,1);
 
-  for (xml_coll_t c(x_det, _U(layer)); c; ++c) {
-    xml_comp_t x_layer = c;
+  for (xml_coll_t xc(x_det, _U(layer)); xc; ++xc) {
+    xml_comp_t x_layer = xc;
     int repeat = x_layer.repeat();            // Get number of times to repeat this layer.
     const Layer* lay = layering.layer(layer_num - 1); // Get the layer from the layering engine.
     // Loop over repeats for this layer.
@@ -117,11 +116,11 @@ static Ref_t create_detector(LCDD& lcdd, xml_h e, SensitiveDetector sens) {
       // Create the slices (sublayers) within the layer.
       double slice_pos_z = -(layer_thickness / 2);
       int slice_number = 1;
-      for (xml_coll_t k(x_layer, _U(slice)); k; ++k) {
-        xml_comp_t x_slice = k;
+      for (xml_coll_t xk(x_layer, _U(slice)); xk; ++xk) {
+        xml_comp_t x_slice = xk;
         string slice_name = _toString(slice_number, "slice%d");
         double slice_thickness = x_slice.thickness();
-        Material slice_material = lcdd.material(x_slice.materialStr());
+        Material slice_material = description.material(x_slice.materialStr());
         DetElement slice(layer, slice_name, slice_number);
 
         slice_pos_z += slice_thickness / 2;
@@ -133,7 +132,7 @@ static Ref_t create_detector(LCDD& lcdd, xml_h e, SensitiveDetector sens) {
           slice_vol.setSensitiveDetector(sens);
         }
         // Set region, limitset, and vis.
-        slice_vol.setAttributes(lcdd, x_slice.regionStr(), x_slice.limitsStr(), x_slice.visStr());
+        slice_vol.setAttributes(description, x_slice.regionStr(), x_slice.limitsStr(), x_slice.visStr());
         // slice PlacedVolume
         PlacedVolume slice_phv = layer_vol.placeVolume(slice_vol, Position(0, 0, slice_pos_z));
         slice_phv.addPhysVolID("slice", slice_number);
@@ -145,7 +144,7 @@ static Ref_t create_detector(LCDD& lcdd, xml_h e, SensitiveDetector sens) {
         ++slice_number;
       }
       // Set region, limitset, and vis.
-      layer_vol.setAttributes(lcdd, x_layer.regionStr(), x_layer.limitsStr(), x_layer.visStr());
+      layer_vol.setAttributes(description, x_layer.regionStr(), x_layer.limitsStr(), x_layer.visStr());
 
       // Layer physical volume.
       PlacedVolume layer_phv = staveInnerVol.placeVolume(layer_vol, Position(0, 0, layer_pos_z));
@@ -165,13 +164,13 @@ static Ref_t create_detector(LCDD& lcdd, xml_h e, SensitiveDetector sens) {
   staveOuterVol.placeVolume(staveInnerVol);
   if ( staves )  {
     // Set the vis attributes of the outer stave section.
-    stave.setVisAttributes(lcdd, staves.visStr(), staveInnerVol);
-    stave.setVisAttributes(lcdd, staves.visStr(), staveOuterVol);
+    stave.setVisAttributes(description, staves.visStr(), staveInnerVol);
+    stave.setVisAttributes(description, staves.visStr(), staveOuterVol);
   }
   // Place the staves.
   placeStaves(sdet, stave, rmin, numSides, totalThickness, envelopeVol, innerAngle, staveOuterVol);
   // Set envelope volume attributes.
-  envelopeVol.setAttributes(lcdd, x_det.regionStr(), x_det.limitsStr(), x_det.visStr());
+  envelopeVol.setAttributes(description, x_det.regionStr(), x_det.limitsStr(), x_det.visStr());
 
   double z_offset = dim.hasAttr(_U(z_offset)) ? dim.z_offset() : 0.0;
   Transform3D transform(RotationZ(M_PI / numSides), Translation3D(0, 0, z_offset));

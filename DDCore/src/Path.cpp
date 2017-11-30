@@ -1,4 +1,5 @@
-//  AIDA Detector description implementation for LCD
+//==========================================================================
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,7 +12,6 @@
 //  \version 1.0
 //
 //==========================================================================
-// $Id$
 
 #include "DD4hep/Path.h"
 #include <climits>
@@ -20,7 +20,7 @@
 #include <stdexcept>
 
 using namespace std;
-using namespace DD4hep;
+using namespace dd4hep;
 
 namespace {
   const char dot = '.';

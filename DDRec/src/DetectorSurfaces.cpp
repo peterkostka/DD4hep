@@ -1,11 +1,11 @@
 #include "DDRec/DetectorSurfaces.h"
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
     
 
 
-    DetectorSurfaces::DetectorSurfaces(DD4hep::Geometry::DetElement const& e) : DetElement(e) , _sL( 0 ) {
+    DetectorSurfaces::DetectorSurfaces(dd4hep::DetElement const& e) : DetElement(e) , _sL( 0 ) {
 
       initialize() ;
     }

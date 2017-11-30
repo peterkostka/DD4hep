@@ -1,13 +1,14 @@
-#ifndef DDRec_DetectorData_H_
-#define DDRec_DetectorData_H_
+#ifndef rec_DetectorData_H_
+#define rec_DetectorData_H_
 
+#include <map>
 #include <bitset>
 #include <ostream>
 
-#include "DD4hep/Detector.h"
+#include "DD4hep/DetElement.h"
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
     
     /** Wrapper class for adding structs or pods as extensions to DetElements.
      *  Provides default implementations of the c'tors required by the extension mechamism.
@@ -23,8 +24,8 @@ namespace DD4hep {
       StructExtension() : T()  { } 
       StructExtension(const StructExtension<T>& t) : T(t) {} 
       StructExtension(const T& t) : T(t) {} 
-      StructExtension(const Geometry::DetElement&) : T()  {}
-      StructExtension(const StructExtension<T>& t, const Geometry::DetElement&) : T(t) {}
+      StructExtension(const DetElement&) : T()  {}
+      StructExtension(const StructExtension<T>& t, const DetElement&) : T(t) {}
     };
 
     /** Simple data structure with key parameters for
@@ -46,6 +47,8 @@ namespace DD4hep {
       double rMax ;
       /// driftLength in z (half length of active volume)
       double driftLength ;
+      /// start z of active Volume (typically cathode half thickness)
+      double zMinReadout ;
       /// inner r of active volume
       double rMinReadout ;
       /// outer r of active volume
@@ -336,14 +339,17 @@ namespace DD4hep {
       /// enum for encoding the sensor type in typeFlags
       enum LayoutType{
 	BarrelLayout=0,
-	EndcapLayout
+	EndcapLayout,
+	ConicalLayout
       };
 
       /// type of layout: BarrelLayout or EndcapLayout
       LayoutType layoutType ;
 
-      /// extent of the calorimeter in the r-z-plane [ rmin, rmax, zmin, zmax ] in mm.
-      double extent[4] ;
+      /** extent of the calorimeter in the r-z-plane [ rmin, rmax, zmin, zmax, rmin2, rmax2 ] in mm.
+       * where rmin2, rmax2 are the radii at zmax for the ConicalLayout and not used else.
+       */
+      double extent[6] ;
 
       /** the order of the rotational symmetry at the outside, e.g.
        *  8 for an octagonal barrel calorimeter.
@@ -369,11 +375,12 @@ namespace DD4hep {
        */
       double  inner_phi0  ;
       
-      
-      /** Azimuthal angle of the first module in barrel layout
+
+       /** Azimuthal angle of the first module in barrel layout
        *  DEPRECATED! PLEASE POPULATE INNER/OUTER PHI0 INSTEAD
        */
       double  phi0  ;
+           
       
       /// Gap between modules(eg. stave gap) in the phi-direction
       double gap0;
@@ -389,7 +396,7 @@ namespace DD4hep {
 	
 	Layer() :
 	  distance(0),
-	  thickness(0),
+	  phi0(0),
 	  absorberThickness(0),
 	  inner_nRadiationLengths(0),
 	  inner_nInteractionLengths(0),        
@@ -405,10 +412,10 @@ namespace DD4hep {
 	/// distance from Origin (or the z-axis) to the inner-most face of the layer
 	double distance;
         
-	/// DEPRECATED: total thickness of the layer. Use inner/outer thicknesses instead
-	double thickness ;
+	/// phi0 of layer: potential rotation around normal to absorber plane, e.g. if layers are 'staggered' in phi in fwd. calos 
+	double phi0 ;
 	
-        /// DEPRECATED: thickness of the absorber part of the layer. Use instead number of X0, lambdaI in and out
+        /// thickness of the absorber part of the layer. Consider using inner/outer_nRadiationLengths and inner/outer_nInteractionLengths
 	double absorberThickness ;
         
         ///Absorber material in front of sensitive element in the layer, units of radiation lengths
@@ -446,7 +453,33 @@ namespace DD4hep {
     std::ostream& operator<<( std::ostream& io , const LayeredCalorimeterData& d ) ;
 
 
-  } /* namespace DDRec */
-} /* namespace DD4hep */
 
-#endif // DDRec_DetectorData_H_
+
+    /** Simple data strucuture that holds maps of ids of the nearest neighbour surfaces in the same, next and previous layers
+     *  of a tracking detector. Could be used as extension object for tracking DetectorElements and used in 
+     *  pattern recognition. The exact details of the neighbouring criteria depend on the algorithm that is used.
+     *
+     * @author F.Gaede, DESY, R. Simoniello, CERN
+     * @date Dec, 15 2016
+     */
+    struct NeighbourSurfacesStruct {
+
+      /// map of all neighbours in the same layer
+      std::map<dd4hep::long64 , std::vector<dd4hep::long64 > > sameLayer ; 
+
+      /// map of all neighbours in the previous layer
+      std::map<dd4hep::long64 , std::vector<dd4hep::long64 > > prevLayer ;
+
+      /// map of all neighbours in the next layer
+      std::map<dd4hep::long64 , std::vector<dd4hep::long64 > > nextLayer ;
+
+    } ;
+    typedef StructExtension<NeighbourSurfacesStruct> NeighbourSurfacesData ;
+
+    std::ostream& operator<<( std::ostream& io , const NeighbourSurfacesData& d ) ;
+
+
+  } /* namespace rec */
+} /* namespace dd4hep */
+
+#endif // rec_DetectorData_H_

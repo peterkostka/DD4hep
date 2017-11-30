@@ -119,14 +119,17 @@ void TiXmlBase::ConvertUTF32ToUTF8( unsigned long input, char* output, int* leng
     --output;
     *output = (char)((input | BYTE_MARK) & BYTE_MASK);
     input >>= 6;
+    [[fallthrough]];
   case 3:
     --output;
     *output = (char)((input | BYTE_MARK) & BYTE_MASK);
     input >>= 6;
+    [[fallthrough]];
   case 2:
     --output;
     *output = (char)((input | BYTE_MARK) & BYTE_MASK);
     input >>= 6;
+    [[fallthrough]];
   case 1:
     --output;
     *output = (char)(input | FIRST_BYTE_MARK[*length]);
@@ -1158,7 +1161,7 @@ const char* TiXmlElement::Parse( const char* p, TiXmlParsingData* data, TiXmlEnc
         return 0;
       }
 
-      // Handle the strange case of double attributes:
+      // Handle_t the strange case of double attributes:
 #ifdef TIXML_USE_STL
       TiXmlAttribute* node = attributeSet.Find( attrib->NameTStr() );
 #else

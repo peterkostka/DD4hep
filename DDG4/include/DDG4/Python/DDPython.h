@@ -1,4 +1,5 @@
-//  AIDA Detector description implementation for LCD
+//==========================================================================
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -10,7 +11,6 @@
 //  \date   2015-11-07
 //
 //==========================================================================
-// $Id$
 #ifndef DD4HEP_DDG4_DDPYTHON_H 
 #define DD4HEP_DDG4_DDPYTHON_H 1
 
@@ -21,7 +21,7 @@
 #include "TPyReturn.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep  {
+namespace dd4hep  {
 
   struct DDPythonGlobalState;
 
@@ -32,7 +32,7 @@ namespace DD4hep  {
    *  \ingroup DD4HEP_SIMULATION
    */
   class DDPython {
-  private:
+  protected:
     void* context;
     /// Standard constructor
     DDPython( ); 

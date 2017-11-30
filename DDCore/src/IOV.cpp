@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -21,17 +20,24 @@
 #include <cstring>
 
 using namespace std;
-using namespace DD4hep;
+using namespace dd4hep;
 
+#if 0
+/// Assignment operator
+IOVType& IOVType::operator=(const IOVType& copy)  {
+  if ( &copy != this )  {
+    name = copy.name;
+    type = copy.type;
+  }
+  return *this;
+}
+#endif
+
+/// Conversion to string
 std::string IOVType::str()  const   {
   char text[256];
   ::snprintf(text,sizeof(text),"%s(%d)",name.c_str(),int(type));
   return text;
-}
-
-/// Initializing constructor: Does not set reference to IOVType !
-IOV::IOV() : iovType(0), keyData(0,0), optData(0)  {
-  type = int(IOVType::UNKNOWN_IOV);
 }
 
 /// Initializing constructor
@@ -39,10 +45,11 @@ IOV::IOV(const IOVType* t) : iovType(t), keyData(0,0), optData(0)  {
   type = t ? t->type : int(IOVType::UNKNOWN_IOV);
 }
 
-/// Copy constructor
-IOV::IOV(const IOV& c) 
-  : iovType(c.iovType), keyData(c.keyData), optData(c.optData), type(c.type)
+/// Specialized copy constructor for discrete IOVs
+IOV::IOV(const IOVType* t, Key_first_type iov_value)
+  : iovType(t), keyData(iov_value,iov_value), optData(0)
 {
+  type = t ? t->type : int(IOVType::UNKNOWN_IOV);
 }
 
 /// Copy constructor
@@ -50,10 +57,6 @@ IOV::IOV(const IOVType* t, const Key& k)
   : iovType(t), keyData(k), optData(0)
 {
   type = t ? t->type : int(IOVType::UNKNOWN_IOV);
-}
-
-/// Standard Destructor
-IOV::~IOV()  {
 }
 
 /// Set discrete IOV value

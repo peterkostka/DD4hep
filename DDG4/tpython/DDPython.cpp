@@ -1,4 +1,5 @@
-//  AIDA Detector description implementation for LCD
+//==========================================================================
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -10,7 +11,6 @@
 //  \date   2015-11-07
 //
 //==========================================================================
-// $Id$
 
 // C/C++ include files
 #include <fstream>
@@ -39,7 +39,7 @@
 #endif
 
 using namespace std;
-using namespace DD4hep;
+using namespace dd4hep;
 
 namespace {
   string loadScript(const string& fname) {
@@ -100,7 +100,7 @@ namespace {
   }
 }
 
-DDPython::GILState::GILState(int)  {
+DDPython::GILState::GILState(int) : state(0) {
   if ( ::Py_IsInitialized() )  {
     PyGILState_STATE st = (PyGILState_STATE)::PyGILState_Ensure();
     state = (int)st;
@@ -137,7 +137,7 @@ DDPython::AllowThreads::~AllowThreads()  {
 }
 
 /// Standard constructor, initializes variables
-DDPython::DDPython()  {
+DDPython::DDPython() : context(0)  {
   ++_refCount;
   bool inited = ::Py_IsInitialized();
   if ( !inited ) {
@@ -153,14 +153,14 @@ DDPython::DDPython()  {
     if ( !module || ::PyErr_Occurred() )   {
       ::PyErr_Print();
       ::PyErr_Clear();
-      DD4hep::printout(WARNING,"DDPython","Main dictionary pointer is NULL. Try to continue like this!");
+      dd4hep::printout(WARNING,"DDPython","Main dictionary pointer is NULL. Try to continue like this!");
     }
     else  {
       _main_dict = ::PyModule_GetDict(module);
       if ( _main_dict )  {
         Py_INCREF( _main_dict );
       }
-      DD4hep::printout(DEBUG,"DDPython","Pointer to main dict:%p",(void*)_main_dict);
+      dd4hep::printout(DEBUG,"DDPython","Pointer to main dict:%p",(void*)_main_dict);
     }
     setMainThread();
   }
@@ -174,7 +174,7 @@ DDPython::DDPython()  {
 DDPython::~DDPython()   {
   --_refCount;
   if ( 0 == _refCount && ::Py_IsInitialized() ) {
-    DD4hep::printout(ALWAYS,"DDPython","+++ Shutdown python interpreter......");
+    dd4hep::printout(ALWAYS,"DDPython","+++ Shutdown python interpreter......");
     if ( _main_dict )  {
       Py_DECREF(_main_dict);
       _main_dict = 0;
@@ -208,7 +208,27 @@ void DDPython::restoreThread()   {
 }
 
 int DDPython::setArgs(int argc, char** argv)  const   {
+  // Need to protect against API change from Python 2 to Python 3
+#if PY_VERSION_HEX < 0x03000000
   ::PySys_SetArgv(argc,argv);
+#else
+  vector<wstring> wargs;
+  vector<const wchar_t*> wargv;
+  for(int i=0; i<argc;++i)  {
+    std::wstring wstr;
+    if ( argv[i] )  {
+      const size_t size = strlen(argv[i]);
+      if (size > 0) {
+        wstr.resize(size+1);
+        std::mbstowcs(&wstr[0], argv[i], size);
+        wstr[size] = 0;
+      }
+    }
+    wargs.push_back(wstr);
+  }
+  for(auto& s : wargs ) wargv.push_back(s.c_str());
+  ::PySys_SetArgv(argc,(wchar_t**)&wargv[0]);
+#endif
   return 1;
 }
 
@@ -301,5 +321,24 @@ bool DDPython::isMainThread()   {
 
 /// Start the interpreter in normal mode without hacks like 'pythopn.exe' does.
 int DDPython::run_interpreter(int argc, char** argv)   {
+#if PY_VERSION_HEX < 0x03000000
   return ::Py_Main(argc, argv);
+#else
+  vector<wstring> wargs;
+  vector<const wchar_t*> wargv;
+  for(int i=0; i<argc;++i)  {
+    std::wstring wstr;
+    if ( argv[i] )  {
+      const size_t size = strlen(argv[i]);
+      if (size > 0) {
+        wstr.resize(size+1);
+        std::mbstowcs(&wstr[0], argv[i], size);
+        wstr[size] = 0;
+      }
+    }
+    wargs.push_back(wstr);
+  }
+  for( auto& s : wargs ) wargv.push_back(s.c_str());
+  return ::Py_Main(argc, (wchar_t**)&wargv[0]);
+#endif
 }

@@ -7,7 +7,7 @@ from SystemOfUnits import *
 #
 """
 
-   DD4hep simulation example setup using the python configuration
+   dd4hep simulation example setup using the python configuration
 
    @author  M.Frank
    @version 1.0
@@ -18,7 +18,7 @@ def run():
   install_dir = os.environ['DD4hepINSTALL']
   kernel.loadGeometry("file:"+install_dir+"/examples/ClientTests/compact/SiliconBlock.xml")
 
-  DDG4.importConstants(kernel.lcdd(),debug=False)
+  DDG4.importConstants(kernel.detectorDescription(),debug=False)
   geant4 = DDG4.Geant4(kernel,tracker='Geant4TrackerCombineAction')
   geant4.printDetectors()
   # Configure UI
@@ -37,12 +37,19 @@ def run():
 
   generator_output_level = Output.INFO
 
+  # Configure G4 geometry setup
+  seq,act = geant4.addDetectorConstruction("Geant4DetectorGeometryConstruction/ConstructGeo")
+  act.DebugMaterials = True
+  act.DebugElements  = False
+  act.DebugVolumes   = True
+  act.DebugShapes    = True
+
   # Configure I/O
   evt_root = geant4.setupROOTOutput('RootOutput','SiliconBlock_'+time.strftime('%Y-%m-%d_%H-%M'))
 
   # Setup particle gun
   gun = geant4.setupGun("Gun",particle='mu-',energy=20*GeV,multiplicity=1)
-  gun.output_level = generator_output_level
+  gun.OutputLevel = generator_output_level
 
   # And handle the simulation particles.
   part = DDG4.GeneratorAction(kernel,"Geant4ParticleHandler/ParticleHandler")

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,16 +14,17 @@
 #define DD4HEP_DDG4_GEANT4ACTIONPHASE_H
 
 // Framework include files
+#include "DD4hep/Exceptions.h"
 #include "DDG4/Geant4Action.h"
 
 // C/C++ include files
 #include <vector>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     /// Generic action for Geant4 phases
     /**
@@ -141,7 +141,7 @@ namespace DD4hep {
       template <typename A0, typename A1, typename A2> void call(A0 a0, A1 a1, A2 a2);
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4ACTIONPHASE_H

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,7 +13,7 @@
 
 // Framework include files
 #include "DD4hep/Factories.h"
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DDRec/SurfaceHelper.h"
 
 #include "EvNavHandler.h"
@@ -59,10 +58,10 @@
 #include "TGLScenePad.h"
 
 
-using namespace DD4hep ;
-using namespace DDRec ;
-using namespace Geometry ;
-using namespace DDSurfaces ;
+using namespace dd4hep ;
+using namespace rec ;
+using namespace detail ;
+
 
 //=====================================================================================
 // function declarations: 
@@ -74,9 +73,9 @@ TEveStraightLineSet* getSurfaceVectors(bool addO=true, bool addU= true, bool add
 
 //=====================================================================================
 
-static long teve_display(LCDD& lcdd, int /* argc */, char** /* argv */) {
+static long teve_display(Detector& description, int /* argc */, char** /* argv */) {
 
-  TGeoManager* mgr = &lcdd.manager();
+  TGeoManager* mgr = &description.manager();
   mgr->SetNsegments(100); // Increase the visualization resolution.
   TEveManager::Create();
 
@@ -166,9 +165,9 @@ TEveStraightLineSet* getSurfaceVectors(bool addO, bool addU, bool addV, bool add
 
   TEveStraightLineSet* ls = new TEveStraightLineSet(name);
 
-  LCDD& lcdd = LCDD::getInstance();
+  Detector& description = Detector::getInstance();
 
-  DetElement world = lcdd.world() ;
+  DetElement world = description.world() ;
 
   // create a list of all surfaces in the detector:
   SurfaceHelper surfMan(  world ) ;
@@ -178,21 +177,21 @@ TEveStraightLineSet* getSurfaceVectors(bool addO, bool addU, bool addV, bool add
   for( SurfaceList::const_iterator it = sL.begin() ; it != sL.end() ; ++it ){
 
     ISurface* surf = *it ;
-    const DDSurfaces::Vector3D& u = surf->u() ;
-    const DDSurfaces::Vector3D& v = surf->v() ;
-    const DDSurfaces::Vector3D& n = surf->normal() ;
-    const DDSurfaces::Vector3D& o = surf->origin() ;
+    const Vector3D& u = surf->u() ;
+    const Vector3D& v = surf->v() ;
+    const Vector3D& n = surf->normal() ;
+    const Vector3D& o = surf->origin() ;
 
-    DDSurfaces::Vector3D ou = o + u ;
-    DDSurfaces::Vector3D ov = o + v ;
-    DDSurfaces::Vector3D on = o + n ;
+    Vector3D ou = o + u ;
+    Vector3D ov = o + v ;
+    Vector3D on = o + n ;
  
-    if (addU) ls->AddLine( o.x(), o.y(), o.z(), ou.x() , ou.y() , ou.z()  )->fId ;
+    if (addU) ls->AddLine( o.x(), o.y(), o.z(), ou.x() , ou.y() , ou.z()  );
     
 //     TEveStraightLineSet::Marker_t *m = ls->AddMarker(id,1.);
     
-    if (addV) ls->AddLine( o.x(), o.y(), o.z(), ov.x() , ov.y() , ov.z()  )->fId ;
-    if (addN) ls->AddLine( o.x(), o.y(), o.z(), on.x() , on.y() , on.z()  )->fId ;
+    if (addV) ls->AddLine( o.x(), o.y(), o.z(), ov.x() , ov.y() , ov.z()  );
+    if (addN) ls->AddLine( o.x(), o.y(), o.z(), on.x() , on.y() , on.z()  );
     if (addO) ls->AddMarker(  o.x(), o.y(), o.z() );
   }
   ls->SetLineColor( color ) ;
@@ -209,9 +208,9 @@ TEveStraightLineSet* getSurfaces(int col, const SurfaceType& type, TString name)
 
   TEveStraightLineSet* ls = new TEveStraightLineSet(name);
 
-  LCDD& lcdd = LCDD::getInstance();
+  Detector& description = Detector::getInstance();
 
-  DetElement world = lcdd.world() ;
+  DetElement world = description.world() ;
 
   // create a list of all surfaces in the detector:
   SurfaceHelper surfMan(  world ) ;
@@ -267,7 +266,7 @@ void make_gui() {
   browser->StartEmbedding(TRootBrowser::kLeft);
 
   TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
-  frmMain->SetWindowName("DD4hep GUI");
+  frmMain->SetWindowName("dd4hep GUI");
   frmMain->SetCleanup(kDeepCleanup);
 
   TGHorizontalFrame* hf = new TGHorizontalFrame(frmMain);

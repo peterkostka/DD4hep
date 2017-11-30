@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -19,7 +18,7 @@
 #include "DDEve/Projection.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// class RhoZProjection  RhoZProjection.h DDEve/RhoZProjection.h
   /*
@@ -34,12 +33,10 @@ namespace DD4hep {
     /// Default destructor
     virtual ~RhoZProjection();
     /// Build the projection view and map it to the given slot
-    virtual View& Build(TEveWindow* slot);
+    virtual View& Build(TEveWindow* slot)  override;
     /// Root implementation macro
-    ClassDef(RhoZProjection,0);
+    ClassDefOverride(RhoZProjection,0);
   };
-
-} /* End namespace DD4hep   */
-
+}      /* End namespace dd4hep          */
 #endif /* DD4HEP_DDEVE_RHOZPROJECTION_H */
 

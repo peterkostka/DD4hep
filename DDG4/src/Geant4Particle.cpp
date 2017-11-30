@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -27,67 +26,24 @@
 
 #include <iostream>
 
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
-typedef ReferenceBitMask<int> PropertyMask;
+using namespace dd4hep;
+using namespace dd4hep::sim;
+typedef detail::ReferenceBitMask<int> PropertyMask;
 
 /// Default destructor
 ParticleExtension::~ParticleExtension() {
 }
 
-/// Copy constructor
-Geant4Particle::Geant4Particle(const Geant4Particle& c)
-: ref(1), id(c.id), g4Parent(c.g4Parent), reason(c.reason), mask(c.mask),
-  steps(c.steps), secondaries(c.secondaries), pdgID(c.pdgID),
-  status(c.status), charge(0),
-  vsx(c.vsx), vsy(c.vsy), vsz(c.vsz),
-  vex(c.vex), vey(c.vey), vez(c.vez),
-  psx(c.psx), psy(c.psy), psz(c.psz),
-  pex(c.pex), pey(c.pey), pez(c.pez),
-  mass(c.mass), time(c.time), properTime(c.properTime),
-  parents(c.parents), daughters(c.daughters), extension(),
-  process(c.process)//, definition(c.definition)
-{
-  InstanceCount::increment(this);
-  spin[0] = c.spin[0];
-  spin[1] = c.spin[1];
-  spin[2] = c.spin[2];
-  colorFlow[0] = c.colorFlow[0];
-  colorFlow[1] = c.colorFlow[1];
-}
-
 /// Default constructor
-Geant4Particle::Geant4Particle()
-: ref(1), id(0), g4Parent(0), reason(0), mask(0),
-  steps(0), secondaries(0), pdgID(0),
-  status(0), charge(0),
-  vsx(0.0), vsy(0.0), vsz(0.0),
-  vex(0.0), vey(0.0), vez(0.0),
-  psx(0.0), psy(0.0), psz(0.0),
-  pex(0.0), pey(0.0), pez(0.0),
-  mass(0.0), time(0.0), properTime(0.0),
-  daughters(), extension(), process(0)//, definition(0)
+Geant4Particle::Geant4Particle() : ref(1)
 {
   InstanceCount::increment(this);
-  spin[0] = spin[1] = spin[2] = 0;
-  colorFlow[0] = colorFlow[1] = 0;
 }
 
 /// Constructor with ID initialization
-Geant4Particle::Geant4Particle(int part_id)
-: ref(1), id(part_id), g4Parent(0), reason(0), mask(0),
-  steps(0), secondaries(0), pdgID(0),
-  status(0), charge(0),
-  vsx(0.0), vsy(0.0), vsz(0.0),
-  vex(0.0), vey(0.0), vez(0.0),
-  psx(0.0), psy(0.0), psz(0.0),
-  pex(0.0), pey(0.0), pez(0.0),
-  mass(0.0), time(0.0), properTime(0.0),
-  daughters(), extension(), process(0)//, definition(0)
+Geant4Particle::Geant4Particle(int part_id) : ref(1), id(part_id), originalG4ID(part_id)
 {
   InstanceCount::increment(this);
-  spin[0] = spin[1] = spin[2] = 0;
-  colorFlow[0] = colorFlow[1] = 0;
 }
 
 /// Default destructor
@@ -107,10 +63,12 @@ void Geant4Particle::release()  {
 Geant4Particle& Geant4Particle::get_data(Geant4Particle& c)   {
   if ( this != &c )  {
     id = c.id;
+    originalG4ID = c.originalG4ID;
     g4Parent    = c.g4Parent;
     reason      = c.reason;
     mask        = c.mask;
     status      = c.status;
+    genStatus   = c.genStatus;
     charge      = c.charge;
     steps       = c.steps;
     secondaries = c.secondaries;
@@ -139,7 +97,7 @@ Geant4Particle& Geant4Particle::get_data(Geant4Particle& c)   {
 #else
     extension   = c.extension;
 #endif
-    //dd4hep_ptr<ParticleExtension>(c.extension.release());
+    //DD4hep_ptr<ParticleExtension>(c.extension.release());
   }
   return *this;
 }
@@ -204,6 +162,8 @@ std::string Geant4ParticleHandle::processName() const   {
   else if ( particle->status&G4PARTICLE_GEN_STABLE ) return "Gen.Stable";
   else if ( particle->status&G4PARTICLE_GEN_DECAYED ) return "Gen.Decay";
   else if ( particle->status&G4PARTICLE_GEN_DOCUMENTATION ) return "Gen.DOC";
+  else if ( particle->status&G4PARTICLE_GEN_BEAM ) return "Gen.Beam";
+  else if ( particle->status&G4PARTICLE_GEN_OTHER ) return "Gen.Other";
   return "???";
 }
 
@@ -244,7 +204,7 @@ void Geant4ParticleHandle::dump1(int level, const std::string& src, const char* 
     for(std::set<int>::const_iterator i=p->parents.begin(); i!=p->parents.end(); ++i)
       ::snprintf(text+strlen(text),sizeof(text)-strlen(text),"%d ",*i);
   }
-  printout((DD4hep::PrintLevel)level,src,
+  printout((dd4hep::PrintLevel)level,src,
            "+++ %s %4d def [%-11s,%8s] reason:%8d E:%+.2e %3s #Dau:%3d #Par:%3d%-5s",
            tag, p->id,
            p.particleName().c_str(),
@@ -263,7 +223,7 @@ void Geant4ParticleHandle::dump2(int level, const std::string& src, const char* 
   if ( p->parents.size() == 0 ) text[0]=0;
   else if ( p->parents.size() == 1 ) ::snprintf(text,sizeof(text),"/%d",*(p->parents.begin()));
   else if ( p->parents.size() >  1 ) ::snprintf(text,sizeof(text),"/%d..",*(p->parents.begin()));
-  printout((DD4hep::PrintLevel)level,src,
+  printout((dd4hep::PrintLevel)level,src,
            "+++ %s %4d G4:%4d [%-12s,%8s] reason:%8d "
            "E:%+.2e in record:%s  #Par:%3d%-5s #Dau:%3d",
            tag, p->id, g4id,
@@ -288,7 +248,7 @@ void Geant4ParticleHandle::dumpWithVertex(int level, const std::string& src, con
     for(std::set<int>::const_iterator i=p->parents.begin(); i!=p->parents.end(); ++i)
       ::snprintf(text+strlen(text),sizeof(text)-strlen(text),"%d ",*i);
   }
-  printout((DD4hep::PrintLevel)level,src,
+  printout((dd4hep::PrintLevel)level,src,
            "+++ %s ID:%3d %-12s status:%08X PDG:%6d Vtx:(%+.2e,%+.2e,%+.2e)[mm] "
            "time: %+.2e [ns] #Dau:%3d #Par:%1d%-6s",
            tag,p->id,p.particleName().c_str(),p->status,p->pdgID,
@@ -311,7 +271,7 @@ void Geant4ParticleHandle::dumpWithMomentum(int level, const std::string& src, c
     for(std::set<int>::const_iterator i=p->parents.begin(); i!=p->parents.end(); ++i)
       ::snprintf(text+strlen(text),sizeof(text)-strlen(text),"%d ",*i);
   }
-  printout((DD4hep::PrintLevel)level,src,
+  printout((dd4hep::PrintLevel)level,src,
            "+++%s ID:%3d %-12s stat:%08X PDG:%6d Mom:(%+.2e,%+.2e,%+.2e)[MeV] "
            "time: %+.2e [ns] #Dau:%3d #Par:%1d%-6s",
            tag,p->id,p.particleName().c_str(),p->status,p->pdgID,
@@ -333,7 +293,7 @@ void Geant4ParticleHandle::dumpWithMomentumAndVertex(int level, const std::strin
     for(std::set<int>::const_iterator i=p->parents.begin(); i!=p->parents.end(); ++i)
       ::snprintf(text+strlen(text),sizeof(text)-strlen(text),"%d ",*i);
   }
-  printout((DD4hep::PrintLevel)level,src,
+  printout((dd4hep::PrintLevel)level,src,
            "+++%s %3d %-12s stat:%08X PDG:%6d Mom:(%+.2e,%+.2e,%+.2e)[MeV] "
            "Vtx:(%+.2e,%+.2e,%+.2e)[mm] #Dau:%3d #Par:%1d%-6s",
            tag,p->id,p.particleName().c_str(),p->status,p->pdgID,
@@ -357,7 +317,7 @@ void Geant4ParticleHandle::dump4(int level, const std::string& src, const char* 
   if ( p->parents.end() == p->parents.find(p->g4Parent) )  {
     ::snprintf(equiv,sizeof(equiv),"/%d",p->g4Parent);
   }
-  printout((DD4hep::PrintLevel)level,src,
+  printout((dd4hep::PrintLevel)level,src,
            "+++ %s ID:%7d %12s %6d%-7s %7s %3s %5d %3s %+.3e  %-4s %-7s %-3s %-3s %2d  [%s%s%s] %c%c%c%c -- %c%c%c%c%c%c%c",
            tag,
            p->id,
@@ -380,6 +340,8 @@ void Geant4ParticleHandle::dump4(int level, const std::string& src, const char* 
            status.isSet(G4PARTICLE_GEN_STABLE) ? 'S' : '.',
            status.isSet(G4PARTICLE_GEN_DECAYED) ? 'D' : '.',
            status.isSet(G4PARTICLE_GEN_DOCUMENTATION) ? 'd' : '.',
+           status.isSet(G4PARTICLE_GEN_BEAM) ? 'B' : '.',
+           status.isSet(G4PARTICLE_GEN_OTHER) ? 'o' : '.',
 
            status.isSet(G4PARTICLE_SIM_CREATED) ? 's' : '.',
            status.isSet(G4PARTICLE_SIM_BACKSCATTER) ? 'b' : '.',
@@ -398,7 +360,7 @@ Geant4ParticleMap::~Geant4ParticleMap()    {
 
 /// Clear particle maps
 void Geant4ParticleMap::clear()    {
-  releaseObjects(particleMap);
+  detail::releaseObjects(particleMap);
   particleMap.clear();
   equivalentTracks.clear();
 }

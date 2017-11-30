@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,7 +15,6 @@
 
 // Framework include files
 #include "DDEve/EventHandler.h"
-
 #include "lcio.h"
 
 // C/C++ include files
@@ -26,10 +24,11 @@
 // Forward declarations
 
 /*
- *   DD4hep namespace declaration
+ *   dd4hep namespace declaration
  */
-namespace DD4hep {
+namespace dd4hep {
 
+  /// LCIO input event handler for DDEve: Interface class for event I/O
   /** @class LCIOEventHandler  LCIOEventHandler.h DDEve/LCIOEventHandler.h
    *
    * @author  M.Frank
@@ -42,12 +41,15 @@ namespace DD4hep {
   protected:
     /// Reference to data file reader
     lcio::LCReader* m_lcReader;
+    /// Reference to the current LCIO event
     lcio::LCEvent*  m_event;
+    /// Input file name
     std::string     m_fileName;
     /// Branch map
     Branches        m_branches;
     /// Data collection map
     TypedEventCollections m_data;
+
   public:
     /// Standard constructor
     LCIOEventHandler();
@@ -76,7 +78,7 @@ namespace DD4hep {
     virtual bool GotoEvent(long event_number);
   };
 
-} /* End namespace DD4hep   */
+} /* End namespace dd4hep   */
 
 #endif /* DD4HEP_DDEVE_LCIOEVENTHANDLER_H */
 

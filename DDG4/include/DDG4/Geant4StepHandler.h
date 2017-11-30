@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -26,10 +25,10 @@
 #include "G4Version.hh"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations;
     class Geant4StepHandler;
@@ -51,13 +50,18 @@ namespace DD4hep {
       G4StepPoint* post;
       G4Track* track;
       bool applyBirksLaw;
-      Geant4StepHandler(const G4Step* s)
-        : step(s) {
+      /// Inhibit default constructor
+      Geant4StepHandler() = delete;
+      /// Initializing constructor
+      Geant4StepHandler(const G4Step* s) : step(s) {
         pre = s->GetPreStepPoint();
         post = s->GetPostStepPoint();
         track = s->GetTrack();
         applyBirksLaw = false;
       }
+      /// Assignment operator inhibited. Should not be copied
+      Geant4StepHandler& operator=(const Geant4StepHandler& copy) = delete;
+      
       G4ParticleDefinition* trackDef() const {
         return track->GetDefinition();
       }
@@ -244,7 +248,7 @@ namespace DD4hep {
       }
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_GEANT4STEPHANDLER_H

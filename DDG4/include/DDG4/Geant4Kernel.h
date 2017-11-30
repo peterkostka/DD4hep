@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -26,27 +25,29 @@ class G4RunManager;
 class G4UIdirectory;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4ActionPhase;
 
     /// Class, which allows all Geant4Action derivatives to access the DDG4 kernel structures.
     /**
+     *  To implement access to a user specified framework please see class Geant4Context.
+     *
      *  \author  M.Frank
      *  \version 1.0
      *  \ingroup DD4HEP_SIMULATION
      */
     class Geant4Kernel : public Geant4ActionContainer  {
     public:
-      typedef DD4hep::Geometry::LCDD LCDD;
-      typedef std::map<unsigned long, Geant4Kernel*> Workers;
+      typedef std::map<unsigned long, Geant4Kernel*>    Workers;
       typedef std::map<std::string, Geant4ActionPhase*> Phases;
-      typedef std::map<std::string, Geant4Action*> GlobalActions;
-      typedef std::map<std::string,int> ClientOutputLevels;
+      typedef std::map<std::string, Geant4Action*>      GlobalActions;
+      typedef std::map<std::string,int>                 ClientOutputLevels;
+      typedef std::pair<void*, const std::type_info*>   UserFramework;
 
     protected:
       /// Reference to the run manager
@@ -56,10 +57,11 @@ namespace DD4hep {
       /// Reference to Geant4 track manager
       G4TrackingManager* m_trackMgr;
       /// Detector description object
-      LCDD*              m_lcdd;
+      Detector*          m_detDesc;
       /// Property pool
       PropertyManager    m_properties;
-
+      /// Reference to the user framework
+      UserFramework      m_userFramework;
 
       /// Action phases
       Phases        m_phases;
@@ -69,16 +71,18 @@ namespace DD4hep {
       GlobalActions m_globalActions;
       /// Globally registered filters of sensitive detectors
       GlobalActions m_globalFilters;
+      /// Property: Client output levels
+      ClientOutputLevels m_clientLevels;
       /// Property: Name of the G4UI command tree
       std::string m_controlName;
       /// Property: Name of the UI action. Must be member of the global actions
       std::string m_uiName;
+      /// Property: Name of the G4 run manager factory to be used. Default: Geant4RunManager
+      std::string m_runManagerType;
       /// Property: Number of events to be executed in batch mode
       long        m_numEvent;
       /// Property: Output level
       int         m_outputLevel;
-      /// Property: Client output levels
-      ClientOutputLevels m_clientLevels;
 
       /// Property: Running in multi threaded context
       //bool        m_multiThreaded;
@@ -101,7 +105,7 @@ namespace DD4hep {
 
     public:
       /// Standard constructor for the master instance
-      Geant4Kernel(LCDD& lcdd);
+      Geant4Kernel(Detector& description);
 
       /// Thread's master context
       Geant4Kernel& master()  const  { return *m_master; }
@@ -145,12 +149,12 @@ namespace DD4hep {
 
 #ifndef __CINT__
       /// Instance accessor
-      static Geant4Kernel& instance(LCDD& lcdd);
+      static Geant4Kernel& instance(Detector& description);
 #endif
       /// Access phase phases
       const Phases& phases() const              {        return m_phases;          }
       /// Access to detector description
-      LCDD& lcdd() const                        {        return *m_lcdd;           }
+      Detector& detectorDescription() const     {        return *m_detDesc;        }
       /// Access the tracking manager
       G4TrackingManager* trackMgr() const       {        return m_trackMgr;        }
       /// Access the tracking manager
@@ -161,7 +165,12 @@ namespace DD4hep {
       unsigned long id()  const                 {        return m_ident;           }
       /// Access to the Geant4 run manager
       G4RunManager& runManager();
-
+      /// Generic framework access
+      UserFramework& userFramework()            {        return m_userFramework;   }
+      /// Set the framework context to the kernel object
+      template <typename T> void setUserFramework(T* object)   {
+        m_userFramework = UserFramework(object,&typeid(T));
+      }
       /** Property access                            */
       /// Access to the properties of the object
       PropertyManager& properties()             {        return m_properties;      }
@@ -234,7 +243,7 @@ namespace DD4hep {
       /// Execute phase action if it exists
       virtual bool executePhase(const std::string& name, const void** args)  const;
 
-      /// Construct detector geometry using lcdd plugin
+      /// Construct detector geometry using description plugin
       virtual void loadGeometry(const std::string& compact_file);
       /// Load XML file 
       virtual void loadXML(const char* fname);
@@ -283,6 +292,6 @@ namespace DD4hep {
       static int terminate(Geant4Kernel& kernel);
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 #endif // DD4HEP_DDG4_GEANT4KERNEL_H

@@ -1,5 +1,5 @@
 #include "DDRec/Surface.h"
-#include "DD4hep/objects/DetectorInterna.h"
+#include "DD4hep/detail/DetectorInterna.h"
 #include "DD4hep/Memory.h"
 
 #include "DDRec/MaterialManager.h"
@@ -14,10 +14,10 @@
 //TGeoTrd1 is apparently not included by defautl
 #include "TGeoTrd1.h"
 
-namespace DD4hep {
-  namespace DDRec {
+namespace dd4hep {
+  namespace rec {
  
-    using namespace Geometry ;
+    using namespace detail ;
 
 
       //======================================================================================================
@@ -30,9 +30,9 @@ namespace DD4hep {
     long64 VolSurfaceBase::id() const  { return _id ; } 
 
     const SurfaceType& VolSurfaceBase::type() const { return _type ; }
-    Vector3D VolSurfaceBase::u( const Vector3D& point ) const {  point.x() ; return _u ; }
-    Vector3D VolSurfaceBase::v(const Vector3D& point  ) const { point.x() ;  return _v ; }
-    Vector3D VolSurfaceBase::normal(const Vector3D& point ) const {  point.x() ; return _n ; }
+    Vector3D VolSurfaceBase::u(const Vector3D& /*point*/) const { return _u ; }
+    Vector3D VolSurfaceBase::v(const Vector3D& /*point*/) const { return _v ; }
+    Vector3D VolSurfaceBase::normal(const Vector3D& /*point*/) const { return _n ; }
     const Vector3D& VolSurfaceBase::origin() const { return _o ;}
 
     Vector2D VolSurfaceBase::globalToLocal( const Vector3D& point) const {
@@ -66,9 +66,9 @@ namespace DD4hep {
 
     double VolSurfaceBase::length_along_u() const {
       
-      const DDSurfaces::Vector3D& o = this->origin() ;
-      const DDSurfaces::Vector3D& u_val = this->u( o ) ;      
-      DDSurfaces::Vector3D  um = -1. * u_val ;
+      const Vector3D& o = this->origin() ;
+      const Vector3D& u_val = this->u( o ) ;      
+      Vector3D  um = -1. * u_val ;
       
       double dist_p = 0. ;
       double dist_m = 0. ;
@@ -107,8 +107,8 @@ namespace DD4hep {
 	// 	  << " dist_m " <<    dist_m
 	// 	  << std::endl ;
 
-	DDSurfaces::Vector3D o_1 = this->origin() + dist_p * u_val ;
-	DDSurfaces::Vector3D o_2 = this->origin() + dist_m * um ;
+	Vector3D o_1 = this->origin() + dist_p * u_val ;
+	Vector3D o_2 = this->origin() + dist_m * um ;
 
 	dist_p += volume()->GetShape()->DistFromInside( const_cast<double*> ( o_1.const_array() ) , 
 							const_cast<double*> ( u_val.const_array() ) ) ;
@@ -129,9 +129,9 @@ namespace DD4hep {
     
     double VolSurfaceBase::length_along_v() const {
 
-      const DDSurfaces::Vector3D& o = this->origin() ;
-      const DDSurfaces::Vector3D& v_val = this->v( o ) ;      
-      DDSurfaces::Vector3D  vm = -1. * v_val ;
+      const Vector3D& o = this->origin() ;
+      const Vector3D& v_val = this->v( o ) ;      
+      Vector3D  vm = -1. * v_val ;
       
       double dist_p = 0. ;
       double dist_m = 0. ;
@@ -170,8 +170,8 @@ namespace DD4hep {
 	// 	  << " dist_m " <<    dist_m
 	// 	  << std::endl ;
 
-	DDSurfaces::Vector3D o_1 = this->origin() + dist_p * v_val ;
-	DDSurfaces::Vector3D o_2 = this->origin() + dist_m * vm ;
+	Vector3D o_1 = this->origin() + dist_p * v_val ;
+	Vector3D o_2 = this->origin() + dist_m * vm ;
 
 	dist_p += volume()->GetShape()->DistFromInside( const_cast<double*> ( o_1.const_array() ) , 
 							const_cast<double*> ( v_val.const_array() ) ) ;
@@ -190,26 +190,34 @@ namespace DD4hep {
     }
     
 
-    double VolSurfaceBase::distance(const Vector3D& point ) const  {  point.x() ; return 1.e99 ; }
+    double VolSurfaceBase::distance(const Vector3D& /*point*/ ) const { return 1.e99 ; }
 
     /// Checks if the given point lies within the surface
     bool VolSurfaceBase::insideBounds(const Vector3D& point, double epsilon) const {
-      
+
 #if 0
+
+      bool inShape = ( type().isUnbounded() ? true : volume()->GetShape()->Contains( point.const_array() ) ) ;
+
       double dist = std::abs ( distance( point ) ) ;
-      
-      bool inShape = volume()->GetShape()->Contains( point.const_array() ) ;
-      
+
       std::cout << " ** Surface::insideBound( " << point << " ) - distance = " << dist 
                 << " origin = " << origin() << " normal = " << normal() 
                 << " p * n = " << point * normal() 
                 << " isInShape : " << inShape << std::endl ;
-	
+
       return dist < epsilon && inShape ;
 #else
-	
-      //fixme: older versions of ROOT (~<5.34.10 ) take a non const pointer as argument - therefore use a const cast here for the time being ...
-      return ( std::abs ( distance( point ) ) < epsilon )  &&  volume()->GetShape()->Contains( const_cast<double*> (point.const_array() )  ) ; 
+
+      if(  type().isUnbounded() ){
+
+	return std::abs ( distance( point ) ) < epsilon ;
+
+      } else {
+
+	return (  std::abs ( distance( point ) ) < epsilon &&  volume()->GetShape()->Contains( point.const_array() ) ) ;
+      }
+
 #endif
  
     }
@@ -254,7 +262,7 @@ namespace DD4hep {
     }
    //======================================================================================================
 
-    VolCylinderImpl::VolCylinderImpl( Geometry::Volume vol, SurfaceType typ, 
+    VolCylinderImpl::VolCylinderImpl( Volume vol, SurfaceType typ, 
 				      double thickness_inner ,double thickness_outer,  Vector3D o ) :
 
       VolSurfaceBase(typ, thickness_inner, thickness_outer, Vector3D() , Vector3D() , Vector3D() , o , vol, 0) {
@@ -318,7 +326,7 @@ namespace DD4hep {
     }
     
     //================================================================================================================
-    VolConeImpl::VolConeImpl( Geometry::Volume vol, SurfaceType typ, 
+    VolConeImpl::VolConeImpl( Volume vol, SurfaceType typ, 
                               double thickness_inner ,double thickness_outer, Vector3D v_val,  Vector3D o_val ) :
       
       VolSurfaceBase(typ, thickness_inner, thickness_outer, Vector3D() , v_val ,  Vector3D() , Vector3D() , vol, 0) {
@@ -444,9 +452,9 @@ namespace DD4hep {
     }
     
     /// create outer bounding lines for the given symmetry of the polyhedron
-    std::vector< std::pair<DDSurfaces::Vector3D, DDSurfaces::Vector3D> >  VolConeImpl::getLines(unsigned nMax){
+    std::vector< std::pair<Vector3D, Vector3D> >  VolConeImpl::getLines(unsigned nMax){
       
-      std::vector< std::pair<DDSurfaces::Vector3D, DDSurfaces::Vector3D> >  lines ;
+      std::vector< std::pair<Vector3D, Vector3D> >  lines ;
       
       lines.reserve( nMax ) ;
       
@@ -509,19 +517,10 @@ namespace DD4hep {
     //================================================================================================================
 
     VolSurfaceList* volSurfaceList( DetElement& det ) {
-
-      
-      VolSurfaceList* list = 0 ;
-
-      try {
-
-        list = det.extension< VolSurfaceList >() ;
-
-      } catch(const std::runtime_error& e){ 
-	
-        list = det.addExtension<VolSurfaceList >(  new VolSurfaceList ) ; 
+      VolSurfaceList* list = det.extension< VolSurfaceList >(false);
+      if ( !list )  {
+        list = det.addExtension<VolSurfaceList >(new VolSurfaceList);
       }
-
       return list ;
     }
 
@@ -572,8 +571,8 @@ namespace DD4hep {
                                      +" [Internal error -- bad detector constructor]");
           }
 	  
-          PlacedVolume pv_dau = Ref_t(daughter); // why use a Ref_t here  ???
-	  
+	  PlacedVolume pv_dau( daughter );
+
           if( findVolume(  pv_dau , theVol , volList ) ) {
 	    
             //	    std::cout << "  ----- found in daughter volume !!!  " << std::hex << pv_dau.volume().ptr() << std::endl ;
@@ -594,8 +593,8 @@ namespace DD4hep {
 
     //======================================================================================================================
 
-    Surface::Surface( Geometry::DetElement det, VolSurface volSurf ) : _det( det) , _volSurf( volSurf ), 
-                                                                       _wtM(0) , _id( 0) , _type( _volSurf.type() )  {
+    Surface::Surface( DetElement det, VolSurface volSurf ) : _det( det) , _volSurf( volSurf ), 
+                                                                       _wtM() , _id( 0) , _type( _volSurf.type() )  {
 
       initialize() ;
     }      
@@ -604,9 +603,9 @@ namespace DD4hep {
 
     const SurfaceType& Surface::type() const { return _type ; }
 
-    Vector3D Surface::u( const Vector3D& point ) const { point.x() ; return _u ; }
-    Vector3D Surface::v(const Vector3D& point ) const {  point.x() ; return _v ; }
-    Vector3D Surface::normal(const Vector3D& point ) const {  point.x() ; return _n ; }
+    Vector3D Surface::u(const Vector3D& /*point*/) const { return _u ; }
+    Vector3D Surface::v(const Vector3D& /*point*/) const { return _v ; }
+    Vector3D Surface::normal(const Vector3D& /*point*/) const { return _n ; }
     const Vector3D& Surface::origin() const { return _o ;}
     double Surface::innerThickness() const { return _volSurf.innerThickness() ; }
     double Surface::outerThickness() const { return _volSurf.outerThickness() ; }
@@ -621,7 +620,7 @@ namespace DD4hep {
       
       if( ! ( mat.Z() > 0 ) ) {
 	
-        MaterialManager matMgr ;
+        MaterialManager matMgr( _det.placement().volume() )  ;
         
 	Vector3D p = _o - innerThickness() * _n  ;
 
@@ -640,7 +639,7 @@ namespace DD4hep {
       
       if( ! ( mat.Z() > 0 ) ) {
 	
-        MaterialManager matMgr ;
+        MaterialManager matMgr( _det.placement().volume() ) ;
         
 	Vector3D p = _o + outerThickness() * _n  ;
 
@@ -723,7 +722,7 @@ namespace DD4hep {
 
       //=========== compute and cache world transform for surface ==========
       
-      const TGeoHMatrix& wm = _det.worldTransformation() ;
+      const TGeoHMatrix& wm = _det.nominal().worldTransformation() ;
       
 #if 0 // debug
       wm.Print() ;
@@ -738,7 +737,7 @@ namespace DD4hep {
       // need to get the inverse transformation ( see Detector.cpp )
       // std::auto_ptr<TGeoHMatrix> wtI( new TGeoHMatrix( wm.Inverse() ) ) ;
       // has been fixed now, no need to get the inverse anymore:
-      dd4hep_ptr<TGeoHMatrix> wtI( new TGeoHMatrix( wm ) ) ;
+      std::unique_ptr<TGeoHMatrix> wtI( new TGeoHMatrix( wm ) ) ;
 
       //---- if the volSurface is not in the DetElement's volume, we need to mutliply the path to the volume to the
       // DetElements world transform
@@ -759,11 +758,11 @@ namespace DD4hep {
       dd4hep_ptr<TGeoHMatrix> wt( new TGeoHMatrix( wtI->Inverse() ) ) ;
       wt->Print() ;
       // cache the world transform for the surface
-      _wtM = wt.release()  ;
+      _wtM = std::move(wtI);
 #else
       //      wtI->Print() ;
       // cache the world transform for the surface
-      _wtM = wtI.release()  ;
+      _wtM = std::move(wtI);
 #endif
 
 
@@ -839,7 +838,7 @@ namespace DD4hep {
 	
 	for( unsigned i=0;i<n;++i){
 	  
-	  DDSurfaces::Vector3D av,bv;
+	  Vector3D av,bv;
 	  _wtM->LocalToMaster( local_lines[i].first ,  av.array() ) ;
 	  _wtM->LocalToMaster( local_lines[i].second , bv.array() ) ;
 	  
@@ -852,10 +851,10 @@ namespace DD4hep {
 
 
       // get local and global surface vectors
-      const DDSurfaces::Vector3D& lu = _volSurf.u() ;
-      //      const DDSurfaces::Vector3D& lv = _volSurf.v() ;
-      const DDSurfaces::Vector3D& ln = _volSurf.normal() ;
-      DDSurfaces::Vector3D lo = _volSurf.origin() ;
+      const Vector3D& lu = _volSurf.u() ;
+      //      const Vector3D& lv = _volSurf.v() ;
+      const Vector3D& ln = _volSurf.normal() ;
+      Vector3D lo = _volSurf.origin() ;
       
       Volume vol = volume() ; 
       const TGeoShape* shape = vol->GetShape() ;
@@ -867,7 +866,7 @@ namespace DD4hep {
 	  
           TGeoBBox* box = ( TGeoBBox* ) shape  ;
 	  
-          DDSurfaces::Vector3D boxDim(  box->GetDX() , box->GetDY() , box->GetDZ() ) ;  
+          Vector3D boxDim(  box->GetDX() , box->GetDY() , box->GetDZ() ) ;  
 	  
 	  
           bool isYZ = std::fabs(  ln.x() - 1.0 ) < epsilon  ; // normal parallel to x
@@ -881,8 +880,8 @@ namespace DD4hep {
             unsigned uidx = 1 ;
             unsigned vidx = 2 ;
 	    
-            DDSurfaces::Vector3D ubl(  0., 1., 0. ) ; 
-            DDSurfaces::Vector3D vbl(  0., 0., 1. ) ;
+            Vector3D ubl(  0., 1., 0. ) ; 
+            Vector3D vbl(  0., 0., 1. ) ;
 	    
             if( isXZ ) {
 	      
@@ -899,8 +898,8 @@ namespace DD4hep {
               vidx = 1 ;
             }
 	    
-            DDSurfaces::Vector3D ub ;
-            DDSurfaces::Vector3D vb ;
+            Vector3D ub ;
+            Vector3D vb ;
             _wtM->LocalToMasterVect( ubl , ub.array() ) ;
             _wtM->LocalToMasterVect( vbl , vb.array() ) ;
 	    
@@ -1004,12 +1003,12 @@ namespace DD4hep {
 
           //according to the TGeoTrap definition, the lengths are given such that the normal vector of the surface
           //points in the e_z direction.
-          DDSurfaces::Vector3D ubl(  1., 0., 0. ) ; 
-          DDSurfaces::Vector3D vbl(  0., 1., 0. ) ; 
+          Vector3D ubl(  1., 0., 0. ) ; 
+          Vector3D vbl(  0., 1., 0. ) ; 
 
           //the local span vectors are transformed into the main coordinate system (in LocalToMasterVect())
-          DDSurfaces::Vector3D ub ;
-          DDSurfaces::Vector3D vb ;
+          Vector3D ub ;
+          Vector3D vb ;
           _wtM->LocalToMasterVect( ubl , ub.array() ) ;
           _wtM->LocalToMasterVect( vbl , vb.array() ) ;
 
@@ -1035,12 +1034,12 @@ namespace DD4hep {
           //the normal vector is parallel to e_y for all geometry cases in CLIC
           //if that is at some point not the case anymore, then local plane vectors ubl, vbl
           //must be initialized like it is done for the boxes (line 674 following)
-          DDSurfaces::Vector3D ubl(  1., 0., 0. ) ; 
-          DDSurfaces::Vector3D vbl(  0., 0., 1. ) ; 
+          Vector3D ubl(  1., 0., 0. ) ; 
+          Vector3D vbl(  0., 0., 1. ) ; 
           
           //the local span vectors are transformed into the main coordinate system (in LocalToMasterVect())
-          DDSurfaces::Vector3D ub ;
-          DDSurfaces::Vector3D vb ;
+          Vector3D ub ;
+          Vector3D vb ;
           _wtM->LocalToMasterVect( ubl , ub.array() ) ;
           _wtM->LocalToMasterVect( vbl , vb.array() ) ;
 
@@ -1067,12 +1066,12 @@ namespace DD4hep {
           //the normal vector is parallel to e_y for all geometry cases in CLIC
           //if that is at some point not the case anymore, then local plane vectors ubl, vbl
           //must be initialized like it is done for the boxes (line 674 following)
-          DDSurfaces::Vector3D ubl(  1., 0., 0. ) ; 
-          DDSurfaces::Vector3D vbl(  0., 0., 1. ) ; 
+          Vector3D ubl(  1., 0., 0. ) ; 
+          Vector3D vbl(  0., 0., 1. ) ; 
           
           //the local span vectors are transformed into the main coordinate system (in LocalToMasterVect())
-          DDSurfaces::Vector3D ub ;
-          DDSurfaces::Vector3D vb ;
+          Vector3D ub ;
+          Vector3D vb ;
           _wtM->LocalToMasterVect( ubl , ub.array() ) ;
           _wtM->LocalToMasterVect( vbl , vb.array() ) ;
 
@@ -1102,7 +1101,7 @@ namespace DD4hep {
         TVector3 norm( ln.x() , ln.y() , ln.z() ) ;
 
 	
-        DDSurfaces::Vector3D first, previous ;
+        Vector3D first, previous ;
 
         for(unsigned i=0 ; i< nMax ; ++i ){ 
 	  
@@ -1115,15 +1114,15 @@ namespace DD4hep {
 	
           TVector3 vecR = rot * vec ;
 	  
-          DDSurfaces::Vector3D luRot ;
+          Vector3D luRot ;
           luRot.fill( vecR ) ;
  	  
           double dist = shape->DistFromInside( const_cast<double*> (lo.const_array()) , const_cast<double*> (luRot.const_array())  , 3, 0.1 ) ;
 	  
           // local point at volume boundary
-          DDSurfaces::Vector3D lp = lo + dist * luRot ;
+          Vector3D lp = lo + dist * luRot ;
 
-          DDSurfaces::Vector3D gp ;
+          Vector3D gp ;
 	  
           _wtM->LocalToMaster( lp , gp.array() ) ;
 
@@ -1202,7 +1201,7 @@ namespace DD4hep {
  
       Vector3D lp , u_val ;
       _wtM->MasterToLocal( point , lp.array() ) ;
-      const DDSurfaces::Vector3D& lu = _volSurf.u( lp  ) ;
+      const Vector3D& lu = _volSurf.u( lp  ) ;
       _wtM->LocalToMasterVect( lu , u_val.array() ) ;
       return u_val ; 
     }
@@ -1210,7 +1209,7 @@ namespace DD4hep {
     Vector3D CylinderSurface::v(const Vector3D& point ) const {  
       Vector3D lp , v_val ;
       _wtM->MasterToLocal( point , lp.array() ) ;
-      const DDSurfaces::Vector3D& lv =  _volSurf.v( lp  ) ;
+      const Vector3D& lv =  _volSurf.v( lp  ) ;
       _wtM->LocalToMasterVect( lv , v_val.array() ) ;
       return v_val ; 
     }
@@ -1218,7 +1217,7 @@ namespace DD4hep {
     Vector3D CylinderSurface::normal(const Vector3D& point ) const {  
       Vector3D lp , n ;
       _wtM->MasterToLocal( point , lp.array() ) ;
-      const DDSurfaces::Vector3D& ln =  _volSurf.normal( lp  ) ;
+      const Vector3D& ln =  _volSurf.normal( lp  ) ;
       _wtM->LocalToMasterVect( ln , n.array() ) ;
       return n ; 
     }

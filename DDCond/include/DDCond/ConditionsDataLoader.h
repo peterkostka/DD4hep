@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -18,6 +17,7 @@
 #include "DD4hep/Conditions.h"
 #include "DD4hep/NamedObject.h"
 #include "DD4hep/ComponentProperties.h"
+#include "DDCond/ConditionsSlice.h"
 #include "DDCond/ConditionsManager.h"
 
 // C/C++ include files
@@ -25,15 +25,16 @@
 #include <set>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Conditions {
+  /// Namespace for implementation details of the AIDA detector description toolkit
+  namespace cond {
 
     // Forward declarations
     class Entry;
-    class ConditionsDataLoader;
     typedef std::list<Entry*> ConditionsStack;
+    class ConditionsSlice;
+    class ConditionsDescriptor;
 
     /// Interface for a generic conditions loader
     /** 
@@ -47,12 +48,14 @@ namespace DD4hep {
       typedef std::pair<std::string, IOV> Source;
       typedef std::vector<Source>         Sources;
       typedef ConditionsDataLoader        base_t;
-      typedef Condition::iov_type         iov_type;
       typedef Condition::key_type         key_type;
+
+      typedef std::map<key_type,Condition>                          LoadedItems;
+      typedef std::vector<std::pair<key_type,ConditionsLoadInfo*> > RequiredItems;
 
     protected:
       /// Reference to main detector description object
-      LCDD&             m_lcdd;
+      Detector&             m_detDesc;
       /// Reference to conditions manager used to queue update requests
       ConditionsManager m_mgr;
       /// Property: input data source definitions
@@ -60,31 +63,35 @@ namespace DD4hep {
 
     protected:
       /// Queue update to manager.
-      Condition queueUpdate(Entry* data);
+      //Condition queueUpdate(Entry* data);
       /// Push update to manager.
       void pushUpdates();
 
     public:
       /// Default constructor
-      ConditionsDataLoader(LCDD& lcdd, ConditionsManager mgr, const std::string nam);
+      ConditionsDataLoader(Detector& description, ConditionsManager mgr, const std::string nam);
       /// Default destructor
       virtual ~ConditionsDataLoader();
       /// Add data source definition to loader
-      void addSource(const std::string& source, const iov_type& iov);
+      void addSource(const std::string& source);
+      /// Add data source definition to loader for data corresponding to a given IOV
+      void addSource(const std::string& source, const IOV& iov);
+#if 0
+      /// Load  a condition set given the conditions key according to their validity
+      virtual size_t load_single(key_type         key,
+                                 const IOV&       req_validity,
+                                 RangeConditions& conditions) = 0;
       /// Load  a condition set given a Detector Element and the conditions name according to their validity
-      virtual size_t load(key_type key,
-			  const iov_type& req_validity,
-                          RangeConditions& conditions) = 0;
-      /// Load  a condition set given a Detector Element and the conditions name according to their validity
-      virtual size_t load_range(key_type key,
-                                const iov_type& req_validity,
-                                RangeConditions& conditions) = 0;
-      virtual size_t update(const iov_type& req_validity,
-			    RangeConditions& conditions,
-			    iov_type& conditions_validity) = 0;
+      virtual size_t load_range( key_type         key,
+                                 const IOV&       req_validity,
+                                 RangeConditions& conditions) = 0;
+#endif
+      /// Load a number of conditions items from the persistent medium according to the required IOV
+      virtual size_t load_many(  const IOV&       req_validity,
+                                 RequiredItems&   work,
+                                 LoadedItems&     loaded,
+                                 IOV&             combined_validity) = 0;
     };
-
-  } /* End namespace Conditions             */
-} /* End namespace DD4hep                   */
-
+  }        /* End namespace cond         */
+}          /* End namespace dd4hep             */
 #endif     /* DDCOND_CONDITIONSDATALOADER_H    */

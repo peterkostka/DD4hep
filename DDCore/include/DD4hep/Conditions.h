@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -11,332 +10,410 @@
 // Author     : M.Frank
 //
 //==========================================================================
-#ifndef DD4HEP_CONDITIONS_CONDITIONS_H
-#define DD4HEP_CONDITIONS_CONDITIONS_H
+#ifndef DD4HEP_DDCORE_CONDITIONS_H
+#define DD4HEP_DDCORE_CONDITIONS_H
 
 // Framework include files
-#include "DD4hep/OpaqueData.h"
-#include "DD4hep/Handle.h"
 #include "DD4hep/IOV.h"
+#include "DD4hep/Handle.h"
+#include "DD4hep/OpaqueData.h"
 
 // C/C++ include files
 #include <vector>
 
+#define DD4HEP_CONDITIONKEY_HAVE_NAME 1
+
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Grammar definition for type binding
+  // Forward declarations
   class BasicGrammar;
+  class DetElement;
+  class Detector;
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Geometry {
-    // Forward declarations
-    class DetElement;
-    class LCDD;
+  /// Conditions internal namespace
+  namespace detail  {
+    class ConditionObject;
   }
 
-  /// Namespace for the conditions part of the AIDA detector description toolkit
-  namespace Conditions   {
+  /// Main condition object handle.
+  /**
+   *  This objects allows access to the data block and
+   *  the interval of validity for a single condition.
+   *
+   *  Note:
+   *  Conditions may be shared between several DetElement objects.
+   *  Hence, the back-link to the DetElement structure cannot be
+   *  set - it would be ambiguous.
+   *
+   *  \author  M.Frank
+   *  \version 1.0
+   *  \ingroup DD4HEP_CONDITIONS
+   */
+  class Condition: public Handle<detail::ConditionObject> {
+  public:
+    /// Forward definition of the key type
+    typedef unsigned long long int key_type;
+    /// High part of the key identifies the detector element
+    typedef unsigned int           detkey_type;
+    /// Low part of the key identifies the item identifier
+    typedef unsigned int           itemkey_type;
+    /// Forward definition of the object properties
+    typedef unsigned int           mask_type;
 
-    // The DetElement is a central object. We alias it here.
-    using Geometry::DetElement;
-    using Geometry::LCDD;
+  public:
+    enum StringFlags  {
+      WITH_IOV           = 1<<0,
+      WITH_ADDRESS       = 1<<1,
+      WITH_TYPE          = 1<<2,
+      WITH_COMMENT       = 1<<4,
+      WITH_DATATYPE      = 1<<5,
+      WITH_DATA          = 1<<6,
+      NO_NAME            = 1<<20,
+      NONE
+    };
+    enum ConditionState {
+      INACTIVE            = 0,
+      ACTIVE              = 1<<0,
+      CHECKED             = 1<<2,
+      DERIVED             = 1<<3,
+      ONSTACK             = 1<<4,
+      // Flags for specific conditions
+      TEMPERATURE         = 1<<5,
+      TEMPERATURE_DERIVED = TEMPERATURE|DERIVED,
+      PRESSURE            = 1<<6,
+      PRESSURE_DERIVED    = PRESSURE|DERIVED,
+      ALIGNMENT_DELTA     = 1<<7,
+      ALIGNMENT_DERIVED   = ALIGNMENT_DELTA|DERIVED,
+      // Keep bit 8-15 for other generic types
+      // Bit 16-31 is reserved for user classifications
+      USER_FLAGS_FIRST    = 1<<16,
+      USER_FLAGS_LAST     = 1<<31
+    };
 
-    // Forward declarations
-    class ConditionsManagerObject;
-    class ConditionsManager;
-    class ConditionsLoader;
-    class UserPool;
-
-    /// Conditions internal namespace
-    namespace Interna  {
-      class ConditionContainer;
-      class ConditionObject;
-    }
-
-    /// Main condition object handle.
+    /// Abstract base for processing callbacks to conditions objects
     /**
-     *  This objects allows access to the data block and
-     *  the interval of validity for a single condition.
-     *
-     *  Note:
-     *  Conditions may be shared between several DetElement objects.
-     *  Hence, the back-link to the DetElement structure cannot be
-     *  set - it would be ambiguous.
-     *
      *  \author  M.Frank
      *  \version 1.0
      *  \ingroup DD4HEP_CONDITIONS
      */
-    class Condition: public Handle<Interna::ConditionObject> {
+    class Processor {
     public:
-      /// Standard object type
-      typedef Interna::ConditionObject    Object;
-      /// Forward definition of the key type
-      typedef unsigned int                key_type;
-      /// Forward definition of the iov type
-      typedef IOV                         iov_type;
-
-    public:
-      enum StringFlags  {
-        WITH_IOV         = 1<<0,
-        WITH_ADDRESS     = 1<<1,
-        WITH_TYPE        = 1<<2,
-        WITH_COMMENT     = 1<<4,
-        WITH_DATATYPE    = 1<<5,
-        WITH_DATA        = 1<<6,
-        NO_NAME          = 1<<20,
-        NONE
-      };
-      enum ConditionState {
-        INACTIVE         = 0,
-        ACTIVE           = 1<<0,
-        CHECKED          = 1<<2,
-        DERIVED          = 1<<3,
-        TEMPERATURE      = 1<<4,
-        PRESSURE         = 1<<5,
-        ALIGNMENT        = 1<<6,
-        // Keep bit 7-15 for other generic types
-        // Bit 16-31 is reserved for user classifications
-        USER_FLAGS_FIRST = 1<<16,
-        USER_FLAGS_LAST  = 1<<31
-      };
-
-      /// Abstract base for processing callbacks
-      /**
-       *  \author  M.Frank
-       *  \version 1.0
-       *  \ingroup DD4HEP_CONDITIONS
-       */
-      class Processor {
-      public:
-        virtual int operator()(Condition c) = 0;
-      };
-
       /// Default constructor
-      Condition();
-      /// Copy constructor
-      Condition(const Condition& c);
-      /// Initializing constructor
-      Condition(Object* p);
-      /// Constructor to be used when reading the already parsed object
-      template <typename Q> Condition(const Handle<Q>& e) : Handle<Object>(e) {}
-      /// Initializing constructor for a pure, undecorated conditions object
-      Condition(const std::string& name, const std::string& type);
-      /// Assignment operator
-      Condition& operator=(const Condition& c);
-
-      /// Output method
-      std::string str(int with_data=WITH_IOV|WITH_ADDRESS|WITH_DATATYPE)  const;
-
-      /** Data block (bound type)         */
-      /// Access the data type
-      int dataType()  const;
-      /// Access the IOV block
-      OpaqueData& data()  const;
-
-      /** Interval of validity            */
-      /// Access the IOV type
-      const IOVType& iovType()  const;
-      /// Access the IOV block
-      const iov_type& iov()  const;
-
-      /** Direct data items in string form */
-      /// Access the name of the condition
-      const std::string& name()  const;
-      /// Access the type field of the condition
-      const std::string& type()  const;
-      /// Access the comment field of the condition
-      const std::string& comment()  const;
-      /// Access the value field of the condition as a string
-      const std::string& value()  const;
-      /// Access the address string [e.g. database identifier]
-      const std::string& address()  const;
-
-      /** Conditions meta-data   */
-      /// Access to the type information
-      const std::type_info& typeInfo() const;
-      /// Access to the grammar type
-      const BasicGrammar& descriptor() const;
-      /// Hash identifier
-      key_type key()  const;
-      
-      /** Conditions handling */
-      /// Re-evaluate the conditions data according to the previous bound type definition
-      Condition& rebind();
-
-      /** Bind the data of the conditions object to a given format.
-       *
-       *  Note: The type definition is possible exactly once.
-       *  Any further rebindings MUST match the identical type.
-       */
-      template <typename T> T& bind();
-      /// Generic getter. Specify the exact type, not a polymorph type
-      template <typename T> T& get();
-      /// Generic getter (const version). Specify the exact type, not a polymorph type
-      template <typename T> const T& get() const;
-      /// Check if object is already bound....
-      bool is_bound()  const  {  return isValid() ? data().is_bound() : false;  }
+      Processor();
+      /// Default destructor
+      virtual ~Processor() = default;
+      /// Processing callback
+      virtual int process(Condition c)  const = 0;
+      /// Conditions callback for object processing
+      virtual int operator()(Condition c)  const
+      {  return this->process(c);                   }
+      /// Conditions callback for object processing in maps
+      virtual int operator()(const std::pair<Condition::key_type,Condition>& e)  const
+      {  return this->process(e.second);            }
     };
 
-    /// Initializing constructor
-    inline Condition::Condition(Condition::Object* p) : Handle<Condition::Object>(p)  {
-    }
-
+    /// Default constructor
+    Condition() = default;
     /// Copy constructor
-    inline Condition::Condition(const Condition& c) : Handle<Condition::Object>(c)   {
-    }
+    Condition(const Condition& c) = default;
+    /// Initializing constructor
+    Condition(Object* p);
+    /// Constructor to be used when reading the already parsed object
+    template <typename Q> Condition(const Handle<Q>& e);
+    /// Initializing constructor for a pure, undecorated conditions object
+    Condition(const std::string& name, const std::string& type);
+    /// Initializing constructor for a pure, undecorated conditions object with payload buffer
+    Condition(const std::string& name, const std::string& type, size_t memory);
+    /// Assignment operator
+    Condition& operator=(const Condition& c) = default;
 
-    /// Default constructor
-    inline Condition::Condition() : Handle<Condition::Object>()   {
-    }
+    /// Output method
+    std::string str(int with_data=WITH_IOV|WITH_ADDRESS|WITH_DATATYPE)  const;
 
+    /** Data block (bound type)         */
+    /// Access the data type
+    int dataType()  const;
 
-    /// Container class for condition handles aggregated by a detector element
-    /**
-     *  Note: The conditions container is owner by the detector element
-     *        On deletion the detector element will destroy the container
-     *        and all associated entries.
+    /** Interval of validity            */
+    /// Access the IOV type
+    const IOVType& iovType()  const;
+    /// Access the IOV block
+    const IOV& iov()  const;
+
+    /** Conditions identification using integer keys.   */
+    /// Hash identifier
+    key_type key()  const;
+    /// DetElement part of the identifier
+    detkey_type  detector_key()  const;
+    /// Item part of the identifier
+    itemkey_type item_key()  const;
+      
+    
+    /** Direct data items in string form */
+    /// Access the type field of the condition
+    const std::string& type()  const;
+    /// Access the comment field of the condition
+    const std::string& comment()  const;
+    /// Access the value field of the condition as a string
+    const std::string& value()  const;
+    /// Access the address string [e.g. database identifier]
+    const std::string& address()  const;
+
+    /// Flag operations: Set a conditons flag
+    void setFlag(mask_type option);
+    /// Flag operations: UN-Set a conditons flag
+    void unFlag(mask_type option);
+    /// Flag operations: Test for a given a conditons flag
+    bool testFlag(mask_type option) const;
+
+    /** Conditions meta-data and handling of the data binding  */
+    /// Access the opaque data block
+    OpaqueData& data()  const;
+    /// Access to the type information
+    const std::type_info& typeInfo() const;
+    /// Access to the grammar type
+    const BasicGrammar& descriptor() const;
+    /// Check if object is already bound....
+    bool is_bound()  const  {  return isValid() ? data().is_bound() : false;  }
+    /** Bind the data of the conditions object to a given format.
      *
-     *  \author  M.Frank
-     *  \version 1.0
-     *  \ingroup DD4HEP_CONDITIONS
+     *  Note: The type definition is possible exactly once.
+     *  Any further rebindings MUST match the identical type.
      */
-    class Container : public Handle<Interna::ConditionContainer> {
-    public:
-      /// Standard object type
-      typedef Interna::ConditionContainer Object;
-      /// Forward definition of the key type
-      typedef Condition::key_type         key_type;
-      /// Forward definition of the iov type
-      typedef Condition::iov_type         iov_type;
+    template <typename T> T& bind();
+    /** Set and bind the data of the conditions object to a given format.
+     *
+     *  Note: The type definition is possible exactly once.
+     *  Any further rebindings MUST match the identical type.
+     */
+    template <typename T> T& bind(const std::string& val);
+    /// Generic getter. Specify the exact type, not a polymorph type
+    template <typename T> T& get();
+    /// Generic getter (const version). Specify the exact type, not a polymorph type
+    template <typename T> const T& get() const;
+    /// Re-evaluate the conditions data according to the previous bound type definition
+    Condition& rebind();
+  };
 
-    public:
-      /// Default constructor
-      Container();
+  /// Initializing constructor
+  inline Condition::Condition(Condition::Object* p)
+    : Handle<Condition::Object>(p)  {}
 
-      /// Constructor to be used when reading the already parsed object
-      template <typename Q> Container(const Container& c) : Handle<Object>(c) {}
+  /// Constructor to be used when reading the already parsed object
+  template <typename Q> inline Condition::Condition(const Handle<Q>& e)
+    : Handle<Condition::Object>(e) {}
 
-      /// Constructor to be used when reading the already parsed object
-      template <typename Q> Container(const Handle<Q>& e) : Handle<Object>(e) {}
+    
+  /// Key definition to optimize ans simplyfy the access to conditions entities
+  /**
+   *  \author  M.Frank
+   *  \version 1.0
+   *  \ingroup DD4HEP_CONDITIONS
+   */
+  class ConditionKey  {
+  public:
+#ifdef DD4HEP_CONDITIONKEY_HAVE_NAME
+    /// Optional string identifier. Helps debugging a lot!
+    std::string  name;
+#endif
+    /// Hashed key representation
+    Condition::key_type     hash = 0;
 
-      /// Access the number of conditons keys available for this detector element
-      size_t numKeys() const;
-
-      /// Access to condition objects by key and IOV. 
-      Condition get(const std::string& condition_key, const iov_type& iov);
-
-      /// Access to condition objects directly by their hash key. 
-      Condition get(key_type condition_key, const iov_type& iov);
-
-      /// Access to condition objects. Only conditions in the pool are accessed.
-      Condition get(const std::string& condition_key, const UserPool& iov);
-
-      /// Access to condition objects. Only conditions in the pool are accessed.
-      Condition get(key_type condition_key, const UserPool& iov);
-    };
-
-    /// Default constructor
-    inline Container::Container() : Handle<Object>() {
-    }
-
-
-    /// Key definition to optimize ans simplyfy the access to conditions entities
+    /// Helper union to interprete conditions keys
     /**
      *  \author  M.Frank
      *  \version 1.0
      *  \ingroup DD4HEP_CONDITIONS
      */
-    class ConditionKey  {
-    public:
-      /// Forward definition of the key type
-      typedef Condition::key_type      key_type;
-
-      /// String representation of the key object
-      std::string  name;
-      /// Hashed key representation
-      key_type     hash;
-
-    public:
-      /// Default constructor
-      ConditionKey() : hash(0)  {}
-      /// Constructor from string
-      ConditionKey(const std::string& compare);
-      /// Constructor from string
-      ConditionKey(const std::string& s, key_type h) : name(s), hash(h) {}
-      /// Copy constructor
-      ConditionKey(const ConditionKey& c) : name(c.name), hash(c.hash) {}
-
-      /// Hash code generation from input string
-      static key_type hashCode(const char* value);
-      /// Hash code generation from input string
-      static key_type hashCode(const std::string& value);
-
-      /// Assignment operator from the string representation
-      ConditionKey& operator=(const std::string& value);
-      /// Assignment operator from object copy
-      ConditionKey& operator=(const ConditionKey& key);
-      /// Equality operator using key object
-      bool operator==(const ConditionKey& compare)  const;
-      /// Equality operator using hash value
-      bool operator==(const key_type compare)  const;
-      /// Equality operator using the string representation
-      bool operator==(const std::string& compare)  const;
-
-      /// Operator less (for map insertions) using key object
-      bool operator<(const ConditionKey& compare)  const;
-      /// Operator less (for map insertions) using hash value
-      bool operator<(const key_type compare)  const;
-      /// Operator less (for map insertions) using the string representation
-      bool operator<(const std::string& compare)  const;
-
-      /// Automatic conversion to the string representation of the key object
-      operator const std::string& ()  const  {  return name;     }
-      /// Automatic conversion to the hashed representation of the key object
-      operator key_type () const         {  return hash;     }
-    };
-
-    /// Hash code generation from input string
-    inline ConditionKey::key_type ConditionKey::hashCode(const char* value)
-    {   return hash32(value);    }
-
-    /// Hash code generation from input string
-    inline ConditionKey::key_type ConditionKey::hashCode(const std::string& value)
-    {   return hash32(value);    }
-
-    /// Assignment operator from object copy
-    inline ConditionKey& ConditionKey::operator=(const ConditionKey& key)  {
-      if ( this != &key )  {
-        hash  = key.hash;
-        name  = key.name;
+    union KeyMaker  {
+      Condition::key_type  hash;
+      /** Note: The memory layout is important here to have properly
+       *        ordered maps. The detector key MUST be on the high end 
+       *        of the resulting int64 'hash'.
+       */
+      struct {
+        Condition::itemkey_type item_key;
+        Condition::detkey_type  det_key;
+      } values;
+      KeyMaker()  {
+        this->hash = 0;
       }
-      return *this;
+      KeyMaker(Condition::key_type k)  {
+        this->hash = k;
+      }
+      KeyMaker(Condition::detkey_type det, Condition::itemkey_type item)  {
+        this->values.det_key  = det;
+        this->values.item_key = item;
+      }
+    };
+    /// Compare keys by the hash value
+    /**
+     *  \author  M.Frank
+     *  \version 1.0
+     *  \ingroup DD4HEP_CONDITIONS
+     */
+    struct HashCompare {
+      Condition::key_type key;
+      HashCompare(Condition::key_type k) : key(k) {}
+      bool operator==(const ConditionKey& k) const { return key==k.hash; }
+    };
+  public:
+    /// Default constructor
+    ConditionKey() = default;
+    /// Constructor from fully qualified key
+    ConditionKey(Condition::key_type key) : hash(key) {}
+    /// Constructor from string
+    ConditionKey(DetElement detector, const std::string& identifier);
+    /// Constructor from detector element key and item sub-key
+    ConditionKey(Condition::detkey_type det_key, const std::string& identifier);
+    /// Constructor from detector element and item sub-key
+    ConditionKey(DetElement detector, Condition::itemkey_type item_key);
+    /// Constructor from detector element key and item sub-key
+    ConditionKey(Condition::detkey_type det_key, Condition::itemkey_type item_key);
+    /// Copy constructor
+    ConditionKey(const ConditionKey& c) = default;
+
+    /// Access the detector element part of the key
+    Condition::detkey_type detector_key()  const   {
+      return KeyMaker(hash).values.det_key;
     }
-
+    /// Access the detector element part of the key
+    Condition::itemkey_type item_key()  const   {
+      return KeyMaker(hash).values.item_key;
+    }
+    /// Hash code generation from input string
+    static Condition::key_type hashCode(DetElement detector, const char* value);
+    /// Hash code generation from input string
+    static Condition::key_type hashCode(DetElement detector, const std::string& value);
+    /// 32 bit hashcode of the item
+    static Condition::itemkey_type itemCode(const char* value);
+    /// 32 bit hashcode of the item
+    static Condition::itemkey_type itemCode(const std::string& value);
+       
+    /// Assignment operator from object copy
+    ConditionKey& operator=(const ConditionKey& key) = default;
     /// Equality operator using key object
-    inline bool ConditionKey::operator==(const ConditionKey& compare)  const
-    {  return hash == compare.hash;                            }
-
+    bool operator==(const ConditionKey& compare)  const;
     /// Equality operator using hash value
-    inline bool ConditionKey::operator==(const key_type compare)  const
-    {  return hash == compare;                                 }
+    bool operator==(const Condition::key_type compare)  const;
+    /// Equality operator using the string representation
+    //bool operator==(const std::string& compare)  const;
 
     /// Operator less (for map insertions) using key object
-    inline bool ConditionKey::operator<(const ConditionKey& compare)  const
-    {  return hash < compare.hash;                             }
-
+    bool operator<(const ConditionKey& compare)  const;
     /// Operator less (for map insertions) using hash value
-    inline bool ConditionKey::operator<(const key_type compare)  const
-    {  return hash < compare;                                  }
+    bool operator<(const Condition::key_type compare)  const;
+    /// Automatic conversion to the hashed representation of the key object
+    operator Condition::key_type () const             {  return hash;     }
+  };
 
-    /// Access the key of the condition
-    ConditionKey make_key(Condition c);
+  /// Constructor from detector element key and item sub-key
+  inline ConditionKey::ConditionKey(Condition::detkey_type det_key, Condition::itemkey_type item_key)  {
+    hash = KeyMaker(det_key,item_key).hash;
+  }
+    
+  /// Equality operator using key object
+  inline bool ConditionKey::operator==(const ConditionKey& compare)  const
+  {  return hash == compare.hash;                            }
 
-    // Utility type definitions
-    typedef std::vector<Condition>          RangeConditions;
-    typedef std::pair<RangeConditions,bool> RangeStatus;
+  /// Equality operator using hash value
+  inline bool ConditionKey::operator==(const Condition::key_type compare)  const
+  {  return hash == compare;                                 }
 
-  } /* End namespace Conditions             */
-} /* End namespace DD4hep                   */
-#endif    /* DD4HEP_CONDITIONS_CONDITIONS_H */
+  /// Operator less (for map insertions) using key object
+  inline bool ConditionKey::operator<(const ConditionKey& compare)  const
+  {  return hash < compare.hash;                             }
+
+  /// Operator less (for map insertions) using hash value
+  inline bool ConditionKey::operator<(const Condition::key_type compare)  const
+  {  return hash < compare;                                  }
+
+
+  /// Conditions selector functor. Default implementation selects everything evaluated.
+  /**
+   *  Please note:
+   *  This class should never be directly instantiated by the user.
+   *  A typical use-case is to do so in a wrapper class, which contains a refernce
+   *  to a counter object, which in turn allows to deduce information from the
+   *  processed objects.
+   *
+   *  See class ConditionsSelectWrapper below
+   *
+   *  \author  M.Frank
+   *  \version 1.0
+   *  \ingroup DD4HEP_CONDITIONS
+   */
+  class ConditionsSelect   {
+  protected:
+    /// Default constructor
+    ConditionsSelect() = default;
+    /// Copy constructor
+    ConditionsSelect(const ConditionsSelect& copy) = default;
+    /// Default destructor. 
+    virtual ~ConditionsSelect();
+    /// Default assignment operator
+    ConditionsSelect& operator=(const ConditionsSelect& copy) = default;
+
+  public:
+    /// Selection callback: return true if the condition should be selected
+    bool operator()(Condition cond)  const  { return (*this)(cond.ptr()); }
+    /// Selection callback: return true if the condition should be selected
+    bool operator()(std::pair<Condition::key_type,Condition::Object*> cond) const
+    /** Arg is 2 longwords. No need to pass by reference.                      */
+    { return (*this)(cond.second);            }
+    /// Selection callback: return true if the condition should be selected
+    /** Arg is 2 longwords. No need to pass by reference.                      */
+    bool operator()(std::pair<Condition::key_type,Condition> cond) const
+    { return (*this)(cond.second.ptr());      }
+
+    /// Overloadable entry: Return number of conditions selected. Default does nothing....
+    virtual size_t size()  const  { return 0; }
+    /// Overloadable entry: Selection callback: return true if the condition should be selected
+    virtual bool operator()(Condition::Object* cond) const = 0;
+  };
+
+  /// Conditions selector functor. Wraps a user defined object by reference
+  /**
+   *  Example usage for the slow ones:
+   *
+   *  class MyCounter : public ConditionsSelectWrapper<long> {
+   *    MyCounter(long& cnt) : ConditionsSelectWrapper<long>(cnt) {}
+   *    virtual bool operator()(Condition::Object* cond) const { if ( cond != 0 ) ++object; }
+   *    // Optionally overload: virtual size_t size()  const  { return object; }
+   *  };
+   *  
+   *  long counter = 0;
+   *  for_each(std::begin(conditons), std::end(conditions), MyCounter(counter));
+   *
+   *  \author  M.Frank
+   *  \version 1.0
+   *  \ingroup DD4HEP_CONDITIONS
+   */
+  template <typename OBJECT> class ConditionsSelectWrapper : public ConditionsSelect {
+  private:
+    /// Default constructor
+    ConditionsSelectWrapper() = delete;
+    /// Default assignment operator
+    bool operator==(const ConditionsSelectWrapper& compare) = delete;
+
+  public:
+    /// Reference to the infomation collector
+    OBJECT& object;
+
+  public:
+    /// Default constructor
+    ConditionsSelectWrapper(OBJECT& o) : ConditionsSelect(), object(o) {}
+    /// Copy constructor
+    ConditionsSelectWrapper(const ConditionsSelectWrapper& copy) = default;
+    /// Default destructor. 
+    virtual ~ConditionsSelectWrapper() = default;
+    /// Default assignment operator
+    ConditionsSelectWrapper& operator=(const ConditionsSelectWrapper& copy) = default;
+  };
+
+  // Utility type definitions
+  typedef std::vector<Condition>          RangeConditions;
+  
+}          /* End namespace dd4hep                   */
+#endif     /* DD4HEP_DDCORE_CONDITIONS_H             */

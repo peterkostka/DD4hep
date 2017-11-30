@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -22,7 +21,7 @@ class TEveViewer;
 class TGLOvlSelectRecord;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Class to add annotations to eve viewers
   /** 
@@ -45,7 +44,6 @@ namespace DD4hep {
     /// Default margin for placement in bottom left corner
     static float DefaultMargin();
   };
-
-}      /* End namespace DD4hep   */
+}      /* End namespace dd4hep      */
 #endif /* DD4HEP_DDEVE_ANNOTATION_H */
 

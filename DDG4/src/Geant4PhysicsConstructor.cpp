@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -18,7 +17,7 @@
 #include "G4VModularPhysicsList.hh"
 #include "G4Version.hh"
 
-using namespace DD4hep::Simulation;
+using namespace dd4hep::sim;
 
 namespace  {
 
@@ -35,11 +34,15 @@ namespace  {
     /// Access to a fresh (resetted) instance of the particle table iterator
     G4ParticleTable::G4PTblDicIterator* particleIterator()  const   {
       G4ParticleTable::G4PTblDicIterator* iter;
-#if G4VERSION_NUMBER >= 1000
+
+#if G4VERSION_NUMBER >= 1030
+      iter = GetParticleIterator();
+#elif G4VERSION_NUMBER >= 1000
       iter = aParticleIterator;
 #else  
       iter = theParticleIterator;
-#endif
+#endif 
+
       iter->reset();
       return iter;
     }

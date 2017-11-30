@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -26,7 +25,7 @@
 class TGWindow;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// class PopupMenu  PopupMenu.h DDEve/PopupMenu.h
   /*
@@ -79,14 +78,10 @@ namespace DD4hep {
     /// Public access to the popup menu using '->'
     TGPopupMenu* operator->() { return &m_popup; }
     /// Public access to the popup menu using '->'
-    operator TGPopupMenu* () { return &m_popup; }
+    operator TGPopupMenu* ()  { return &m_popup; }
 
     ClassDef(PopupMenu,0);
   };
-
-
-} /* End namespace DD4hep   */
-
-
+}      /* End namespace dd4hep     */
 #endif /* DD4HEP_DDEVE_POPUPMENU_H */
 

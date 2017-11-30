@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -19,15 +18,13 @@
 
 // C/C++ include files
 #include <map>
+#include <memory>
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Conditions {
-
-    /// Forward declarations
-    class ConditionsDataLoader;
+  /// Namespace for implementation details of the AIDA detector description toolkit
+  namespace cond {
 
     /// Pool of conditions satisfying one IOV type (epoch, run, fill, etc)
     /** 
@@ -40,32 +37,38 @@ namespace DD4hep {
      */
     class ConditionsIOVPool  {
     public:
-      typedef ConditionsPool*              Element;
-      typedef std::map<IOV::Key, Element > Elements;      
+      /// Shortcut name for the actual container elements
+      typedef std::shared_ptr<ConditionsPool> Element;
+      /// Shortcut name for the actual conditions container
+      typedef std::map<IOV::Key, Element >    Elements;      
 
       /// Container of IOV dependent conditions pools
-      Elements elements;
-
+      Elements elements;     //! Not ROOT persistent
+      /// Reference to the IOV container
+      const IOVType* type;   //! Not ROOT persistent
+      
     public:
       /// Default constructor
-      ConditionsIOVPool();
+      ConditionsIOVPool(const IOVType* type);
       /// Default destructor
       virtual ~ConditionsIOVPool();
       /// Retrieve  a condition set given the key according to their validity
-      void select(Condition::key_type key, const Condition::iov_type& req_validity, RangeConditions& result);
+      size_t select(Condition::key_type key, const IOV& req_validity, RangeConditions& result);
       /// Retrieve  a condition set given the key according to their validity
-      void selectRange(Condition::key_type key, const Condition::iov_type& req_validity, RangeConditions& result);
-      /// Select all ACTIVE conditions, which do no longer match the IOV requirement
-      void select(const Condition::iov_type& required_validity, 
-                  RangeConditions& valid,
-                  RangeConditions& expired,
-                  Condition::iov_type& conditions_validity);
+      size_t selectRange(Condition::key_type key, const IOV& req_validity, RangeConditions& result);
+      /// Select all ACTIVE conditions, which do match the IOV requirement
+      size_t select(const IOV& req_validity, RangeConditions& valid, IOV& cond_validity);
+      /// Select all ACTIVE conditions, which do match the IOV requirement
+      size_t select(const IOV& req_validity, const ConditionsSelect& valid, IOV& cond_validity);
+      /// Select all ACTIVE conditions pools, which do match the IOV requirement
+      size_t select(const IOV& req_validity, Elements& valid, IOV& cond_validity);
+
       /// Remove all key based pools with an age beyon the minimum age. 
       /** @return Number of conditions cleaned up and removed.                       */
       int clean(int max_age);
     };
 
-  } /* End namespace Conditions             */
-} /* End namespace DD4hep                   */
+  } /* End namespace cond             */
+} /* End namespace dd4hep                   */
 
 #endif     /*  DDCOND_CONDITIONSIOVPOOL_H   */

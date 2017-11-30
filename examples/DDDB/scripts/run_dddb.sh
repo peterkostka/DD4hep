@@ -1,7 +1,6 @@
 #!/bin/bash
-# $Id$
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -28,6 +27,7 @@ if test -z "${DDDB_DIR}"; then
     fi;
     DDDB_DIR=${target}/DDDB;
 fi;
+export DDDB_DIR;
 loader="-loader DDDB_FileReader";
 params="-params file:${DDDB_DIR}/Parameters.xml";
 input="-input file:${DDDB_DIR}/DDDB/lhcb.xml";
@@ -36,13 +36,27 @@ exec="";
 vis="";
 debug="";
 last_cmd="";
+plugins="";
 #
+all_args="$*";
 #
 while [[ "$1" == -* ]]; do
     #echo "Arg:$1 $2 [$*]";
     a1=`echo $1 | tr A-Z a-z`;
     #echo "Arg: $1 -- ${last_cmd}";
     case ${a1} in
+        -plugin)
+            plugins="$*";
+            while test -n "$1"; do 
+                shift;
+            done;
+            ;;
+        -end-plugin)
+            plugins="$*";
+            while test -n "$1"; do 
+                shift;
+            done;
+            ;;
         -debug)
             debug="gdb --args";
             last_cmd="";
@@ -106,8 +120,11 @@ while [[ "$1" == -* ]]; do
 done;
 #
 #
+if [ "$(uname)" == "Darwin" ]; then
+  export DYLD_LIBRARY_PATH=${DD4HEP_LIBRARY_PATH}
+fi
 export DD4HEP_TRACE=ON;
-ARGS=`echo -plugin DDDB_Executor ${loader} ${params} ${input} ${config} ${exec} ${vis}`;
+ARGS=`echo -plugin DDDB_Executor ${loader} ${params} ${input} ${config} ${exec} ${vis} ${plugins}`;
 echo "Command: ${debug} `which geoPluginRun` -destroy $ARGS";
 if test -z "${debug}";then
     exec `which geoPluginRun` -destroy ${ARGS};

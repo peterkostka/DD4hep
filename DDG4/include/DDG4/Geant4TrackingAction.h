@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -22,10 +21,10 @@ class G4TrackingManager;
 class G4Track;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4TrackInformation;
@@ -43,6 +42,10 @@ namespace DD4hep {
     public:
       typedef Geant4SharedTrackingAction shared_type;
     public:
+      /// Default constructor
+      Geant4TrackingAction() = default;
+      /// Inhibit copy constructor
+      Geant4TrackingAction(const Geant4TrackingAction& copy) = delete;
       /// Standard constructor
       Geant4TrackingAction(Geant4Context* context, const std::string& name = "");
       /// Default destructor
@@ -75,8 +78,13 @@ namespace DD4hep {
     class Geant4SharedTrackingAction : public Geant4TrackingAction {
     protected:
       /// Reference to the shared action
-      Geant4TrackingAction* m_action;
+      Geant4TrackingAction* m_action = 0;
+
     public:
+      /// Default constructor
+      Geant4SharedTrackingAction() = default;
+      /// Inhibit copy constructor
+      Geant4SharedTrackingAction(const Geant4TrackingAction& copy) = delete;
       /// Standard constructor
       Geant4SharedTrackingAction(Geant4Context* context, const std::string& nam);
       /// Default destructor
@@ -119,6 +127,10 @@ namespace DD4hep {
       /// The list of action objects to be called
       Actors<Geant4TrackingAction> m_actors;
     public:
+      /// Default constructor
+      Geant4TrackingActionSequence() = default;
+      /// Inhibit copy constructor
+      Geant4TrackingActionSequence(const Geant4TrackingActionSequence& copy) = delete;
       /// Standard constructor
       Geant4TrackingActionSequence(Geant4Context* context, const std::string& name);
       /// Default destructor
@@ -161,7 +173,6 @@ namespace DD4hep {
       virtual void end(const G4Track* track);
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
-
+  }    // End namespace sim
+}      // End namespace dd4hep
 #endif // DD4HEP_DDG4_GEANT4TRACKINGACTION_H

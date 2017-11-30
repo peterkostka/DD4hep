@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -21,10 +20,10 @@
 namespace EVENT { class LCCollection;    }
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep  {
+namespace dd4hep  {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation  {
+  namespace sim  {
 
     /// Base class to read lcio files.
     /**
@@ -42,12 +41,12 @@ namespace DD4hep  {
 
       /// Read an event and fill a vector of MCParticles.
       virtual EventReaderStatus readParticles(int event_number, 
-                                              Vertex& primary_vertex,
+                                              Vertices& vertices,
                                               std::vector<Particle*>& particles);
       /// Read an event and return a LCCollectionVec of MCParticles.
       virtual EventReaderStatus readParticleCollection(int event_number, EVENT::LCCollection** particles) = 0;
     };
 
-  }     /* End namespace Simulation   */
-}       /* End namespace DD4hep */
+  }     /* End namespace sim   */
+}       /* End namespace dd4hep */
 #endif  /* DD4HEP_DDG4_LCIOEVENTREADER_H  */

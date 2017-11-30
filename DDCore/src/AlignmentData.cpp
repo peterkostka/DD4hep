@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -16,18 +15,19 @@
 #include "DD4hep/AlignmentData.h"
 #include "DD4hep/MatrixHelpers.h"
 #include "DD4hep/InstanceCount.h"
+#include "DD4hep/OpaqueData.h"
+#include "DD4hep/Primitives.h"
 
 // ROOT include files
 #include "TGeoMatrix.h"
 #include <sstream>
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Alignments;
+using namespace dd4hep;
 
 /// Copy constructor
 Delta::Delta(const Delta& c)
-  : pivot(c.pivot), translation(c.translation), rotation(c.rotation), flags(c.flags)
+  : translation(c.translation), pivot(c.pivot), rotation(c.rotation), flags(c.flags)
 {
 }
 
@@ -54,7 +54,7 @@ void Delta::clear()   {
   rotation    = RotationZYX();
 }
 
-/// print Conditions object
+/// print alignment delta object
 ostream& operator << (ostream& s, const Delta& data)   {
   string res;
   stringstream str;
@@ -74,7 +74,8 @@ AlignmentData::AlignmentData()
 
 /// Copy constructor
 AlignmentData::AlignmentData(const AlignmentData& copy)
-  : delta(copy.delta), worldTrafo(copy.worldTrafo), detectorTrafo(copy.detectorTrafo),
+  : delta(copy.delta), worldTrafo(copy.worldTrafo), worldDelta(copy.worldDelta),
+    detectorTrafo(copy.detectorTrafo),
     nodes(copy.nodes), trToWorld(copy.trToWorld), detector(copy.detector),
     placement(copy.placement), flag(copy.flag), magic(magic_word())
 {
@@ -200,11 +201,16 @@ Alignment AlignmentData::nominal() const   {
   return detector.nominal();
 }
 
-#include "DD4hep/ToStream.h"
-#include "DD4hep/objects/ConditionsInterna.h"
-DD4HEP_DEFINE_CONDITIONS_TYPE_DUMMY(Delta)
-DD4HEP_DEFINE_CONDITIONS_TYPE_DUMMY(AlignmentData)
+#include "DDParsers/Parsers.h"
+#include "DDParsers/ToStream.h"
+DD4HEP_DEFINE_PARSER_DUMMY(Delta)
+DD4HEP_DEFINE_PARSER_DUMMY(AlignmentData)
 
-#include "DD4hep/objects/BasicGrammar_inl.h"
+#include "DD4hep/detail/BasicGrammar_inl.h"
+#include "DD4hep/detail/ConditionsInterna.h"
 DD4HEP_DEFINE_PARSER_GRAMMAR(Delta,eval_none<Delta>)
 DD4HEP_DEFINE_PARSER_GRAMMAR(AlignmentData,eval_none<AlignmentData>)
+
+DD4HEP_DEFINE_CONDITIONS_TYPE(Delta)
+DD4HEP_DEFINE_CONDITIONS_TYPE(AlignmentData)
+

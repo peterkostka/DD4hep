@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -13,9 +12,9 @@
 //==========================================================================
 
 // Framework include files
-#include "DD4hep/Printout.h"
-#include "XML/Evaluator.h"
+#include "DDParsers/Evaluator.h"
 #include "XML/XMLElements.h"
+#include "XML/Printout.h"
 #include "XML/XMLTags.h"
 
 // C/C++ include files
@@ -25,16 +24,16 @@
 #include <map>
 
 using namespace std;
-using namespace DD4hep::XML;
+using namespace dd4hep::xml;
 static const size_t INVALID_NODE = ~0U;
 
 // Forward declarations
-namespace DD4hep {
+namespace dd4hep {
   XmlTools::Evaluator& evaluator();
 }
 // Static storage
 namespace {
-  XmlTools::Evaluator& eval(DD4hep::evaluator());
+  XmlTools::Evaluator& eval(dd4hep::evaluator());
   string _checkEnviron(const string& env)  {
     string r = getEnviron(env);
     return r.empty() ? env : r;
@@ -63,6 +62,7 @@ namespace {
 #define appendChild         LinkEndChild
 #define getOwnerDocument    GetDocument
 #define getDocumentElement  RootElement
+#define getDocumentURI      Value
 
 /// Union to ease castless object access in TinyXML
 union Xml {
@@ -90,15 +90,15 @@ namespace {
     return cnt;
   }
 }
-XmlChar* DD4hep::XML::XmlString::replicate(const XmlChar* c) {
+XmlChar* dd4hep::xml::XmlString::replicate(const XmlChar* c) {
   return c ? ::strdup(c) : 0;
 }
-XmlChar* DD4hep::XML::XmlString::transcode(const char* c)    {return c ? ::strdup(c) : 0;
+XmlChar* dd4hep::xml::XmlString::transcode(const char* c)    {return c ? ::strdup(c) : 0;
 }
-void DD4hep::XML::XmlString::release(char** p) {
+void dd4hep::xml::XmlString::release(char** p) {
   if(p && *p)  {::free(*p); *p=0;}
 }
-size_t DD4hep::XML::XmlString::length(const char* p)  {
+size_t dd4hep::xml::XmlString::length(const char* p)  {
   return p ? ::strlen(p) : 0;
 }
 
@@ -124,25 +124,25 @@ union Xml {
   XmlElement* xe;
 };
 
-XmlChar* DD4hep::XML::XmlString::replicate(const XmlChar* c) {
+XmlChar* dd4hep::xml::XmlString::replicate(const XmlChar* c) {
   return xercesc::XMLString::replicate(c);
 }
-char* DD4hep::XML::XmlString::transcode(const XmlChar* c) {
+char* dd4hep::xml::XmlString::transcode(const XmlChar* c) {
   return xercesc::XMLString::transcode(c);
 }
-XmlChar* DD4hep::XML::XmlString::transcode(const char* c) {
+XmlChar* dd4hep::xml::XmlString::transcode(const char* c) {
   return xercesc::XMLString::transcode(c);
 }
-void DD4hep::XML::XmlString::release(XmlChar** p) {
+void dd4hep::xml::XmlString::release(XmlChar** p) {
   return xercesc::XMLString::release(p);
 }
-void DD4hep::XML::XmlString::release(char** p) {
+void dd4hep::xml::XmlString::release(char** p) {
   return xercesc::XMLString::release(p);
 }
-size_t DD4hep::XML::XmlString::length(const char* p)  {
+size_t dd4hep::xml::XmlString::length(const char* p)  {
   return p ? xercesc::XMLString::stringLen(p) : 0;
 }
-size_t DD4hep::XML::XmlString::length(const XmlChar* p)  {
+size_t dd4hep::xml::XmlString::length(const XmlChar* p)  {
   return p ? xercesc::XMLString::stringLen(p) : 0;
 }
 
@@ -181,7 +181,8 @@ namespace {
   }
 }
 
-string DD4hep::XML::_toString(const XmlChar *toTranscode) {
+/// Convert XML char to std::string
+string dd4hep::xml::_toString(const XmlChar *toTranscode) {
   char *buff = XmlString::transcode(toTranscode);
   string tmp(buff == 0 ? "" : buff);
   XmlString::release(&buff);
@@ -205,7 +206,7 @@ namespace {
 #endif
 }
 
-string DD4hep::XML::_toString(Attribute attr) {
+string dd4hep::xml::_toString(Attribute attr) {
   if (attr)
     return _toString(attribute_value(attr));
   return "";
@@ -218,55 +219,64 @@ template <typename T> static inline string __to_string(T value, const char* fmt)
 }
 
 /// Do-nothing version. Present for completeness and argument interchangeability
-string DD4hep::XML::_toString(const char* s) {
+string dd4hep::xml::_toString(const char* s) {
   if ( !s || *s == 0 ) return "";
   else if ( !(*s == '$' && *(s+1) == '{') ) return s;
   return _checkEnviron(s);
 }
 
 /// Do-nothing version. Present for completeness and argument interchangeability
-string DD4hep::XML::_toString(const string& s) {
+string dd4hep::xml::_toString(const string& s) {
   if ( s.length() < 3 || s[0] != '$' ) return s;
   else if ( !(s[0] == '$' && s[1] == '{') ) return s;
   return _checkEnviron(s);
 }
 
 /// Format unsigned long integer to string with arbitrary format
-string DD4hep::XML::_toString(unsigned long v, const char* fmt) {
+string dd4hep::xml::_toString(unsigned long v, const char* fmt) {
   return __to_string(v, fmt);
 }
 
 /// Format unsigned integer (32 bits) to string with arbitrary format
-string DD4hep::XML::_toString(unsigned int v, const char* fmt) {
+string dd4hep::xml::_toString(unsigned int v, const char* fmt) {
   return __to_string(v, fmt);
 }
 
 /// Format signed integer (32 bits) to string with arbitrary format
-string DD4hep::XML::_toString(int v, const char* fmt) {
+string dd4hep::xml::_toString(int v, const char* fmt) {
   return __to_string(v, fmt);
 }
 
 /// Format signed long integer to string with arbitrary format
-string DD4hep::XML::_toString(long v, const char* fmt)   {
+string dd4hep::xml::_toString(long v, const char* fmt)   {
   return __to_string(v, fmt);
 }
 
 /// Format single procision float number (32 bits) to string with arbitrary format
-string DD4hep::XML::_toString(float v, const char* fmt) {
+string dd4hep::xml::_toString(float v, const char* fmt) {
   return __to_string(v, fmt);
 }
 
 /// Format double procision float number (64 bits) to string with arbitrary format
-string DD4hep::XML::_toString(double v, const char* fmt) {
+string dd4hep::xml::_toString(double v, const char* fmt) {
   return __to_string(v, fmt);
+}
+
+/// Convert Strng_t to std::string
+string dd4hep::xml::_toString(const Strng_t& s)   {
+  return _toString(Tag_t(s));
+}
+/// Convert Tag_t to std::string
+string dd4hep::xml::_toString(const Tag_t& s)     {
+  return s.str();
 }
 
 /// Format pointer to string with arbitrary format
-string DD4hep::XML::_ptrToString(const void* v, const char* fmt) {
+string dd4hep::xml::_ptrToString(const void* v, const char* fmt) {
   return __to_string(v, fmt);
 }
 
-long DD4hep::XML::_toLong(const XmlChar* value) {
+long dd4hep::xml::_toLong(const XmlChar* value) {
   if (value) {
     string s = _toString(value);
     size_t idx = s.find("(int)");
@@ -281,14 +291,14 @@ long DD4hep::XML::_toLong(const XmlChar* value) {
     if (eval.status() != XmlTools::Evaluator::OK) {
       cerr << s << ": ";
       eval.print_error();
-      throw runtime_error("DD4hep: Severe error during expression evaluation of " + s);
+      throw runtime_error("dd4hep: Severe error during expression evaluation of " + s);
     }
     return (long) result;
   }
   return -1;
 }
 
-int DD4hep::XML::_toInt(const XmlChar* value) {
+int dd4hep::xml::_toInt(const XmlChar* value) {
   if (value) {
     string s = _toString(value);
     size_t idx = s.find("(int)");
@@ -300,14 +310,14 @@ int DD4hep::XML::_toInt(const XmlChar* value) {
     if (eval.status() != XmlTools::Evaluator::OK) {
       cerr << s << ": ";
       eval.print_error();
-      throw runtime_error("DD4hep: Severe error during expression evaluation of " + s);
+      throw runtime_error("dd4hep: Severe error during expression evaluation of " + s);
     }
     return (int) result;
   }
   return -1;
 }
 
-bool DD4hep::XML::_toBool(const XmlChar* value) {
+bool dd4hep::xml::_toBool(const XmlChar* value) {
   if (value) {
     string s = _toString(value);
     return s == "true";
@@ -315,7 +325,7 @@ bool DD4hep::XML::_toBool(const XmlChar* value) {
   return false;
 }
 
-float DD4hep::XML::_toFloat(const XmlChar* value) {
+float dd4hep::xml::_toFloat(const XmlChar* value) {
   if (value) {
     string s = _toString(value);
     double result = eval.evaluate(s.c_str());
@@ -323,28 +333,28 @@ float DD4hep::XML::_toFloat(const XmlChar* value) {
     if (eval.status() != XmlTools::Evaluator::OK) {
       cerr << s << ": ";
       eval.print_error();
-      throw runtime_error("DD4hep: Severe error during expression evaluation of " + s);
+      throw runtime_error("dd4hep: Severe error during expression evaluation of " + s);
     }
     return (float) result;
   }
   return 0.0;
 }
 
-double DD4hep::XML::_toDouble(const XmlChar* value) {
+double dd4hep::xml::_toDouble(const XmlChar* value) {
   if (value) {
     string s = _toString(value);
     double result = eval.evaluate(s.c_str());
     if (eval.status() != XmlTools::Evaluator::OK) {
       cerr << s << ": ";
       eval.print_error();
-      throw runtime_error("DD4hep: Severe error during expression evaluation of " + s);
+      throw runtime_error("dd4hep: Severe error during expression evaluation of " + s);
     }
     return result;
   }
   return 0.0;
 }
 
-void DD4hep::XML::_toDictionary(const XmlChar* name, const XmlChar* value) {
+void dd4hep::xml::_toDictionary(const XmlChar* name, const XmlChar* value) {
   string n = _toString(name).c_str(), v = _toString(value);
   size_t idx = v.find("(int)");
   if (idx != string::npos)
@@ -355,45 +365,57 @@ void DD4hep::XML::_toDictionary(const XmlChar* name, const XmlChar* value) {
   if (eval.status() != XmlTools::Evaluator::OK) {
     cerr << v << ": ";
     eval.print_error();
-    throw runtime_error("DD4hep: Severe error during expression evaluation of " + v);
+    throw runtime_error("dd4hep: Severe error during expression evaluation of " + v);
   }
   eval.setVariable(n.c_str(), result);
 }
 
+/// Helper function to populate the evaluator dictionary  \ingroup DD4HEP_XML
+void dd4hep::xml::_toDictionary(const XmlChar* name, const Strng_t& s)   {
+  return _toDictionary(name, s.ptr());
+}
+
+/// Helper function to populate the evaluator dictionary  \ingroup DD4HEP_XML
+void dd4hep::xml::_toDictionary(const XmlChar* name, const Tag_t& t)   {
+  return _toDictionary(name, t.ptr());
+}
+
 template <typename T>
-void DD4hep::XML::_toDictionary(const XmlChar* name, T value)   {
+void dd4hep::xml::_toDictionary(const XmlChar* name, T value)   {
   Strng_t item = _toString(value);
   const XmlChar* item_value = item;
   _toDictionary(name, item_value);
 }
 
 #ifndef DD4HEP_USE_TINYXML
-template void DD4hep::XML::_toDictionary(const XmlChar* name, const char* value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, const char* value);
 #endif
-template void DD4hep::XML::_toDictionary(const XmlChar* name, const string& value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, unsigned long value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, unsigned int value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, unsigned short value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, int value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, long value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, short value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, float value);
-template void DD4hep::XML::_toDictionary(const XmlChar* name, double value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, const Tag_t& value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, const Strng_t& value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, const string& value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, unsigned long value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, unsigned int value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, unsigned short value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, int value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, long value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, short value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, float value);
+template void dd4hep::xml::_toDictionary(const XmlChar* name, double value);
 
 /// Evaluate string constant using environment stored in the evaluator
-string DD4hep::XML::getEnviron(const string& env)   {
+string dd4hep::xml::getEnviron(const string& env)   {
   size_t id1 = env.find("${");
   size_t id2 = env.rfind("}");
   if ( id1 == string::npos || id2 == string::npos )   {
     return "";
   }
   else  {
-    string v = env.substr(0,id2+1);
+    string v = env.substr(id1,id2-id1+1);
     const char* ret = eval.getEnviron(v.c_str());
     if (eval.status() != XmlTools::Evaluator::OK) {
       cerr << env << ": ";
       eval.print_error();
-      throw runtime_error("DD4hep: Severe error during environment lookup of " + env);
+      throw runtime_error("dd4hep: Severe error during environment lookup of " + env);
     }
     v = env.substr(0,id1);
     v += ret;
@@ -409,68 +431,68 @@ static inline string i_add(const string& a, B b) {
   return r;
 }
 
-Strng_t DD4hep::XML::operator+(const Strng_t& a, const string& b) {
+Strng_t dd4hep::xml::operator+(const Strng_t& a, const string& b) {
   return _toString(a.ptr()) + b;
 }
 
-Strng_t DD4hep::XML::operator+(const string& a, const Strng_t& b) {
+Strng_t dd4hep::xml::operator+(const string& a, const Strng_t& b) {
   return a + _toString(b.ptr());
 }
 
-Strng_t DD4hep::XML::operator+(const Strng_t& a, const char* b) {
+Strng_t dd4hep::xml::operator+(const Strng_t& a, const char* b) {
   return _toString(a.ptr()) + b;
 }
 
-Strng_t DD4hep::XML::operator+(const char* a, const Strng_t& b) {
+Strng_t dd4hep::xml::operator+(const char* a, const Strng_t& b) {
   return string(a) + _toString(b.ptr());
 }
 
-Strng_t DD4hep::XML::operator+(const Strng_t& a, const Strng_t& b) {
+Strng_t dd4hep::xml::operator+(const Strng_t& a, const Strng_t& b) {
   return _toString(a.ptr()) + _toString(b.ptr());
 }
 
-Tag_t DD4hep::XML::operator+(const Tag_t& a, const char* b) {
+Tag_t dd4hep::xml::operator+(const Tag_t& a, const char* b) {
   string res = a.str() + b;
   return Tag_t(res);
 }
 
-Tag_t DD4hep::XML::operator+(const char* a, const Tag_t& b) {
+Tag_t dd4hep::xml::operator+(const char* a, const Tag_t& b) {
   string res = a + b.str();
   return Tag_t(res);
 }
 
-Tag_t DD4hep::XML::operator+(const Tag_t& a, const Strng_t& b) {
+Tag_t dd4hep::xml::operator+(const Tag_t& a, const Strng_t& b) {
   string res = a.str() + _toString(b);
   return Tag_t(res);
 }
 
-Tag_t DD4hep::XML::operator+(const Tag_t& a, const string& b) {
+Tag_t dd4hep::xml::operator+(const Tag_t& a, const string& b) {
   string res = a.str() + b;
   return Tag_t(res);
 }
 
 #ifndef DD4HEP_USE_TINYXML
-Strng_t DD4hep::XML::operator+(const Strng_t& a, const XmlChar* b) {
+Strng_t dd4hep::xml::operator+(const Strng_t& a, const XmlChar* b) {
   string res = _toString(a.ptr()) + _toString(b);
   return Tag_t(res);
 }
 
-Strng_t DD4hep::XML::operator+(const XmlChar* a, const Strng_t& b) {
+Strng_t dd4hep::xml::operator+(const XmlChar* a, const Strng_t& b) {
   string res = _toString(a) + _toString(b.ptr());
   return Tag_t(res);
 }
 
-Strng_t DD4hep::XML::operator+(const XmlChar* a, const string& b) {
+Strng_t dd4hep::xml::operator+(const XmlChar* a, const string& b) {
   string res = _toString(a) + b;
   return Tag_t(res);
 }
 
-Strng_t DD4hep::XML::operator+(const string& a, const XmlChar* b) {
+Strng_t dd4hep::xml::operator+(const string& a, const XmlChar* b) {
   string res = a + _toString(b);
   return Tag_t(res);
 }
 
-Tag_t DD4hep::XML::operator+(const Tag_t& a, const XmlChar* b) {
+Tag_t dd4hep::xml::operator+(const Tag_t& a, const XmlChar* b) {
   string res = a.str() + _toString(b);
   return Tag_t(res);
 }
@@ -1034,6 +1056,15 @@ Handle_t Document::root() const {
   throw runtime_error("Document::root: Invalid handle!");
 }
 
+/// Acces the document URI
+std::string Document::uri() const   {
+  if (m_doc)   {
+    Tag_t val(_D(m_doc)->getDocumentURI());
+    return val;
+  }
+  throw runtime_error("Document::uri: Invalid handle!");
+}
+
 /// Assign new document. Old document is dropped.
 DocumentHolder& DocumentHolder::assign(DOC d)   {
   if (m_doc)   {
@@ -1112,6 +1143,13 @@ Handle_t Element::setChild(const XmlChar* t) const {
   return e ? Handle_t(e) : addChild(t);
 }
 
+#ifndef DD4HEP_USE_TINYXML
+/// Add comment node to the element
+void Element::addComment(const XmlChar* text_value) const {
+  _N(m_element)->appendChild(_D(document().m_doc)->createComment(text_value));
+}
+#endif
+
 /// Add comment node to the element
 void Element::addComment(const char* text_value) const {
 #ifdef DD4HEP_USE_TINYXML
@@ -1119,6 +1157,11 @@ void Element::addComment(const char* text_value) const {
 #else
   _N(m_element)->appendChild(_D(document().m_doc)->createComment(Strng_t(text_value)));
 #endif
+}
+
+/// Add comment node to the element
+void Element::addComment(const string& text_value) const {
+  addComment(text_value.c_str());
 }
 
 /// Initializing constructor to create a new XMLElement and add it to the document.
@@ -1192,9 +1235,9 @@ size_t Collection_t::size() const {
 /// Helper function to throw an exception
 void Collection_t::throw_loop_exception(const exception& e) const {
   if (m_node) {
-    throw runtime_error(string(e.what()) + "\n" + "DD4hep: Error interpreting XML nodes of type <" + tag() + "/>");
+    throw runtime_error(string(e.what()) + "\n" + "dd4hep: Error interpreting XML nodes of type <" + tag() + "/>");
   }
-  throw runtime_error(string(e.what()) + "\n" + "DD4hep: Error interpreting collections XML nodes.");
+  throw runtime_error(string(e.what()) + "\n" + "dd4hep: Error interpreting collections XML nodes.");
 }
 
 void Collection_t::operator++() const {

@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,7 +13,9 @@
 #ifndef DD4HEP_CONFIG_H
 #define DD4HEP_CONFIG_H
 
-#define DD4HEP_INSTANCE_COUNTS
+#define DD4HEP_INSTANCE_COUNTS 1
+#define DD4HEP_USE_SAFE_CAST   1
+
 #ifdef DD4HEP_INSTANCE_COUNTS
 #define INCREMENT_COUNTER InstanceCount::increment(this)
 #define DECREMENT_COUNTER InstanceCount::decrement(this)
@@ -24,11 +25,11 @@
 #endif
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
-  /// Namespace for the geometry part of the AIDA detector description toolkit
-  namespace Geometry {
+  /// Namespace for implementation details of the AIDA detector description toolkit
+  namespace detail {
 
-  } /* End namespace Geometry  */
-} /*   End namespace DD4hep    */
+  } /* End namespace detail  */
+} /*   End namespace dd4hep    */
 #endif    /* DD4HEP_CONFIG_H         */

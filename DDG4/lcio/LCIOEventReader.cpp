@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -27,12 +26,12 @@
 #include "G4Event.hh"
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Simulation;
-typedef DD4hep::ReferenceBitMask<int> PropertyMask;
+using namespace dd4hep;
+using namespace dd4hep::sim;
+typedef dd4hep::detail::ReferenceBitMask<int> PropertyMask;
 
 // Neede for backwards compatibility:
-namespace DD4hep{namespace Simulation{typedef Geant4InputAction LCIOInputAction;}}
+namespace dd4hep{namespace sim{typedef Geant4InputAction LCIOInputAction;}}
 DECLARE_GEANT4ACTION(LCIOInputAction)
 
 
@@ -61,7 +60,7 @@ LCIOEventReader::~LCIOEventReader()   {
 /// Read an event and fill a vector of MCParticles.
 LCIOEventReader::EventReaderStatus
 LCIOEventReader::readParticles(int event_number, 
-                               Vertex& /* primary_vertex */,
+                               Vertices& vertices,
                                vector<Particle*>& particles)
 {
   EVENT::LCCollection*        primaries = 0;
@@ -124,10 +123,32 @@ LCIOEventReader::readParticles(int event_number,
     else if ( genStatus == 1 ) status.set(G4PARTICLE_GEN_STABLE);
     else if ( genStatus == 2 ) status.set(G4PARTICLE_GEN_DECAYED);
     else if ( genStatus == 3 ) status.set(G4PARTICLE_GEN_DOCUMENTATION);
-    else {
-      cout << " #### WARNING - LCIOInputAction : unknown generator status : "
-           << genStatus << " -> ignored ! " << endl;
+    else if ( genStatus == 4 ) status.set(G4PARTICLE_GEN_BEAM);
+    else
+      status.set(G4PARTICLE_GEN_OTHER);
+    // Copy raw generator status
+    p->genStatus = genStatus&G4PARTICLE_GEN_STATUS_MASK;
+
+    //fg: we simply add all particles without parents as with their own vertex.
+    //    This might include the incoming beam particles, e.g. in
+    //    the case of lcio files written with Whizard2, which is slightly odd,
+    //    however should be treated correctly in Geant4InputHandling.cpp.
+    //    We no longer make an attempt to identify the incoming particles
+    //    based on the generator status, as this varies widely with different
+    //    generators.
+
+    if ( p->parents.size() == 0 )  {
+
+      Geant4Vertex* vtx = new Geant4Vertex ;
+      vertices.push_back( vtx );
+      vtx->x = p->vsx;
+      vtx->y = p->vsy;
+      vtx->z = p->vsz;
+      vtx->time = p->time;
+
+      vtx->out.insert(p->id) ;
     }
+
     if ( mcp->isCreatedInSimulation() )       status.set(G4PARTICLE_SIM_CREATED);
     if ( mcp->isBackscatter() )               status.set(G4PARTICLE_SIM_BACKSCATTER);
     if ( mcp->vertexIsNotEndpointOfParent() ) status.set(G4PARTICLE_SIM_PARENT_RADIATED);

@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -12,12 +11,12 @@
 //
 //==========================================================================
 
-#include "DD4hep/Handle.inl"
 #include "DD4hep/FieldTypes.h"
+#include "DD4hep/detail/Handle.inl"
 #include <cmath>
 
 using namespace std;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
 
 #ifndef INFINITY
 #define INFINITY (numeric_limits<double>::max())
@@ -28,7 +27,7 @@ DD4HEP_INSTANTIATE_HANDLE(SolenoidField);
 DD4HEP_INSTANTIATE_HANDLE(DipoleField);
 DD4HEP_INSTANTIATE_HANDLE(MultipoleField);
 
-/// Call to access the field components at a given location
+/// Compute  the field components at a given location and add to given field
 void ConstantField::fieldComponents(const double* /* pos */, double* field) {
   field[0] += direction.X();
   field[1] += direction.Y();
@@ -37,11 +36,12 @@ void ConstantField::fieldComponents(const double* /* pos */, double* field) {
 
 /// Initializing constructor
 SolenoidField::SolenoidField()
-  : innerField(0), outerField(0), minZ(-INFINITY), maxZ(INFINITY), innerRadius(0), outerRadius(INFINITY) {
+  : innerField(0), outerField(0), minZ(-INFINITY), maxZ(INFINITY), innerRadius(0), outerRadius(INFINITY)
+{
   type = CartesianField::MAGNETIC;
 }
 
-/// Call to access the field components at a given location
+/// Compute  the field components at a given location and add to given field
 void SolenoidField::fieldComponents(const double* pos, double* field) {
   double z = pos[2] ;
   //  std::cout << " field z=" << z << " maxZ=" << maxZ << " minZ = " << minZ << std::endl ;
@@ -55,12 +55,11 @@ void SolenoidField::fieldComponents(const double* pos, double* field) {
 }
 
 /// Initializing constructor
-DipoleField::DipoleField()
-  : zmax(INFINITY), zmin(-INFINITY), rmax(INFINITY) {
+DipoleField::DipoleField() : zmax(INFINITY), zmin(-INFINITY), rmax(INFINITY) {
   type = CartesianField::MAGNETIC;
 }
 
-/// Call to access the field components at a given location
+/// Compute  the field components at a given location and add to given field
 void DipoleField::fieldComponents(const double* pos, double* field) {
   double z = pos[2], r = std::sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
   // Check if z coordinate is within dipole z bounds.
@@ -86,7 +85,7 @@ MultipoleField::MultipoleField() : coefficents(), skews(), volume(), transform()
   type = CartesianField::MAGNETIC;
 }
 
-/// Call to access the field components at a given location
+/// Compute  the field components at a given location and add to given field
 void MultipoleField::fieldComponents(const double* pos, double* field) {
   Transform3D::Point p = transform * Transform3D::Point(pos[0],pos[1],pos[2]);
   //const Transform3D::Point::CoordinateType& c = p.Coordinates();
@@ -102,15 +101,19 @@ void MultipoleField::fieldComponents(const double* pos, double* field) {
     case 4:      // Ocupole momentum
       by +=  coefficents[3] * (x2*x - 3.0*x*y2) + skews[3]*(y2*y - 3.0*x*y2);
       bx +=  coefficents[3] * (3.0*x2*y - y2*y) + skews[3]*(x2*x - 3.0*x*y2);
+      [[fallthrough]];
     case 3:      // Sextupole momentum:
       by += -coefficents[2] * (x2 - y2) + skews[2] * 2.0 * xy;
       bx +=  coefficents[2] * 2.0 * xy + skews[2] * (x2 - y2);
+      [[fallthrough]];
     case 2:      // Quadrupole momentum:
       bx += coefficents[1] * x - skews[1]*y;
       by += coefficents[1] * y + skews[1]*x;
+      [[fallthrough]];
     case 1:      // Dipole momentum:
       bx += skews[0];
       by += coefficents[0];
+      [[fallthrough]];
     case 0:      // Nothing, but still valid
       break;
     default:     // Error condition

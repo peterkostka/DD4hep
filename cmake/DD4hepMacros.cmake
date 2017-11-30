@@ -67,7 +67,7 @@ ENDMACRO( DISPLAY_STD_VARIABLES )
 
 #---------------------------------------------------------------------------
 # helper macro for generating project configuration file
-MACRO( GENERATE_PACKAGE_CONFIGURATION_FILES )
+MACRO( DD4HEP_GENERATE_PACKAGE_CONFIGURATION_FILES )
 #---------------------------------------------------------------------------
 
     FOREACH( arg ${ARGN} )
@@ -77,37 +77,19 @@ MACRO( GENERATE_PACKAGE_CONFIGURATION_FILES )
                                 "${PROJECT_BINARY_DIR}/${arg}" @ONLY
                 )
                 INSTALL( FILES "${PROJECT_BINARY_DIR}/${arg}" DESTINATION . )
-                #IF( EXISTS "${_current_dir}/MacroCheckPackageLibs.cmake" )
-                #    INSTALL( FILES "${_current_dir}/MacroCheckPackageLibs.cmake" DESTINATION cmake )
-                #ENDIF()
-                #IF( EXISTS "${_current_dir}/MacroExportPackageDeps.cmake" )
-                #    INSTALL( FILES "${_current_dir}/MacroExportPackageDeps.cmake" DESTINATION cmake )
-                #ENDIF()
+                INSTALL( FILES "${PROJECT_BINARY_DIR}/${arg}" DESTINATION ./cmake )
             ENDIF()
         ENDIF()
-
-
-        IF( ${arg} MATCHES "ConfigVersion.cmake" )
-            # version configuration file
-            IF( EXISTS "${PROJECT_SOURCE_DIR}/cmake/${arg}.in" )
-                CONFIGURE_FILE( "${PROJECT_SOURCE_DIR}/cmake/${arg}.in"
-                                "${PROJECT_BINARY_DIR}/${arg}" @ONLY
-                )
-                INSTALL( FILES "${PROJECT_BINARY_DIR}/${arg}" DESTINATION . )
-                #IF( EXISTS "${_current_dir}/MacroCheckPackageVersion.cmake" )
-                #    INSTALL( FILES "${_current_dir}/MacroCheckPackageVersion.cmake" DESTINATION cmake )
-                #ENDIF()
-            ENDIF( EXISTS "${PROJECT_SOURCE_DIR}/cmake/${arg}.in" )
-        ENDIF()
-
-        IF( ${arg} MATCHES "LibDeps.cmake" )
-            EXPORT_LIBRARY_DEPENDENCIES( "${arg}" )
-            INSTALL( FILES "${PROJECT_BINARY_DIR}/${arg}" DESTINATION lib/cmake )
-        ENDIF()
-
     ENDFOREACH()
 
-ENDMACRO( GENERATE_PACKAGE_CONFIGURATION_FILES )
+    INCLUDE( CMakePackageConfigHelpers )
+    WRITE_BASIC_PACKAGE_VERSION_FILE( DD4hepConfigVersion.cmake
+                                      VERSION ${DD4hep_VERSION}
+                                      COMPATIBILITY AnyNewerVersion )
+    INSTALL( FILES "${PROJECT_BINARY_DIR}/DD4hepConfigVersion.cmake" DESTINATION . )
+    INSTALL( FILES "${PROJECT_BINARY_DIR}/DD4hepConfigVersion.cmake" DESTINATION ./cmake )
+
+ENDMACRO( DD4HEP_GENERATE_PACKAGE_CONFIGURATION_FILES )
 
 
 ##############################################################################

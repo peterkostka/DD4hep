@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -23,11 +22,11 @@
 // Framework include files
 #include "XML/XMLElements.h"
 #ifndef UNICODE 
-#define UNICODE(x)  extern const ::DD4hep::XML::Tag_t Unicode_##x 
+#define UNICODE(x)  extern const ::dd4hep::xml::Tag_t Unicode_##x 
 #endif
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace of DDDB conversion namespace
   namespace DDDB  {
@@ -93,6 +92,7 @@ namespace DD4hep {
 
     UNICODE(paramphysvol);
     UNICODE(paramphysvol2D);
+    UNICODE(paramphysvol3D);
     UNICODE(phiAngle);
     UNICODE(paramVector);
     UNICODE(posXYZ);
@@ -150,11 +150,11 @@ namespace DD4hep {
 
     //UNICODE();
   }   /* End namespace DDDB       */
-}     /* End namespace DD4hep     */
+}     /* End namespace dd4hep     */
 
 #undef UNICODE // Do not miss this one!
 #include "XML/XMLTags.h"
 
-#define _LBU(a) ::DD4hep::DDDB::Unicode_##a
+#define _LBU(a) ::dd4hep::DDDB::Unicode_##a
 
 #endif /* DD4HEP_DDDB_DDDBTAGS_H  */

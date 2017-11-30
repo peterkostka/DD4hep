@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -14,18 +13,25 @@
 
 // Framework includes
 #include "DD4hep/NamedObject.h"
-#include "DD4hep/Handle.inl"
-#include "TObject.h"
+#include "DD4hep/detail/Handle.inl"
+#include "TNamed.h"
 
 using namespace std;
-using namespace DD4hep;
-using namespace DD4hep::Geometry;
+using namespace dd4hep;
+using namespace dd4hep::detail;
 
-DD4HEP_INSTANTIATE_HANDLE_NAMED(NamedObject);
-
-/// Standard constructor
-NamedObject::NamedObject()  {
+namespace dd4hep {
+  template <> const char* Handle<NamedObject>::name() const  {
+    return this->m_element ? this->m_element->name.c_str() : "";
+  }
+  template <> void
+  Handle<NamedObject>::assign(NamedObject* p, const string& n, const string& t){
+    m_element = p;
+    p->name = n;
+    p->type = t;
+  }
 }
+template class dd4hep::Handle<NamedObject>;
 
 /// Initializing constructor
 NamedObject::NamedObject(const char* nam, const char* typ)
@@ -43,22 +49,5 @@ NamedObject::NamedObject(const std::string& nam)
 NamedObject::NamedObject(const std::string& nam, const std::string& typ)
   : name(nam), type(typ)
 {
-}
-
-/// Copy constructor
-NamedObject::NamedObject(const NamedObject& c)  : name(c.name), type(c.type) {
-}
-
-/// Default destructor
-NamedObject::~NamedObject()  {
-}
-
-/// Assignment operator
-NamedObject& NamedObject::operator=(const NamedObject& c)  {
-  if ( this != &c ) {
-    name = c.name;
-    type = c.type;
-  }
-  return *this;
 }
 

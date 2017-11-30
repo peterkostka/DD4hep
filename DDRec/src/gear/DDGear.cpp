@@ -1,6 +1,6 @@
 #include "DDRec/DDGear.h"
 
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/DD4hepUnits.h"
 #include "DD4hep/Fields.h"
 #include "DD4hep/Plugins.h"
@@ -20,24 +20,23 @@
 #include "geartgeo/TGeoGearDistanceProperties.h"
 
 
-namespace DD4hep{
+namespace dd4hep{
+  namespace rec{
+  using namespace detail ;
 
-  using namespace Geometry ;
-
-
-  gear::GearMgr* createGearMgr( Geometry::LCDD& lcdd , const std::string& pluginName ){
+  gear::GearMgr* createGearMgr( Detector& description , const std::string& pluginName ){
 
     int argc(0); char** argv = 0 ;
 
-    lcdd.apply( pluginName.c_str() , argc, argv) ;
+    description.apply( pluginName.c_str() , argc, argv) ;
     
-    DetElement world = lcdd.world() ;
+    DetElement world = description.world() ;
     
     gear::GearMgrImpl* gearMgr = new gear::GearMgrImpl() ;
 
-    gearMgr->setDetectorName(  lcdd.header().name() ) ; 
+    gearMgr->setDetectorName(  description.header().name() ) ; 
 
-    std::cout << " **** will convert detector "  <<  lcdd.header().name() << " to Gear \n"
+    std::cout << " **** will convert detector "  <<  description.header().name() << " to Gear \n"
 	      << "      Iterating over all subdetectors: " << std::endl ;
 
 
@@ -68,11 +67,11 @@ namespace DD4hep{
     
     for( unsigned i=0, N= dets.size() ; i<N ; ++i){
       
-      DD4hep::GearHandle* gearH = 0 ;
+      GearHandle* gearH = 0 ;
       
       try{
       
-	gearH = dets[i].extension<DD4hep::GearHandle>() ;
+	gearH = dets[i].extension<GearHandle>() ;
 
 	std::cout << " *** subdetector " << dets[i].name() << " - found gear object : " << gearH->name() << std::endl ; 
 
@@ -126,7 +125,7 @@ namespace DD4hep{
     // fixme: for now we just assume a constant field - should be a real field map ...
     double origin[3] = { 0., 0., 0. } ;
     double bfield[3] ;
-    OverlayedField ovField = lcdd.field() ;
+    OverlayedField ovField = description.field() ;
     ovField.magneticField( origin , bfield  ) ;
   
     gearMgr->setBField( new gear::ConstantBField( gear::Vector3D( bfield[0]/ dd4hep::tesla , bfield[1]/ dd4hep::tesla , bfield[2] / dd4hep::tesla ) ) ) ;
@@ -145,5 +144,6 @@ namespace DD4hep{
     return gearMgr ;
 
   }
-}
+
+ }}
  

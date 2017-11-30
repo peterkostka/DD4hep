@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -20,7 +19,7 @@
 #include <stdexcept>
 
 using namespace std;
-using namespace DD4hep::Simulation;
+using namespace dd4hep::sim;
 
 /// Standard constructor
 Geant4UserInitialization::Geant4UserInitialization(Geant4Context* ctxt, const string& nam)

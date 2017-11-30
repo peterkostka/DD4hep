@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -22,10 +21,10 @@ class G4SteppingManager;
 class G4Step;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the Geant4 based simulation part of the AIDA detector description toolkit
-  namespace Simulation {
+  namespace sim {
 
     // Forward declarations
     class Geant4SteppingAction;
@@ -42,6 +41,10 @@ namespace DD4hep {
     public:
       typedef Geant4SharedSteppingAction shared_type;
     public:
+      /// Default constructor
+      Geant4SteppingAction() = default;
+      /// Inhibit copy constructor
+      Geant4SteppingAction(const Geant4SteppingAction& copy) = default;
       /// Standard constructor
       Geant4SteppingAction(Geant4Context* context, const std::string& name);
       /// Default destructor
@@ -66,8 +69,12 @@ namespace DD4hep {
     class Geant4SharedSteppingAction : public Geant4SteppingAction {
     protected:
       /// Reference to the shared action
-      Geant4SteppingAction* m_action;
+      Geant4SteppingAction* m_action = 0;
     public:
+      /// Default constructor
+      Geant4SharedSteppingAction() = default;
+      /// Inhibit copy constructor
+      Geant4SharedSteppingAction(const Geant4SteppingAction& copy) = delete;
       /// Standard constructor
       Geant4SharedSteppingAction(Geant4Context* context, const std::string& nam);
       /// Default destructor
@@ -103,6 +110,8 @@ namespace DD4hep {
       Actors<Geant4SteppingAction> m_actors;
 
     public:
+      /// Inhibit copy constructor
+      Geant4SteppingActionSequence(const Geant4SteppingAction& copy) = delete;
       /// Standard constructor
       Geant4SteppingActionSequence(Geant4Context* context, const std::string& name);
       /// Default destructor
@@ -124,7 +133,7 @@ namespace DD4hep {
       virtual void operator()(const G4Step* step, G4SteppingManager* mgr);
     };
 
-  }    // End namespace Simulation
-}      // End namespace DD4hep
+  }    // End namespace sim
+}      // End namespace dd4hep
 
 #endif // DD4HEP_DDG4_GEANT4STEPPINGACTION_H

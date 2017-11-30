@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,7 +14,7 @@
 #ifndef DD4HEP_DDG4_GEANT4CALLBACK_H
 #define DD4HEP_DDG4_GEANT4CALLBACK_H
 
-// Just forward header for DD4hep callbacks
+// Just forward header for dd4hep callbacks
 #include "DD4hep/Callback.h"
 
 #endif  // DD4HEP_DDG4_GEANT4CALLBACK_H

@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -18,17 +17,25 @@
 #include "DD4hep/ConditionsData.h"
 #include <sstream>
 
-using namespace DD4hep::Conditions;
+using namespace dd4hep::cond;
 
 /// print Conditions object
 std::ostream& operator << (std::ostream& s, const AbstractMap& data)   {
   struct _Print {
     void operator()(const AbstractMap::Params::value_type& obj)  const {
-      const AbstractMap& d= obj.second.get<AbstractMap>();
-      DD4hep::printout(DD4hep::INFO,"Condition","++ %-16s [%d] %-8s -> %s",
-                       obj.first.c_str(), d.classID,
-                       obj.second.dataType().c_str(), 
-                       obj.second.str().c_str());
+      if ( obj.second.typeInfo() == typeid(AbstractMap) )  {
+        const AbstractMap& d= obj.second.get<AbstractMap>();
+        dd4hep::printout(dd4hep::INFO,"Condition","++ %-16s [%d] %-8s -> %s",
+                         obj.first.c_str(), d.classID,
+                         obj.second.dataType().c_str(), 
+                         obj.second.str().c_str());
+      }
+      else   {
+        dd4hep::printout(dd4hep::INFO,"Condition","++ %-16s %-8s -> %s",
+                         obj.first.c_str(),
+                         obj.second.dataType().c_str(), 
+                         obj.second.str().c_str());
+      }
     }
   };
   if ( !data.params.empty() )  {
@@ -49,7 +56,7 @@ AbstractMap::AbstractMap(const AbstractMap& c)
 }
 
 /// Default constructor
-AbstractMap::AbstractMap() : clientData(0) {
+AbstractMap::AbstractMap() : clientData(0), classID(0) {
   InstanceCount::increment(this);
 }
 
@@ -70,10 +77,10 @@ AbstractMap& AbstractMap::operator=(const AbstractMap& c)  {
   return *this;
 }
 
-#include "DD4hep/ToStream.h"
-#include "DD4hep/objects/ConditionsInterna.h"
-DD4HEP_DEFINE_CONDITIONS_TYPE_DUMMY(AbstractMap)
-
-#include "DD4hep/objects/BasicGrammar_inl.h"
+#include "DDParsers/Parsers.h"
+#include "DDParsers/ToStream.h"
+DD4HEP_DEFINE_PARSER_DUMMY(AbstractMap)
+#include "DD4hep/detail/BasicGrammar_inl.h"
+#include "DD4hep/detail/ConditionsInterna.h"
 DD4HEP_DEFINE_PARSER_GRAMMAR(AbstractMap,eval_none<AbstractMap>)
-
+DD4HEP_DEFINE_CONDITIONS_TYPE(AbstractMap)

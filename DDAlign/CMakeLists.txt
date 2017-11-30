@@ -1,6 +1,5 @@
-# $Id: $
 #==========================================================================
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #--------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -10,7 +9,7 @@
 #
 #==========================================================================
 dd4hep_package(    DDAlign
-  USES             DDCore DDCond
+  USES             DDCore
   INCLUDE_DIRS     include
   INSTALL_INCLUDES include/DDAlign)
 

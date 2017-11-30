@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.obj
+*.pyc
 
 # Precompiled Headers
 *.gch
@@ -31,9 +32,15 @@
 # Build and install directories
 bin/
 lib/
-include/
+/include
 python/
 build/
 
 # CMake config files
 *Config.cmake
+*ConfigVersion.cmake
+Version.h
+
+# emacs backup files
+*~
+

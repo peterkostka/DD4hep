@@ -1,7 +1,6 @@
 #=================================================================================
-#  $Id: $
 #
-#  AIDA Detector description implementation for LCD
+#  AIDA Detector description implementation 
 #---------------------------------------------------------------------------------
 # Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 # All rights reserved.
@@ -10,41 +9,123 @@
 # For the list of contributors see $DD4hepINSTALL/doc/CREDITS.
 #
 #=================================================================================
-cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
-###set(DD4HEP_DEBUG_CMAKE 1)
+
+##set(DD4HEP_DEBUG_CMAKE 1)
 message ( STATUS "INCLUDING DD4hepBuild.... c++11:${DD4HEP_USE_CXX11} c++14:${DD4HEP_USE_CXX14}" )
 
 include ( CMakeParseArguments )
 set ( DD4hepBuild_included ON )
-####set ( DD4HEP_DEBUG_CMAKE ON )
+##set ( DD4HEP_DEBUG_CMAKE ON )
+##set ( CMAKE_CTEST_COMMAND ${CMAKE_CTEST_COMMAND} --test-output-size-passed 4096 )
 
 #---------------------------------------------------------------------------------------------------
 macro(dd4hep_to_parent_scope val)
   set ( ${val} ${${val}} PARENT_SCOPE )
 endmacro(dd4hep_to_parent_scope)
 
+find_package(Threads REQUIRED)
+
+#---------------------------------------------------------------------------------------------------
+#  MACRO: dd4hep_set_compiler_flags
+#
+#  Set compiler flags
+#
+#  \author  M.Frank
+#  \version 1.0
+#
+#---------------------------------------------------------------------------------------------------
 macro(dd4hep_set_compiler_flags)
+  include(CheckCXXCompilerFlag)
+
+  SET(COMPILER_FLAGS -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto)
+
+  # AppleClang/Clang specific warning flags
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^(Apple)?Clang$")
+    set ( COMPILER_FLAGS ${COMPILER_FLAGS} -Winconsistent-missing-override -Wno-c++1z-extensions -Wheader-hygiene )
+  endif()
+
+  FOREACH( FLAG ${COMPILER_FLAGS} )
+    ## meed to replace the minus or plus signs from the variables, because it is passed
+    ## as a macro to g++ which causes a warning about no whitespace after macro
+    ## definition
+    STRING(REPLACE "-" "_" FLAG_WORD ${FLAG} )
+    STRING(REPLACE "+" "P" FLAG_WORD ${FLAG_WORD} )
+
+    CHECK_CXX_COMPILER_FLAG( "${FLAG}" CXX_FLAG_WORKS_${FLAG_WORD} )
+    IF( ${CXX_FLAG_WORKS_${FLAG_WORD}} )
+      MESSAGE ( STATUS "Adding ${FLAG} to CXX_FLAGS" )
+      SET ( CMAKE_CXX_FLAGS "${FLAG} ${CMAKE_CXX_FLAGS} ")
+    ELSE()
+      MESSAGE ( STATUS "NOT Adding ${FLAG} to CXX_FLAGS" )
+    ENDIF()
+  ENDFOREACH()
+
+  CHECK_CXX_COMPILER_FLAG("-std=c++14" CXX_FLAG_WORKS_CXX14)
+  CHECK_CXX_COMPILER_FLAG("-std=c++11" CXX_FLAG_WORKS_CXX11)
+  CHECK_CXX_COMPILER_FLAG("-ftls-model=global-dynamic" CXX_FLAG_WORKS_FTLS_global_dynamic)
+
+  if (NOT CXX_FLAG_WORKS_CXX11)
+    message( FATAL_ERROR "The provided compiler does not support the C++11 standard" )
+  endif()
+
+  if (NOT CXX_FLAG_WORKS_FTLS_global_dynamic)
+    message( FATAL_ERROR "The provided compiler does not support the flag -ftls-model=global-dynamic" )
+  endif()
+
   if ( DD4HEP_USE_CXX14 )
-    set ( CMAKE_CXX_FLAGS "-std=c++14 -ftls-model=global-dynamic")
+    set ( CMAKE_CXX_FLAGS "-std=c++14 -ftls-model=global-dynamic ${CMAKE_CXX_FLAGS} ")
     set ( DD4HEP_USE_CXX11 OFF ) 
     set ( DD4HEP_USE_STDCXX 14 )
     add_definitions(-DDD4HEP_USE_STDCXX=14)
-  elseif ( DD4HEP_USE_CXX11 )
-    set ( CMAKE_CXX_FLAGS "-std=c++11 -ftls-model=global-dynamic")
+  else()
+    set ( CMAKE_CXX_FLAGS "-std=c++11 -ftls-model=global-dynamic ${CMAKE_CXX_FLAGS} ")
+    set ( DD4HEP_USE_CXX14 OFF )
     set ( DD4HEP_USE_STDCXX 11 )
     add_definitions(-DDD4HEP_USE_STDCXX=11)
+  endif()
+
+  if ( THREADS_HAVE_PTHREAD_ARG OR CMAKE_USE_PTHREADS_INIT )
+    set ( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -pthread")
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pthread")
+  elseif ( CMAKE_THREAD_LIBS_INIT )
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_THREAD_LIBS_INIT}")
   else()
-    set( CMAKE_CXX_FLAGS )
-  endif()
-  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated")
-
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always")
-    endif()
+    # Assume standard gcc and pthreads library
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pthread")
+    message( STATUS "Unknown thread library: CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS}" )
   endif()
 
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
+  elseif ( ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" ))
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+  else()
+    MESSAGE( WARNING "We do not test with the ${CMAKE_CXX_COMPILER_ID} compiler, use at your own discretion" )
+  endif()
+
+ #rpath treatment
+ if (APPLE)
+   # use, i.e. don't skip the full RPATH for the build tree
+   SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+   # when building, don't use the install RPATH already
+   # (but later on when installing)
+   SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+   # add the automatically determined parts of the RPATH
+   # which point to directories outside the build tree to the install RPATH
+   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+   # the RPATH to be used when installing, but only if it's not a system directory
+   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+   IF("${isSystemDir}" STREQUAL "-1")
+     SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+   ENDIF("${isSystemDir}" STREQUAL "-1")
+ endif()
 endmacro(dd4hep_set_compiler_flags)
+
 #---------------------------------------------------------------------------------------------------
 #  dd4hep_debug
 #
@@ -66,6 +147,26 @@ function ( dd4hep_debug msg )
     endif()
   endif()
 endfunction( dd4hep_debug )
+
+#---------------------------------------------------------------------------------------------------
+#  dd4hep_include_directories
+#
+#  Same as include_directories but treat all external packages as SYSTEM -> no warnings
+#
+#  \author  A.Sailer
+#  \version 1.0
+#
+#---------------------------------------------------------------------------------------------------
+function ( dd4hep_include_directories pkg_incs )
+  FOREACH( INCDIR ${pkg_incs} )
+    string(FIND "${INCDIR}" "${CMAKE_SOURCE_DIR}" out)
+    IF("${out}" EQUAL 0)
+      INCLUDE_DIRECTORIES( ${INCDIR} )
+    ELSE()
+      INCLUDE_DIRECTORIES( SYSTEM ${INCDIR} )
+    ENDIF()
+  ENDFOREACH()
+endfunction( dd4hep_include_directories )
 
 #---------------------------------------------------------------------------------------------------
 #  dd4hep_print
@@ -154,7 +255,6 @@ function ( dd4hep_print_options )
   dd4hep_print ( "|  DD4hep build setup:                                                          " )
   dd4hep_print ( "|                                                                               " )
   dd4hep_print ( "|  CMAKE_MODULE_PATH:  ${CMAKE_MODULE_PATH}                                     " )
-  dd4hep_print ( "|  DD4HEP_USE_BOOST:   ${DD4HEP_USE_BOOST}  DD4HEP_USE_Boost:${DD4HEP_USE_Boost}" )
   dd4hep_print ( "|  DD4HEP_USE_XERCESC: ${DD4HEP_USE_XERCESC}                                    " )
   dd4hep_print ( "|  XERCESC_ROOT_DIR:   ${XERCESC_ROOT_DIR}                                      " )
   dd4hep_print ( "|  DD4HEP_USE_LCIO:    ${DD4HEP_USE_LCIO}                                       " )
@@ -194,7 +294,6 @@ function( dd4hep_print_cmake_options )
   dd4hep_print ( "|                     Requires LCIO_DIR to be set                           |")
   dd4hep_print ( "|                     or LCIO in CMAKE_MODULE_PATH                          |")
   dd4hep_print ( "|  DD4HEP_USE_GEAR    Build gear wrapper for backward compatibility OFF     |")
-  dd4hep_print ( "|  DD4HEP_USE_CXX11   Build DD4hep using c++11                      OFF     |")
   dd4hep_print ( "|  DD4HEP_USE_CXX14   Build DD4hep using c++14                      OFF     |")
   dd4hep_print ( "|  BUILD_TESTING      Enable and build tests                        ON      |")
   dd4hep_print ( "|  DD4HEP_USE_PYROOT  Enable 'Detector Builders' based on PyROOT    OFF     |")
@@ -227,16 +326,16 @@ macro ( dd4hep_configure_output )
     set ( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin )
   endif()
   #------------- set the default installation directory to be the source directory
-  dd4hep_debug( "dd4hep_configure_output: CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}  CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT=${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT}" )
+  dd4hep_debug( "DD4hep_configure_output: CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}  CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT=${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT}" )
   if ( NOT "${ARG_INSTALL}" STREQUAL "" )
     set ( CMAKE_INSTALL_PREFIX ${ARG_INSTALL} CACHE PATH "Set install prefix path." FORCE )
-    dd4hep_print( "dd4hep_configure_output: set CMAKE_INSTALL_PREFIX to ${ARG_INSTALL}" )
+    dd4hep_print( "DD4hep_configure_output: set CMAKE_INSTALL_PREFIX to ${ARG_INSTALL}" )
   elseif ( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT )
     set( CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR} CACHE PATH  
       "install prefix path  - overwrite with -D CMAKE_INSTALL_PREFIX = ..."  FORCE )
-    dd4hep_print ( "dd4hep_configure_output: CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX} - overwrite with -D CMAKE_INSTALL_PREFIX" )
+    dd4hep_print ( "DD4hep_configure_output: CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX} - overwrite with -D CMAKE_INSTALL_PREFIX" )
   elseif ( CMAKE_INSTALL_PREFIX )
-    dd4hep_print( "dd4hep_configure_output: set CMAKE_INSTALL_PREFIX to ${CMAKE_INSTALL_PREFIX}" )
+    dd4hep_print( "DD4hep_configure_output: set CMAKE_INSTALL_PREFIX to ${CMAKE_INSTALL_PREFIX}" )
     set ( CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} )
   endif()
   dd4hep_debug("|++> Installation goes to: ${CMAKE_INSTALL_PREFIX}  <${ARG_INSTALL}>" )
@@ -304,13 +403,14 @@ function ( dd4hep_find_packageEx PKG_NAME )
     set (pkg "DD4hep" )
   endif()
   dd4hep_debug( "Call find_package( ${pkg}/${PKG_NAME} ${ARGN})" )
+  ##MESSAGE(STATUS "Call find_package( ${pkg}/${PKG_NAME} ${ARGN})" )
   ##dd4hep_print ( "Call find_package( ${pkg}/${PKG_NAME} ${ARGN})" )
   if ( "${${pkg}_LIBRARIES}" STREQUAL "" )
     cmake_parse_arguments(ARG "" "" "ARGS" ${ARGN} )
     find_package( ${pkg} ${ARG_ARGS} )
   else()
     cmake_parse_arguments(ARG "" "" "ARGS" ${ARGN} )
-    find_package( ${pkg} QUIET ${ARG_ARGS} )
+    find_package( ${pkg} ${ARG_ARGS} )
   endif()
   # Propagate values to caller
   string ( TOUPPER "${pkg}" PKG )
@@ -320,6 +420,7 @@ function ( dd4hep_find_packageEx PKG_NAME )
     set ( libs ${libs}  ${${PKG}_LIBRARIES} ${${PKG}_LIBRARY} ${${PKG}_COMPONENT_LIBRARIES} )
     set ( incs ${incs}  ${${PKG}_INCLUDE_DIRS} ${${PKG}_INCLUDE_DIR} )
   endif()
+  ##MESSAGE(STATUS "Call find_package: ${pkg}/${PKG_NAME} -> ${libs}" )
   dd4hep_make_unique_list ( libs VALUES ${libs} )
   dd4hep_make_unique_list ( incs VALUES ${incs} )
 
@@ -399,10 +500,10 @@ function ( dd4hep_find_package name found )
       set ( ${found}             "ON"       PARENT_SCOPE )	
     else()
       dd4hep_find_packageEx( ${name} ${ARGN} )
-      dd4hep_debug("dd4hep_find_package: DD4HEP_USE_${name}: ${DD4HEP_USE_${NAME}} Exists: ${${NAME}_EXISTS} ARGS:${arguments}")
+      dd4hep_debug("DD4hep_find_package: DD4HEP_USE_${name}: ${DD4HEP_USE_${NAME}} Exists: ${${NAME}_EXISTS} ARGS:${arguments}")
       if ( "${${NAME}_EXISTS}" STREQUAL "ON" )
-	dd4hep_debug( "dd4hep_find_package ${NAME} Incs: ${incs}" )
-	dd4hep_debug( "dd4hep_find_package ${NAME} Libs: ${libs}" )
+	dd4hep_debug( "DD4hep_find_package ${NAME} Incs: ${incs}" )
+	dd4hep_debug( "DD4hep_find_package ${NAME} Libs: ${libs}" )
 	set_property ( GLOBAL PROPERTY ${NAME}_COMPONENTS   ${arguments} )
 	set_property ( GLOBAL PROPERTY ${NAME}_INCLUDE_DIRS ${${NAME}_INCLUDE_DIRS} )
 	set_property ( GLOBAL PROPERTY ${NAME}_LIBRARIES    ${${NAME}_LIBRARIES} )
@@ -451,7 +552,7 @@ endfunction( dd4hep_install_dir )
 #
 #---------------------------------------------------------------------------------------------------
 function ( dd4hep_install_includes package )
-  dd4hep_print ( "dd4hep_install_includes[${package}]: ${ARGN}" )
+  dd4hep_print ( "DD4hep_install_includes[${package}]: ${ARGN}" )
   dd4hep_install_dir( ${ARGN} DESTINATION include )
 endfunction()
 
@@ -934,7 +1035,7 @@ function( dd4hep_add_library binary building )
         dd4hep_make_unique_list ( sources  VALUES ${sources} )
         dd4hep_debug( "${tag} ${sources}")
         #
-        include_directories ( ${pkg_incs} )
+        dd4hep_include_directories( "${pkg_incs}" )
         add_definitions ( ${pkg_defs} )
         #
         add_library ( ${binary} SHARED ${sources} )
@@ -1085,6 +1186,7 @@ endfunction(dd4hep_add_plugin)
 #
 #---------------------------------------------------------------------------------------------------
 function ( dd4hep_add_executable binary )
+  #set ( DD4HEP_DEBUG_CMAKE "ON" )
   dd4hep_package_properties( pkg PKG enabled )
   set ( tag "Executable[${pkg}] -> ${binary}" )
   if ( "${enabled}" STREQUAL "OFF" )
@@ -1128,7 +1230,7 @@ function ( dd4hep_add_executable binary )
 	  dd4hep_make_unique_list ( sources VALUES ${sources} )
 	  #
 	  dd4hep_debug ( "${tag} Libs:${libs}" )
-	  include_directories( ${incs} )
+	  dd4hep_include_directories( "${incs}" )
 	  add_executable( ${binary} ${sources} )
 	  target_link_libraries( ${binary} ${libs} )
 	  #
@@ -1222,24 +1324,15 @@ function( dd4hep_add_dictionary dictionary )
     dd4hep_debug ( "${tag}  Unparsed:'${ARG_UNPARSED_ARGUMENTS}'" ) 
     dd4hep_debug ( "${tag}  Sources: '${CMAKE_CURRENT_SOURCE_DIR}'" ) 
     #
-    if ( ${ROOT_VERSION_MAJOR} GREATER 5 )
-      ## ${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary}_rdict.pcm
-      add_custom_command(OUTPUT ${dictionary}.cxx
-        COMMAND ${ROOTCLING_EXECUTABLE} -cint -f ${dictionary}.cxx 
-        -s ${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary} -inlineInputHeader -c -p ${ARG_OPTIONS} ${comp_defs} -std=c++${DD4HEP_USE_STDCXX} ${inc_dirs} ${headers} ${linkdefs} 
-        DEPENDS ${headers} ${linkdefs} )
-      #  Install the binary to the destination directory
-      #set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary}_rdict.pcm PROPERTIES GENERATED TRUE )
-      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary}_rdict.pcm DESTINATION lib)
-      #set_source_files_properties( ${dictionary}.h ${dictionary}.cxx PROPERTIES GENERATED TRUE )
-    else()
-      add_custom_command(OUTPUT ${dictionary}.h ${dictionary}.cxx
-        COMMAND ${ROOTCINT_EXECUTABLE} -cint -f ${dictionary}.cxx 
-        -s ${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary} -c -p ${ARG_OPTIONS} ${comp_defs} ${inc_dirs} ${headers} ${linkdefs} 
-        DEPENDS ${headers} ${linkdefs} )
-      #set_source_files_properties( ${dictionary}.h ${dictionary}.cxx PROPERTIES GENERATED TRUE )
+    add_custom_command(OUTPUT ${dictionary}.cxx
+      COMMAND ${ROOT_rootcling_CMD} -cint -f ${dictionary}.cxx
+      -s ${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary} -inlineInputHeader -c -p ${ARG_OPTIONS} ${comp_defs} -std=c++${DD4HEP_USE_STDCXX} ${inc_dirs} ${headers} ${linkdefs}
+      DEPENDS ${headers} ${linkdefs} )
+    #  Install the binary to the destination directory
+    #set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary}_rdict.pcm PROPERTIES GENERATED TRUE )
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../lib/${dictionary}_rdict.pcm DESTINATION lib)
+    #set_source_files_properties( ${dictionary}.h ${dictionary}.cxx PROPERTIES GENERATED TRUE )
     endif()
-  endif()
 endfunction()
 
 #---------------------------------------------------------------------------------------------------
@@ -1306,7 +1399,7 @@ endmacro( dd4hep_configure_scripts )
 #
 #---------------------------------------------------------------------------------------------------
 function ( dd4hep_add_test_reg test_name )
-  cmake_parse_arguments(ARG "BUILD_EXEC" "OUTPUT" "COMMAND;EXEC_ARGS;REGEX_PASS;REGEX_PASSED;REGEX_FAIL;REGEX_FAILED;REQUIRES" ${ARGN} )
+  cmake_parse_arguments(ARG "BUILD_EXEC" "OUTPUT" "COMMAND;DEPENDS;EXEC_ARGS;REGEX_PASS;REGEX_PASSED;REGEX_FAIL;REGEX_FAILED;REQUIRES" ${ARGN} )
   set ( missing )
   set ( use_test 1 )
 
@@ -1358,5 +1451,42 @@ function ( dd4hep_add_test_reg test_name )
     if ( NOT "${failed}" STREQUAL "" )
       set_tests_properties( t_${test_name} PROPERTIES FAIL_REGULAR_EXPRESSION "${failed}" )
     endif()
+    # Set test dependencies if present
+    foreach ( _dep ${ARG_DEPENDS} )
+      set_tests_properties( t_${test_name} PROPERTIES DEPENDS t_${_dep} )
+    endforeach()
   endif()
+endfunction()
+
+#---------------------------------------------------------------------------------------------------
+#  fill_dd4hep_library_path
+#
+#
+#  \author  M.Petric
+#  \version 1.0
+#
+#---------------------------------------------------------------------------------------------------
+function ( fill_dd4hep_library_path )
+
+  string(REGEX REPLACE "/lib/libCore.*" "" ROOT_ROOT ${ROOT_Core_LIBRARY})
+  SET( ENV{DD4HEP_LIBRARY_PATH} ${ROOT_ROOT}/lib )
+
+  if ( ${DD4HEP_USE_GEANT4} )
+    string(REGEX REPLACE "/lib/Geant4.*" "" Geant4_ROOT ${Geant4_DIR})
+    SET( ENV{DD4HEP_LIBRARY_PATH} ${Geant4_ROOT}/lib:$ENV{DD4HEP_LIBRARY_PATH} )
+  endif()
+
+  if(${DD4HEP_USE_LCIO})
+    SET( ENV{DD4HEP_LIBRARY_PATH} ${LCIO_DIR}/lib:$ENV{DD4HEP_LIBRARY_PATH} )
+  endif()
+
+  SET( ENV{DD4HEP_LIBRARY_PATH} ${CLHEP_ROOT_DIR}/lib:$ENV{DD4HEP_LIBRARY_PATH} )
+
+  if(${DD4HEP_USE_XERCESC})
+    SET( ENV{DD4HEP_LIBRARY_PATH} ${XERCESC_ROOT_DIR}/lib:$ENV{DD4HEP_LIBRARY_PATH} )
+  endif()
+
+  SET( ENV{DD4HEP_LIBRARY_PATH} ${CMAKE_BINARY_DIR}/lib:$ENV{DD4HEP_LIBRARY_PATH} )
+
+
 endfunction()

@@ -10,7 +10,6 @@
 # ---- initialize DD4hep for this shell
 . @CMAKE_INSTALL_PREFIX@/bin/thisdd4hep.sh
 
-
 #----- parse command line - first argument is the 
 #      test to run
 command=$1
@@ -21,6 +20,5 @@ for i in "$@" ; do
 	theargs="${theargs} $i"
     fi
 done
-
 echo "---running test :  '" ${command} ${theargs} "'"
 ${command} ${theargs}

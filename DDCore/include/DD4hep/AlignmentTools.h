@@ -1,6 +1,5 @@
-// $Id$
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -18,12 +17,12 @@
 #include "DD4hep/Alignments.h"
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   /// Namespace for the alignment part of the AIDA detector description toolkit
-  namespace Alignments {
+  namespace detail {
 
-    namespace AlignmentTools   {
+    namespace tools   {
 
       /// Copy alignment object from source object
       void copy(Alignment from, Alignment to);
@@ -38,7 +37,7 @@ namespace DD4hep {
       /**
        *  Note: Detector information of the alignment data is filled by the caller!
        */
-      void computeIdeal(Alignment alignment, const Alignment::NodeList& node_list);
+      //void computeIdeal(Alignment alignment, const Alignment::NodeList& node_list);
 
       /// Compute the survey to-world transformation.
       /** Compute the survey to-world transformation from 
@@ -53,5 +52,5 @@ namespace DD4hep {
     }
 
   } /* End namespace Aligments               */
-} /* End namespace DD4hep                    */
+} /* End namespace dd4hep                    */
 #endif    /* DD4HEP_ALIGMENTS_ALIGNMENTTOOLS_H   */

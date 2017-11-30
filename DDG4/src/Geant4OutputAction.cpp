@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -23,8 +22,8 @@
 #include "G4HCofThisEvent.hh"
 #include "G4Event.hh"
 
-using namespace DD4hep::Simulation;
-using namespace DD4hep;
+using namespace dd4hep::sim;
+using namespace dd4hep;
 using namespace std;
 
 /// Standard constructor
@@ -35,7 +34,7 @@ Geant4OutputAction::Geant4OutputAction(Geant4Context* ctxt, const string& nam)
   declareProperty("Output", m_output);
   declareProperty("HandleErrorsAsFatal", m_errorFatal=true);
   // Need to instantiate run action to configure fibers
-  if ( 0 == &ctxt->runAction() )  {}
+  ctxt->runAction();
 }
 
 /// Default destructor

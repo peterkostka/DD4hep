@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -21,7 +20,11 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // Code that causes warning goes here
+#elif defined(__llvm__) || defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // Code that causes warning goes here
 #endif
+
 
 // C/C++ include files
 #include <memory>
@@ -30,7 +33,7 @@
 #define DD4HEP_DD4HEP_PTR_AUTO
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep  {
+namespace dd4hep  {
 
   /// Out version of the std auto_ptr implementation base either on auto_ptr or unique_ptr.
   /**
@@ -39,7 +42,7 @@ namespace DD4hep  {
    *
    *   \author  M.Frank
    *   \version 1.0
-   *   \ingroup DD4HEP_GEOMETRY
+   *   \ingroup DD4HEP_CORE
    */
   template <typename T> class dd4hep_ptr
   //#if defined(DD4HEP_NEVER) && __cplusplus >= 201103L && ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
@@ -82,6 +85,8 @@ namespace DD4hep  {
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
+#elif defined(__llvm__) || defined(__APPLE__)
+#pragma clang diagnostic pop
 #endif
 
 #endif  // DD4HEP_MEMORY_H

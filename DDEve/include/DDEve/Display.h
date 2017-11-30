@@ -1,6 +1,5 @@
-// $Id: $
 //==========================================================================
-//  AIDA Detector description implementation for LCD
+//  AIDA Detector description implementation 
 //--------------------------------------------------------------------------
 // Copyright (C) Organisation europeenne pour la Recherche nucleaire (CERN)
 // All rights reserved.
@@ -15,7 +14,7 @@
 #define DD4HEP_DDEVE_DISPLAY_H
 
 // Framework include files
-#include "DD4hep/LCDD.h"
+#include "DD4hep/Detector.h"
 #include "DD4hep/Printout.h"
 #include "DDEve/PopupMenu.h"
 #include "DDEve/EventHandler.h"
@@ -36,12 +35,12 @@ class TGClient;
 class TFile;
 
 /// Namespace for the AIDA detector description toolkit
-namespace DD4hep {
+namespace dd4hep {
 
   // Forward declarations
   class View;
   class ViewMenu;
-  class DD4hepMenu;
+  class dd4hepMenu;
   class EventHandler;
   class ViewConfiguration;
   class CalodataConfiguration;
@@ -65,44 +64,61 @@ namespace DD4hep {
     typedef std::map<std::string, ViewConfig>        ViewConfigurations;
     typedef std::map<std::string, DataConfig>        DataConfigurations;
 
+    /// Calorimeter data context for the DDEve event display
     struct CalodataContext {
-      int slice;
-      TEveCalo3D* calo3D;
-      TEveCaloViz* caloViz;
-      TEveCaloDataHist* eveHist;
+      int slice = 0;
+      TEveCalo3D* calo3D = 0;
+      TEveCaloViz* caloViz = 0;
+      TEveCaloDataHist* eveHist = 0;
       DisplayConfiguration::Config config;
-      CalodataContext();
-      CalodataContext(const CalodataContext& c);
-      CalodataContext& operator=(const CalodataContext& c);
+      /// Default constructor
+      CalodataContext() = default;
+      /// Copy constructor
+      CalodataContext(const CalodataContext& c) = default;
+      /// Assignment operator
+      CalodataContext& operator=(const CalodataContext& c) = default;
     };
+
     typedef std::map<std::string, CalodataContext> Calodata;
    
   protected:
     /// Reference to TEve manager
-    TEveManager* m_eve;
+    TEveManager*         m_eve = 0;
     /// Reference to geometry hub
-    Geometry::LCDD* m_lcdd;
+    Detector*            m_detDesc = 0;
     /// Reference to the event reader object
-    GenericEventHandler* m_evtHandler;
-    TEveElementList* m_geoGlobal;
-    TEveElementList* m_eveGlobal;
-    ViewMenu* m_viewMenu;
-    DD4hepMenu* m_dd4Menu;
-    Topics m_geoTopics;
-    Topics m_eveTopics;
-    Views  m_eveViews;
-    Menus  m_menus;
-    ViewConfigurations m_viewConfigs;
-    DataConfigurations m_calodataConfigs;
-    DataConfigurations m_collectionsConfigs;
+    GenericEventHandler* m_evtHandler = 0;
+    /// Geometry item element list
+    TEveElementList*     m_geoGlobal = 0;
+    /// Event item element list
+    TEveElementList*     m_eveGlobal = 0;
+    /// Reference to the view menu
+    ViewMenu*            m_viewMenu;
+    /// Reference to the specialized ddeve menu
+    dd4hepMenu*          m_dd4Menu;
+    /// Geometry data topics
+    Topics               m_geoTopics;
+    /// Event data topics
+    Topics               m_eveTopics;
+    /// Container with configured event views
+    Views                m_eveViews;
+    /// Container with top level menues
+    Menus                m_menus;
+    /// Container with view configurations
+    ViewConfigurations   m_viewConfigs;
+    /// Container with calorimeter data display configurations
+    DataConfigurations   m_calodataConfigs;
+    /// Container with non-calorimeter data display configurations
+    DataConfigurations   m_collectionsConfigs;
     /// Container with calorimeter data (projections)
-    Calodata m_calodata;
+    Calodata             m_calodata;
     /// TGeoManager visualisation level
-    int m_visLevel;
+    int                  m_visLevel;
     /// Load level for the eve geometry
-    int m_loadLevel;
+    int                  m_loadLevel;
     /// Name of the event handler plugin
-    std::string m_eventHandlerName;
+    std::string          m_eventHandlerName;
+
   public:
     /// Standard constructor
     Display(TEveManager* eve);
@@ -110,7 +126,7 @@ namespace DD4hep {
     virtual ~Display();
 
     /// Access to geometry hub
-    Geometry::LCDD& lcdd() const;
+    Detector& detectorDescription() const;
     /// Access to the EVE manager
     TEveManager& manager() const                         { return *m_eve;             }
     /// Access View configurations
@@ -190,20 +206,18 @@ namespace DD4hep {
     /// Call to import event elements by topic
     void ImportEvent(const std::string& topic, TEveElement* el);
 
+    /// Consumer overload: open file
+    virtual void OnFileOpen(EventHandler& handler)  override;
     /// EventConsumer overload: Consumer event data
-    virtual void OnNewEvent(EventHandler* handler);
+    virtual void OnNewEvent(EventHandler& handler)  override;
 
     /// Build the DDEve specific menues. Default bar is the ROOT browser's bar
     virtual void BuildMenus(TGMenuBar* bar=0);
     /// Add new menu to the main menu bar
     virtual void AddMenu(TGMenuBar* bar, PopupMenu* menu, int hints=kLHintsNormal);
 
-    ClassDef(Display,0);
+    ClassDefOverride(Display,0);
   };
-
-
-} /* End namespace DD4hep   */
-
-
+}      /* End namespace dd4hep   */
 #endif /* DD4HEP_DDEVE_DISPLAY_H */
 
