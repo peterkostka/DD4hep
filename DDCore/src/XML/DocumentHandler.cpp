@@ -40,6 +40,7 @@ namespace {
     }
     return fn;
   }
+  int s_minPrintLevel = INFO;
 }
 
 #ifndef __TIXML__
@@ -177,8 +178,10 @@ namespace dd4hep {
               string baseURI(_toString(id->getBaseURI()));
               string schema(_toString(id->getSchemaLocation()));
               string ns(_toString(id->getNameSpace()));
-              printout(INFO,"XercesC","+++ Resolved URI: sysID:%s uri:%s ns:%s schema:%s",
-                       systemID.c_str(), baseURI.c_str(), ns.c_str(), schema.c_str());
+              if ( s_minPrintLevel <= INFO ) {
+                printout(INFO,"XercesC","+++ Resolved URI: sysID:%s uri:%s ns:%s schema:%s",
+                         systemID.c_str(), baseURI.c_str(), ns.c_str(), schema.c_str());
+              }
 #endif
               return new MemBufInputSource(input,buf.length(),systemID.c_str(),true);
             }
@@ -274,9 +277,16 @@ Document DocumentHandler::load(Handle_t base, const XMLCh* fname, UriReader* rea
   string path;
   DOMElement* elt = (DOMElement*)base.ptr();
   try  {
-    Strng_t p = _toString(fname);
-    XMLURL ref_url(elt->getBaseURI(), p);
-    path = _toString(ref_url.getURLText());
+    Document doc;
+    Strng_t p = _toString(fname);    
+    path      = _toString(fname);
+    /// This is a bit complicated, but if the primary source is in-memory
+    try  {
+      XMLURL  ref_url(elt->getBaseURI(), p);
+      path = _toString(ref_url.getURLText());
+    }
+    catch(...)   {
+    }
     return load(path, reader);
   }
   catch(const exception& exc)   {
@@ -474,7 +484,7 @@ Document DocumentHandler::load(const std::string& fname, UriReader* reader) cons
     printout(WARNING,"DocumentHandler","+++ Loading document URI: %s %s",
              fname.c_str(),"[URI Resolution is not supported by TiXML]");
   }
-  else  {
+  else if ( s_minPrintLevel <= INFO ) {
     printout(INFO,"DocumentHandler","+++ Loading document URI: %s [Resolved:'%s']",
              fname.c_str(),clean.c_str());
   }
@@ -499,8 +509,10 @@ Document DocumentHandler::load(const std::string& fname, UriReader* reader) cons
     printout(ERROR,"DocumentHandler","+++ Exception (TinyXML): parse(path):%s",e.what());
   }
   if ( result ) {
-    printout(INFO,"DocumentHandler","+++ Document %s succesfully parsed with TinyXML .....",
-             fname.c_str());
+    if ( s_minPrintLevel <= INFO ) {
+      printout(INFO,"DocumentHandler","+++ Document %s succesfully parsed with TinyXML .....",
+               fname.c_str());
+    }
     return (XmlDocument*)doc;
   }
   delete doc;
@@ -520,20 +532,40 @@ Document DocumentHandler::parse(const char* bytes, size_t /* length */, const ch
              "[URI Resolution is not supported by TiXML]");
   }
   TiXmlDocument* doc = new TiXmlDocument();
-  try {
-    if ( 0 == doc->Parse(bytes) ) {
-      return (XmlDocument*)doc;
+  try  {
+    if ( bytes )   {
+      size_t len = ::strlen(bytes);
+      // TiXml does not support white spaces at the end. Check and remove.
+      if ( bytes[len-1] != 0 || ::isspace(bytes[len-2]) )   {
+        char* buff = new char[len+1];
+        try  {
+          ::memcpy(buff, bytes, len+1);
+          buff[len] = 0;
+          for(size_t i=len-1; ::isspace(buff[i]); --i) buff[i] = 0;
+          if ( 0 == doc->Parse(buff) ) {
+            delete [] buff;
+            return (XmlDocument*)doc;
+          }
+        }
+        catch(...)   {
+        }
+        delete [] buff;
+      }
+      if ( 0 == doc->Parse(bytes) ) {
+        return (XmlDocument*)doc;
+      }
+      if ( doc->Error() ) {
+        printout(FATAL,"DocumentHandler",
+                 "+++ Error (TinyXML) while parsing XML string [%s]",
+                 doc->ErrorDesc());
+        printout(FATAL,"DocumentHandler",
+                 "+++ XML Document error: %s Location Line:%d Column:%d",
+                 doc->Value(), doc->ErrorRow(), doc->ErrorCol());
+        throw runtime_error(string("dd4hep: ")+doc->ErrorDesc());
+      }
+      throw runtime_error("dd4hep: Unknown error while parsing XML document string with TiXml.");
     }
-    if ( doc->Error() ) {
-      printout(FATAL,"DocumentHandler",
-               "+++ Error (TinyXML) while parsing XML string [%s]",
-               doc->ErrorDesc());
-      printout(FATAL,"DocumentHandler",
-               "+++ XML Document error: %s Location Line:%d Column:%d",
-               doc->Value(), doc->ErrorRow(), doc->ErrorCol());
-      throw runtime_error(string("dd4hep: ")+doc->ErrorDesc());
-    }
-    throw runtime_error("dd4hep: Unknown error while parsing XML document with TiXml.");
+    throw runtime_error("dd4hep: FAILED to parse invalid document string [NULL] with TiXml.");
   }
   catch(exception& e) {
     printout(ERROR,"DocumentHandler","+++ Exception (TinyXML): parse(string):%s",e.what());
@@ -581,6 +613,13 @@ DocumentHandler::DocumentHandler() {}
 
 /// Default destructor of a document handler using TiXml
 DocumentHandler::~DocumentHandler() {}
+
+/// Set minimum print level
+int DocumentHandler::setMinimumPrintLevel(int level)    {
+  int tmp = s_minPrintLevel;
+  s_minPrintLevel = level;
+  return tmp;
+}
 
 /// Default comment string
 std::string DocumentHandler::defaultComment()  {

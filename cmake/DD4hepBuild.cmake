@@ -15,7 +15,6 @@ message ( STATUS "INCLUDING DD4hepBuild.cmake" )
 include ( CMakeParseArguments )
 set ( DD4hepBuild_included ON )
 
-
 #---------------------------------------------------------------------------------------------------
 macro(dd4hep_to_parent_scope val)
   set ( ${val} ${${val}} PARENT_SCOPE )
@@ -307,16 +306,16 @@ macro ( dd4hep_configure_output )
     set ( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin )
   endif()
   #------------- set the default installation directory to be the source directory
-  dd4hep_debug( "DD4hep_configure_output: CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}  CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT=${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT}" )
+  dd4hep_debug( "dd4hep_configure_output: CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}  CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT=${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT}" )
   if ( NOT "${ARG_INSTALL}" STREQUAL "" )
     set ( CMAKE_INSTALL_PREFIX ${ARG_INSTALL} CACHE PATH "Set install prefix path." FORCE )
     dd4hep_print( "DD4hep_configure_output: set CMAKE_INSTALL_PREFIX to ${ARG_INSTALL}" )
   elseif ( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT )
     set( CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR} CACHE PATH  
       "install prefix path  - overwrite with -D CMAKE_INSTALL_PREFIX = ..."  FORCE )
-    dd4hep_print ( "DD4hep_configure_output: CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX} - overwrite with -D CMAKE_INSTALL_PREFIX" )
+    dd4hep_print ( "|++> dd4hep_configure_output: CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX} - overwrite with -D CMAKE_INSTALL_PREFIX" )
   elseif ( CMAKE_INSTALL_PREFIX )
-    dd4hep_print( "DD4hep_configure_output: set CMAKE_INSTALL_PREFIX to ${CMAKE_INSTALL_PREFIX}" )
+    dd4hep_print( "|++> dd4hep_configure_output: set CMAKE_INSTALL_PREFIX to ${CMAKE_INSTALL_PREFIX}" )
     set ( CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} )
   endif()
   dd4hep_debug("|++> Installation goes to: ${CMAKE_INSTALL_PREFIX}  <${ARG_INSTALL}>" )
@@ -963,7 +962,7 @@ endfunction()
 #
 #---------------------------------------------------------------------------------------------------
 function( dd4hep_add_library binary building )
-  cmake_parse_arguments ( ARG "NODEFAULTS" "" "SOURCES;GENERATED;LINK_LIBRARIES;INCLUDE_DIRS;USES;OPTIONAL;DEFINITIONS;PRINT" ${ARGN} )
+  cmake_parse_arguments ( ARG "NODEFAULTS;NOINSTALL" "" "SOURCES;GENERATED;LINK_LIBRARIES;INCLUDE_DIRS;USES;OPTIONAL;DEFINITIONS;PRINT" ${ARGN} )
   dd4hep_package_properties( pkg PKG_NAME enabled )
   set ( tag "Library[${pkg}] -> ${binary}" )
   if ( NOT "${ARG_PRINT}" STREQUAL "" )
@@ -1027,9 +1026,11 @@ function( dd4hep_add_library binary building )
         ##dd4hep_print ( "set_target_properties ( ${binary} PROPERTIES VERSION ${${pkg}_VERSION} SOVERSION ${${pkg}_SOVERSION})")
         set_target_properties ( ${binary} PROPERTIES VERSION ${${pkg}_VERSION} SOVERSION ${${pkg}_SOVERSION})
         #
-        install ( TARGETS ${binary}  
-	  LIBRARY DESTINATION lib 
-	  RUNTIME DESTINATION bin)
+        if ( NOT ${ARG_NOINSTALL} )
+          install ( TARGETS ${binary}  
+            LIBRARY DESTINATION lib 
+            RUNTIME DESTINATION bin)
+        endif()
         set ( building_binary "ON" )
       else()
         dd4hep_print ( "|++> ${tag} Skipped. No sources to be compiled [Use constraint]" )
@@ -1125,7 +1126,10 @@ function( dd4hep_add_plugin binary )
   if ( "${enabled}" STREQUAL "OFF" )
     dd4hep_skipmsg ( "${tag} DISBALED -- package is not built!" )
   else()
-    cmake_parse_arguments(ARG "" "" "SOURCES;GENERATED;LINK_LIBRARIES;INCLUDE_DIRS;USES;OPTIONAL;DEFINITIONS" ${ARGN})
+    cmake_parse_arguments(ARG "NOINSTALL" "" "SOURCES;GENERATED;LINK_LIBRARIES;INCLUDE_DIRS;USES;OPTIONAL;DEFINITIONS" ${ARGN})
+    if ( ${ARG_NOINSTALL} )
+      set(NOINSTALL NOINSTALL)
+    endif()
     get_property(pkg_lib  GLOBAL PROPERTY ${PKG}_LIBRARIES )
     dd4hep_add_library( ${binary} building
       PRINT          ${tag}
@@ -1135,7 +1139,9 @@ function( dd4hep_add_plugin binary )
       INCLUDE_DIRS   ${ARG_INCLUDE_DIRS} 
       USES           ${ARG_USES}
       OPTIONAL       "${ARG_OPTIONAL}"
-      DEFINITIONS    ${ARG_DEFINITIONS} )
+      DEFINITIONS    ${ARG_DEFINITIONS}
+      ${NOINSTALL}
+      )
     #
     # Generate ROOTMAP if the plugin will be built:
     if ( "${building}" STREQUAL "ON" )

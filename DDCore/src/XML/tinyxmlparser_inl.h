@@ -133,6 +133,9 @@ void TiXmlBase::ConvertUTF32ToUTF8( unsigned long input, char* output, int* leng
   case 1:
     --output;
     *output = (char)(input | FIRST_BYTE_MARK[*length]);
+    [[fallthrough]];
+  default:
+    break;
   }
 }
 

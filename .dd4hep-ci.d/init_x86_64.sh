@@ -59,10 +59,10 @@ BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 #--------------------------------------------------------------------------------
 
 if [[ ${COMPILER_TYPE} == "gcc" && ${OS} != "mac1013" ]]; then
-    source ${CLICREPO}/compilers/gcc/7.2.0/x86_64-${OS}/setup.sh
+    source ${CLICREPO}/compilers/gcc/7.3.0/x86_64-${OS}/setup.sh
 fi
 if [[ ${COMPILER_TYPE} == "llvm" && ${OS} != "mac1013" ]]; then
-    source ${CLICREPO}/compilers/llvm/5.0.0/x86_64-${OS}/setup.sh
+    source ${CLICREPO}/compilers/llvm/5.0.1/x86_64-${OS}/setup.sh
 fi
 
 #--------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
 #     ROOT
 #--------------------------------------------------------------------------------
 
-export ROOTSYS=${CLICREPO}/software/ROOT/6.10.08/${BUILD_FLAVOUR}
+export ROOTSYS=${CLICREPO}/software/ROOT/6.12.06/${BUILD_FLAVOUR}
 export PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 export PATH="$ROOTSYS/bin:$PATH"
 export LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
