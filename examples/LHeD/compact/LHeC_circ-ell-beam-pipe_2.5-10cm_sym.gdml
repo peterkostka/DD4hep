@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+  <define>
+    <position name="Beampipe_0inworld_volumepos" x="0" y="0" z="0" unit="cm"/>
+    <position name="Beampipe_1inworld_volumepos" x="0" y="0" z="0" unit="cm"/>
+    <position name="BeamPipeVacuum_2inworld_volumepos" x="0" y="0" z="0" unit="cm"/>
+    <position name="BeamPipeVacuum_3inworld_volumepos" x="0" y="0" z="0" unit="cm"/>
+  </define>
+  <materials>
+    <element name="Be_elm" formula="Be" Z="4">
+      <atom unit="g/mole" value="9.0121800000000007"/>
+    </element>
+    <material name="Beryllium">
+      <D unit="g/cm3" value="1.8480000000000001"/>
+      <fraction n="1" ref="Be_elm"/>
+    </material>
+    <element name="N_elm" formula="N" Z="7">
+      <atom unit="g/mole" value="14.0068"/>
+    </element>
+    <element name="O_elm" formula="O" Z="8">
+      <atom unit="g/mole" value="15.9994"/>
+    </element>
+    <element name="Ar_elm" formula="Ar" Z="18">
+      <atom unit="g/mole" value="39.947699999999998"/>
+    </element>
+    <material name="Vacuum">
+      <D unit="g/cm3" value="1e-10"/>
+      <fraction n="0.012000000104308128" ref="Ar_elm"/>
+      <fraction n="0.75400000810623169" ref="N_elm"/>
+      <fraction n="0.23399999737739563" ref="O_elm"/>
+    </material>
+    <material name="Air">
+      <D unit="g/cm3" value="0.0011999999999999999"/>
+      <fraction n="0.012000000104308128" ref="Ar_elm"/>
+      <fraction n="0.75400000810623169" ref="N_elm"/>
+      <fraction n="0.23399999737739563" ref="O_elm"/>
+    </material>
+  </materials>
+  <solids>
+    <box name="world_volume_shape_0x7fb58a62b830" x="4000" y="4000" z="4000" lunit="cm"/>
+    <eltube name="TGeoEltu" dx="10" dy="2.5" dz="386.565" lunit="cm"/>
+    <eltube name="TGeoEltu0x1" dx="9.6999999999999993" dy="2.2000000000000002" dz="386.86500000000001" lunit="cm"/>
+    <subtraction name="TGeoCompositeShape">
+      <first ref="TGeoEltu"/>
+      <second ref="TGeoEltu0x1"/>
+    </subtraction>
+    <tube name="TGeoTubeSeg" rmin="2.2000000000000002" rmax="2.5" z="773.73000000000002" startphi="270" deltaphi="180" aunit="deg" lunit="cm"/>
+    <union name="Beampipe_shape_0x7fb589604080_left">
+      <first ref="TGeoCompositeShape"/>
+      <second ref="TGeoTubeSeg"/>
+    </union>
+    <tube name="Beampipe_shape_0x7fb589604080_right" rmin="2.5" rmax="10" z="773.73000000000002" startphi="270" deltaphi="180" aunit="deg" lunit="cm"/>
+    <subtraction name="Beampipe_shape_0x7fb589604080">
+      <first ref="Beampipe_shape_0x7fb589604080_left"/>
+      <second ref="Beampipe_shape_0x7fb589604080_right"/>
+    </subtraction>
+    <eltube name="TGeoEltu0x2" dx="9.6999999999999993" dy="2.1980000001000004" dz="386.565" lunit="cm"/>
+    <eltube name="TGeoEltu0x3" dx="7.5019999999999989" dy="1.0000000000000002e-10" dz="388.76299999999998" lunit="cm"/>
+    <subtraction name="TGeoCompositeShape0x1">
+      <first ref="TGeoEltu0x2"/>
+      <second ref="TGeoEltu0x3"/>
+    </subtraction>
+    <tube name="TGeoTubeSeg0x1" rmin="1.0000000000000002e-10" rmax="2.1980000001000004" z="777.52599999999995" startphi="270" deltaphi="180" aunit="deg" lunit="cm"/>
+    <union name="BeamPipeVacuum_shape_0x7fb58962cca0_left">
+      <first ref="TGeoCompositeShape0x1"/>
+      <second ref="TGeoTubeSeg0x1"/>
+    </union>
+    <tube name="BeamPipeVacuum_shape_0x7fb58962cca0_right" rmin="2.1980000001000004" rmax="9.6999999999999993" z="777.52599999999995" startphi="270" deltaphi="180" aunit="deg" lunit="cm"/>
+    <subtraction name="BeamPipeVacuum_shape_0x7fb58962cca0">
+      <first ref="BeamPipeVacuum_shape_0x7fb58962cca0_left"/>
+      <second ref="BeamPipeVacuum_shape_0x7fb58962cca0_right"/>
+    </subtraction>
+  </solids>
+  <structure>
+    <volume name="Beampipe">
+      <materialref ref="Beryllium"/>
+      <solidref ref="Beampipe_shape_0x7fb589604080"/>
+    </volume>
+    <volume name="BeamPipeVacuum">
+      <materialref ref="Vacuum"/>
+      <solidref ref="BeamPipeVacuum_shape_0x7fb58962cca0"/>
+    </volume>
+    <volume name="world_volume">
+      <materialref ref="Air"/>
+      <solidref ref="world_volume_shape_0x7fb58a62b830"/>
+      <physvol name="Beampipe_0" copynumber="0">
+        <volumeref ref="Beampipe"/>
+        <positionref ref="Beampipe_0inworld_volumepos"/>
+      </physvol>
+      <physvol name="Beampipe_1" copynumber="1">
+        <volumeref ref="Beampipe"/>
+        <positionref ref="Beampipe_1inworld_volumepos"/>
+      </physvol>
+      <physvol name="BeamPipeVacuum_2" copynumber="2">
+        <volumeref ref="BeamPipeVacuum"/>
+        <positionref ref="BeamPipeVacuum_2inworld_volumepos"/>
+      </physvol>
+      <physvol name="BeamPipeVacuum_3" copynumber="3">
+        <volumeref ref="BeamPipeVacuum"/>
+        <positionref ref="BeamPipeVacuum_3inworld_volumepos"/>
+      </physvol>
+    </volume>
+  </structure>
+  <setup name="default" version="1.0">
+    <world ref="world_volume"/>
+  </setup>
+</gdml>

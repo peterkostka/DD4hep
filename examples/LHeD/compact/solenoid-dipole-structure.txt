@@ -1,0 +1,44 @@
+LHeC:   (inner)Solenoid/Dipole structure located between ECAL-barrel and HCAL-barrel
+=====================================================================================
+ |Aluminum             Inner Cryostat radius            radius   ~108cm
+-  
+ Solenoid - 3.5T; length overall: 374cm; fwd (rel.to (0,0,0)): 374cm;  bwd: -204cm :
+ |Aluminum             ConductorThickness   6cm   start radius   ~118cm
+ |Aluminum             QuenchbackThickness  5cm   start radius   ~124cm
+-
+ Dipole  - 0.4T; D+ fwd (rel.to (0,0,0)): 589cm;  D- bwd: -394cm :
+ |Aluminum             ConductorThickness   1.5cm start radius   ~133cm
+-
+ |Aluminum             Outer Cryostat radius           radius    ~143cm
+
+
+
+HL-LHeC: (inner)Solenoid/Dipole structure located between Tracker and ECAL-barrel
+=====================================================================================
+ |Aluminum             Inner Cryostat radius            radius   ~51cm
+-
+ Solenoid - 2T ??? ; length overall: xx cm; fwd (rel.to (0,0,0)):  xx cm;  bwd:  -xx cm:
+ |Aluminum             ConductorThickness   6cm   start radius   ~61cm
+ |Aluminum             QuenchbackThickness  5cm   start radius   ~67cm
+-
+ Dipole:
+ |Aluminum             ConductorThickness   1.5cm start radius   ~76cm
+-
+ |Aluminum             Outer Cryostat radius           radius    ~86cm
+
+
+
+
+FCC-eh: (inner)Solenoid/Dipole structure located between ECAL-barrel and HCAL-barrel
+=====================================================================================
+ |Aluminum              Inner Cryostat radius            radius    ~131cm
+-
+ Solenoid - 2T ??? ; length overall: 918cm; fwd (rel.to (0,0,0)):  524cm;  bwd:  -394cm:
+ |Aluminum              ConductorThickness   6cm   start radius    ~144cm
+ |Aluminum              QuenchbackThickness  5cm   start radius    ~149cm
+-
+ Dipole  - 0.2T; D+ fwd (rel.to (0,0,0)): 952cm;  D- bwd: -629cm :
+ |Aluminum              ConductorThickness   1.5cm start radius    ~157cm
+-
+ |Aluminum              Outer Cryostat radius            radius    ~167cm
+

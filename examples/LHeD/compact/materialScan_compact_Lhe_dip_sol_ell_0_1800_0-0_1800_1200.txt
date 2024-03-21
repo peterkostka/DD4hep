@@ -1,0 +1,29 @@
+TInterpreter::ReadRootmapFile: class  HepMC3::FourVector found in librootIO_Classes.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: class  HepMC3::GenEventData found in librootIO_Classes.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: class  HepMC3::GenParticleData found in librootIO_Classes.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: class  HepMC3::GenRunInfoData found in librootIO_Classes.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: class  HepMC3::GenVertexData found in librootIO_Classes.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: class  HepMC3::Setup found in librootIO_Classes.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: class  HepMC3::Units found in librootIO_Classes.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: typedef  HepMC::GenEventData found in librootIO_Classes.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: typedef  HepMC::GenRunInfoData found in librootIO_Classes.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: typedef  HepMC::GenParticleData found in librootIO_Classes.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: typedef  HepMC::GenVertexData found in librootIO_Classes.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: typedef  HepMC::FourVector found in librootIO_Classes.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: typedef  HepMC::Units found in librootIO_Classes.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  is already in libHepMC3rootIO.dylib 
+TInterpreter::ReadRootmapFile: typedef  HepMC::Setup found in librootIO_Classes.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  libHepMC3rootIO.dylib  is already in libHepMC3rootIO.dylib 
+VertexBarrelSupports_layer0 2.5 2.5 50.625
+VertexBarrelSupports_layer1 4.5 4.5 51.7
+ +--------------------------------------------------------------------------------------------------------------------------------------------------
+ + Material scan between: x_0 = (   0.00,1800.00,   0.00) [cm] and x_1 = (   0.00,1800.00,1200.00) [cm] : 
+ +--------------------------------------------------------------------------------------------------------------------------------------------------
+ |     \   Material           Atomic                 Radiation   Interaction               Path   Integrated  Integrated    Material
+ | Num. \  Name          Number/Z   Mass/A  Density    Length       Length    Thickness   Length      X0        Lambda      Endpoint  
+ | Layer \                        [g/mole]  [g/cm3]     [cm]        [cm]          [cm]      [cm]     [cm]        [cm]     (     cm,     cm,     cm)
+ +--------------------------------------------------------------------------------------------------------------------------------------------------
+ |     1 Air                    7   14.784   0.0012  30528.7508   71299.2615    500.000   500.00    0.016378    0.007013  (   0.00,1800.00, 500.00)
+ |     2 Air                    7   14.784   0.0012  30528.7508   71299.2615    500.000  1000.00    0.032756    0.014025  (   0.00,1800.00,1000.00)
+ |     3 Air                    7   14.784   0.0012  30528.7508   71299.2615    200.000  1200.00    0.039307    0.016830  (   0.00,1800.00,1200.00)
+ +--------------------------------------------------------------------------------------------------------------------------------------------------
+ |     0 Average Material       7   14.784   0.0012  30528.7508   71299.2615   1200.000  1200.00    0.039307    0.016830  (   0.00,1800.00,1200.00)
+ +--------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,2669 @@
+<!-- ====================================================================== -->
+<!--                                                                        -->
+<!--    XML description of the complete HighE_LHeC detector                -->
+<!--    a detector for a new LHC option using a ERL e-source                -->
+<!--                                                                        -->
+<!--    Contained are the required                                          -->
+<!--      ++ global constants used uniquely by this detector                -->
+<!--      ++ visualization attributes                                       -->
+<!--      ++ the definition of the readout structure and the                -->
+<!--         readout segmentation (if necessary)                            -->
+<!--      ++ [the include statements for the sensitive detectors and        -->
+<!--         the corresponding support structure(s)]                        -->
+<!--      ++ SurfacePlugin not active                                       -->
+<!--                                                                        -->
+<!--   @author  P.Kostka                                                    -->
+<!--   @date    old version 20.10.2017                                      -->
+<!--                                                                        -->
+<!-- ====================================================================== -->
+
+<lccdd xmlns:compact="-"
+    xmlns:xs="-"
+    xs:noNamespaceSchemaLocation="-">
+
+    <info name="HighE_LHeC_CDR"
+        title="HighE_LHeC Detector - based on CLIC Silicon Detector DD4hep layout"
+        author="Peter Kostka"
+        url="http:dummy-url.de"
+        status="development"
+        version="$Id: compact.xml 2013-12-13 12:28:53Z peter.kostka@cern.ch $">
+        <comment> The compact format for the HighE_LHeC Detector used for design studies </comment>
+    </info>
+
+    <includes>
+        <gdmlFile  ref="${Lhe_Detector_dir}/compact/elements.xml"/>
+        <gdmlFile  ref="${Lhe_Detector_dir}/compact/materials.xml"/>
+    </includes>
+
+    <define>
+        <constant name="Lhe_Detector_dir" value="${DD4hepINSTALL}/examples/LHeD/" type="string"/>;
+        <constant name="world_side" value="20.*m"/>
+        <constant name="world_x" value="world_side"/>
+        <constant name="world_y" value="world_side"/>
+        <constant name="world_z" value="world_side"/>
+
+        <constant name="CrossingAngle" value="0.020*rad"/>
+
+        <constant name="CaloSides" value="12"/>
+        <constant name="MuonSides" value="8"/>
+
+    <comment> additional defined Parameters  - HighE_LHeC </comment>
+        <constant name="CentralBeamPipe_zmax" value="625.0*cm"/>
+        <constant name="CentralBeamPipe_rmax" value="2.2*cm"/> 
+<!--        <constant name="CentralBeamPipe_rmax" value="10.*cm"/> -->
+        <constant name="CentralBeamPipe_thickness" value="0.30*cm"/>
+<!--        <constant name="CentralEllBeamPipe_rmax" value="6.*cm-CentralBeamPipe_thickness"/> -->
+        <constant name="CentralEllBeamPipe_rmax" value="10.*cm-CentralBeamPipe_thickness"/>
+        <constant name="CentralBeamPipe_rmin" value="CentralBeamPipe_rmax - CentralBeamPipe_thickness"/>
+        <constant name="BeamPipe_thickness" value="0.35*cm"/>
+        <constant name="BeamPipe_endThickness" value="0.1*cm"/>
+        <constant name="BeamPipe_zmax" value="650.0*cm - 0.5*cm"/>
+        <constant name="BeamPipe_rmax" value="5.6*cm"/>
+        <constant name="BeamPipe_rmin" value="BeamPipe_rmax - BeamPipe_thickness"/>
+
+        <constant name="Distance_VXDLayer" value="60*mm"/>
+        <constant name="Distance_VxBG10_in" value="0.03*cm"/>
+        <constant name="Distance_VxBG10_ou" value="0.03*cm"/>
+        <constant name="G10thickness" value="0.5*cm"/>
+        <constant name="VxBar_Env" value="0.25*cm"/>
+        <constant name="Distance_VxCo_in" value="Distance_VxBG10_ou + 0.01*cm"/>
+        <constant name="Distance_VxCo_ou" value="Distance_VxBG10_ou + 0.02*cm"/>
+<!--
+        <constant name="VertexBarrel_r0" value="CentralBeamPipe_rmax+ VxBar_Env + 0.6*cm"/>                          
+        <constant name="VertexBarrel2_r0" value="CentralBeamPipe_rmax+ VxBar_Env + 2.0*cm"/>                          
+--> 
+      <comment> barrel lyers  39.05 95.02 150.91 206.84 262.76 318.69 367.60 509.06 650.52 791.99 </comment>
+ 	 
+        <constant name="VertexBarrel_r0" value="38.0*mm"/>                          
+        <constant name="VertexBarrel2_r0" value="70.00*mm"/>                          
+        <constant name="VertexBarrel_r1"  value="150.91*mm"/>
+        <constant name="VertexBarrel_r2"  value="206.84*mm"/>
+        <constant name="VertexBarrel_r3"  value="262.76*mm"/>
+<!--
+        <constant name="VertexBarrel_r1"  value="VertexBarrel2_r0 + VxBar_Env + Distance_VXDLayer"/>
+        <constant name="VertexBarrel_r2"  value="VertexBarrel_r1 + VxBar_Env + Distance_VXDLayer"/>
+        <constant name="VertexBarrel_r3"  value="VertexBarrel_r2 + VxBar_Env + Distance_VXDLayer"/>
+-->
+        <constant name="VertexBG10_r0_in" value="VertexBarrel_r0 - 2*VxBar_Env - Distance_VxBG10_in"/>
+        <constant name="VertexBG102_r0_in" value="VertexBarrel2_r0 - 2*VxBar_Env - Distance_VxBG10_in"/>
+        <constant name="VertexBG10_r1_in" value="VertexBarrel_r1 - 2*VxBar_Env - Distance_VxBG10_in"/>
+        <constant name="VertexBG10_r2_in" value="VertexBarrel_r2 - 2*VxBar_Env - Distance_VxBG10_in"/>
+        <constant name="VertexBG10_r3_in" value="VertexBarrel_r3 - 2*VxBar_Env - Distance_VxBG10_in"/>
+
+        <constant name="VertexBG10_r0_ou" value="VertexBarrel_r0 + 2*VxBar_Env + Distance_VxBG10_ou"/>
+        <constant name="VertexBG102_r0_ou" value="VertexBarrel2_r0 + 2*VxBar_Env + Distance_VxBG10_ou"/>
+        <constant name="VertexBG10_r1_ou" value="VertexBarrel_r1 + 2*VxBar_Env + Distance_VxBG10_ou"/>
+        <constant name="VertexBG10_r2_ou" value="VertexBarrel_r2 + 2*VxBar_Env + Distance_VxBG10_ou"/>
+        <constant name="VertexBG10_r3_ou" value="VertexBarrel_r3 + 2*VxBar_Env + Distance_VxBG10_ou"/>
+
+        <constant name="VertexCo_r0_in" value="VertexBarrel_r0 - VxBar_Env -  Distance_VxCo_in"/>
+        <constant name="VertexCo2_r0_in" value="VertexBarrel2_r0 - VxBar_Env -  Distance_VxCo_in"/>
+        <constant name="VertexCo_r1_in" value="VertexBarrel_r1 - VxBar_Env -  Distance_VxCo_in"/>
+        <constant name="VertexCo_r2_in" value="VertexBarrel_r2 - VxBar_Env -  Distance_VxCo_in"/>
+        <constant name="VertexCo_r3_in" value="VertexBarrel_r3 - VxBar_Env -  Distance_VxCo_in"/>
+
+        <constant name="VertexCo_r0_ou" value="VertexBarrel_r0 + VxBar_Env +  Distance_VxCo_ou"/>
+        <constant name="VertexCo2_r0_ou" value="VertexBarrel2_r0 + VxBar_Env +  Distance_VxCo_ou"/>
+
+        <constant name="VertexCo_r1_ou" value="VertexBarrel_r1 + VxBar_Env +  Distance_VxCo_ou"/>
+        <constant name="VertexCo_r2_ou" value="VertexBarrel_r2 + VxBar_Env +  Distance_VxCo_ou"/>
+        <constant name="VertexCo_r3_ou" value="VertexBarrel_r3 + VxBar_Env +  Distance_VxCo_ou"/>
+        <constant name="Vertex_r_in" value="VertexBarrel_r0"/>
+        <constant name="Vertex_r_out" value="VertexBarrel_r0 + VxBar_Env +  Distance_VxCo_ou + 0.5*cm"/>
+
+        <constant name="VXD_Ell_Max_r" value="VertexBarrel_r0"/>
+        <constant name="Diff_Radius_SITLayer" value="69.*mm"/>
+        <constant name="Distance_SITLayer" value="60.*mm"/>
+
+<comment> barrel lyers   39.05 95.02    150.91 206.84 262.76 318.69     367.60 509.06 650.52 791.99 
+        <constant name="Radius_SITLayer0" value="VXD_Ell_Max_r + 5.5*cm"/> 
+        <constant name="Radius_SITLayer1" value="Radius_SITLayer0 + Distance_SITLayer"/>
+        <constant name="Radius_SITLayer2" value="Radius_SITLayer1 + Distance_SITLayer"/>
+        <constant name="Radius_SITLayer3" value="Radius_SITLayer2 + Distance_SITLayer"/>    
+</comment>     
+        <constant name="Radius_SITLayer0" value="150.91*mm"/> 
+        <constant name="Radius_SITLayer1" value="206.84*mm"/>
+        <constant name="Radius_SITLayer2" value="262.76*mm"/>
+        <constant name="Radius_SITLayer3" value="318.69*mm"/>    
+
+        <constant name="Diff_Radius_SOTLayer" value="60.*mm"/>        
+        <constant name="Distance_SOTLayer" value="150.*mm"/>
+        <constant name="Radius_SOTLayer0" value="Radius_SITLayer3 + Diff_Radius_SOTLayer"/>
+        <constant name="Radius_SOTLayer1" value="Radius_SOTLayer0 + Distance_SOTLayer"/>
+        <constant name="Radius_SOTLayer2" value="Radius_SOTLayer1 + Distance_SOTLayer"/>
+        <constant name="Radius_SOTLayer3" value="Radius_SOTLayer2 + Distance_SOTLayer"/>
+
+        <constant name="SiMod_w0" value="97.79*mm"/>
+        <constant name="SiMod_w1" value="97.79*mm"/>
+        <constant name="SiMod_w2" value="97.79*mm"/>
+        <constant name="SiMod_w3" value="97.79*mm"/>
+        <constant name="SiMod_w4" value="97.79*mm"/>
+        <constant name="SiWafer_w" value="92.031*mm"/>
+        <constant name="SiMod_l0" value="SiMod_w0"/>
+        <constant name="SiMod_l1" value="SiMod_w1"/>
+        <constant name="SiMod_l2" value="SiMod_w2"/>
+        <constant name="SiMod_l3" value="SiMod_w3"/>
+        <constant name="SiMod_l4" value="SiMod_w4"/>
+        <constant name="SiWafer_l" value="92.031*mm"/>
+
+        <constant name="SiMod_z0" value="512.*mm"/>
+        <constant name="SiMod_z1" value="512.*mm"/>
+        <constant name="SiMod_z2" value="540.*mm"/>
+        <constant name="SiMod_z3" value="540.*mm"/>
+        <constant name="SiMod_z4" value="540.*mm"/>
+        <constant name="SiMod_z5" value="540.*mm"/>
+
+        <constant name="SiModO_z0" value="640.*mm"/>
+        <constant name="SiModO_z1" value="830.*mm"/>
+        <constant name="SiModO_z2" value="980.*mm"/>
+        <constant name="SiModO_z3" value="1130.*mm"/>
+
+        <constant name="SiVXDEndcap_z0" value="SiMod_z0*2.+0.5*cm"/>
+        <constant name="SiVXDEndcap_z1" value="SiMod_z2*2.+0.5*cm"/>
+
+        <constant name="SiModO_zi0" value="SiModO_z0 - SiMod_w0 "/>
+        <constant name="SiModO_zi1" value="SiModO_z1 - SiMod_w1 "/>
+        <constant name="SiModO_zi2" value="SiModO_z2 - SiMod_w2 "/>
+        <constant name="SiModO_zi3" value="SiModO_z3 - SiMod_w3 "/>
+
+      <comment>             FTD parameters             </comment>
+        <constant name="Ftd_total_cylinder_thickness"          value="1.0*mm"/>
+        <constant name="Ftd_cables_thickness"                  value="0.08*mm"/>
+        <constant name="Ftd_Si_thickness1"                     value="0.3*mm"/>
+        <constant name="Ftd_Si_thickness2"                     value="0.3*mm"/>
+        <constant name="Ftd_inner_support_thickness"           value="2*mm"/>
+        <constant name="Ftd_inner_support_length"              value="4*mm"/>
+        <constant name="Ftd_outer_support_thickness"           value="10*mm"/>
+        <constant name="Ftd_outer_support_length"              value="4*mm"/>
+        <constant name="Diff_z_Ftd_disk" value="2.5*cm"/>
+
+      <comment>            ftd - pos z  new </comment>
+        <constant name="Ftd_disk_z0"  value="650.0*mm"/>
+        <constant name="Ftd_disk_z1"  value="800.2*mm"/>
+        <constant name="Ftd_disk_z2"  value="985.2*mm"/>
+        <constant name="Ftd_disk_z3"  value="1212.9*mm"/>
+        <constant name="Ftd_disk_z4"  value="1493.3*mm"/>
+        <constant name="Ftd_disk_z5"  value="1838.5*mm"/>
+        <constant name="Ftd_disk_z6"  value="2263.4*mm"/>
+        <constant name="Ftd_disk_z7"  value="2786.6*mm"/>
+        <constant name="Ftd_disk_z8"  value="3430.7*mm"/>
+        <constant name="Ftd_disk_z9"  value="4223.7*mm"/>
+        <constant name="Ftd_disk_z10" value="5200.0*mm"/>
+
+        <comment>            btd - neg z  new </comment>
+        <constant name="Btd_disk_z0"  value="-650.0*mm"/>
+        <constant name="Btd_disk_z1"  value="-813.2*mm"/>
+        <constant name="Btd_disk_z2"  value="-1017.3*mm"/>
+        <constant name="Btd_disk_z3"  value="-1272.7*mm"/>
+        <constant name="Btd_disk_z4"  value="-1592.2*mm"/>
+        <constant name="Btd_disk_z5"  value="-1991.9*mm"/>
+        <constant name="Btd_disk_z6"  value="-2491.9*mm"/>
+        <constant name="Btd_disk_z7"  value="-3117.4*mm"/>
+        <constant name="Btd_disk_z8"  value="-3900.0*mm"/>
+
+      <comment>            ftd - rings  </comment>
+        <constant name="Ftd_sdisk_ri0"  value="86.716*mm"/>
+        <constant name="Ftd_sdisk_ri1"  value="154.991*mm"/>
+        <constant name="Ftd_sdisk_ri2"  value="245.180*mm"/>
+        <constant name="Ftd_sdisk_ri3"  value="328.520*mm"/>
+        <constant name="Ftd_sdisk_ri4"  value="413.654*mm"/>
+        <constant name="Ftd_sdisk_ri5"  value="498.788*mm"/>
+        <constant name="Ftd_sdisk_ri6"  value="583.922*mm"/>
+        <constant name="Ftd_sdisk_ri7"  value="669.056*mm"/>
+        <constant name="Ftd_sdisk_ri8"  value="754.19*mm"/>
+        <constant name="Ftd_sdisk_ri9"  value="839.324*mm"/>
+        
+
+        <constant name="EcalBarrel_cryo_rmin" value="(Radius_SOTLayer3 + 6.0*cm)" />        
+        <constant name="Steel235_thickness" value = "0.3*cm"/>
+        <constant name="Epoxy_thickness" value = "0.0175*cm"/>
+        <constant name="Pb_thickness" value = "0.22*cm"/>
+        <constant name="LAr_thickness" value = "0.21*cm"/>
+        <constant name="Cu_thickness" value = "0.005*cm"/>
+        <constant name="Kapton_thickness" value = "0.03*cm"/>
+        <constant name="EcalBarrel_layer_thickness" value = "(Steel235_thickness+Epoxy_thickness+LAr_thickness+Cu_thickness)*2 
+                        + Pb_thickness + Kapton_thickness"/>      
+        <constant name="EcalBarrel_layers1" value="10." />
+        <constant name="EcalBarrel_layers2" value="29." />
+        <constant name="EcalBarrel_layers3" value="4." />
+        <constant name="EcalBarrel_layers1_depth" value="EcalBarrel_layer_thickness * EcalBarrel_layers1 + 0.1*cm" />
+        <constant name="EcalBarrel_layers2_depth" value="EcalBarrel_layer_thickness * EcalBarrel_layers2 + 0.1*cm" />
+        <constant name="EcalBarrel_layers3_depth" value="EcalBarrel_layer_thickness * EcalBarrel_layers3 + 0.1*cm" />
+        <constant name="EcalBarrel_depth" value="EcalBarrel_layers1_depth+EcalBarrel_layers2_depth+EcalBarrel_layers3_depth"/>
+<!--		cryostat
+			EcalBarreli   1.345  * 10 = 13.45  (*5  = 6.725) layer1
+			EcalBarrelm   1.35   * 29 = 39.15  (*22 = 29.7 ) layer2
+			EcalBarrelo   1.35   * 4  = 5.4           5.4
+			41.28			            58            41.825
+-->
+        <constant name="EcalBarrel_rmin1" value="((EcalBarrel_cryo_rmin + 1.*cm) / (cos(pi/CaloSides)) )" />
+        <constant name="EcalBarrel_rmin2" value="((EcalBarrel_rmin1 + EcalBarrel_layers1_depth)/ (cos(pi/CaloSides)) )" />
+        <constant name="EcalBarrel_rmin3" value="((EcalBarrel_rmin2 + EcalBarrel_layers2_depth)/ (cos(pi/CaloSides)) )" />
+        <constant name="EcalBarrel_rmax" value="( (EcalBarrel_rmin3 + EcalBarrel_layers3_depth)/(cos(pi/CaloSides)))"/>
+        <constant name="EcalBarrel_zmax" value="Ftd_disk_z10-Btd_disk_z8 + 20.*cm "/>
+        <constant name="EcalBarrel_length" value="EcalBarrel_zmax - Btd_disk_z8 + 2.*cm"/>
+        <constant name="EcalBarrel_zmin" value="Btd_disk_z8 -2.*cm "/>
+
+        <constant name="EcalPlug_rmin" value="Radius_SITLayer0+6.0*cm"/>
+        <constant name="EcalPlug_rmax" value="(EcalBarrel_rmin1 - 2.0*cm) / (cos(pi/CaloSides))"/>
+
+        <constant name="EcalPlug_fwd_layers1" value="1." />
+        <constant name="EcalPlug_fwd_layers2" value="20." />
+        <constant name="EcalPlug_fwd_layers3" value="28." />
+        <constant name="EcalPlug_length_fwd1" value="EcalPlug_fwd_layers1 * 0.13*cm"/>        
+        <constant name="EcalPlug_length_fwd2" value="EcalPlug_fwd_layers2 * 0.625*cm"/>   
+        <constant name="EcalPlug_length_fwd3" value="EcalPlug_fwd_layers3 * 0.725*cm"/>
+        <constant name="EcalPlug_length_fwd" value="EcalPlug_length_fwd1+EcalPlug_length_fwd2+EcalPlug_length_fwd3"/>
+<!--         <constant name="EcalPlug_length_fwd" value="35.73*cm"/> -->
+        <constant name="EcalPlug_zmin_fwd" value="Ftd_disk_z10+3.0*cm"/>
+        <constant name="EcalPlug_zmax_fwd" value="EcalPlug_zmin_fwd+EcalPlug_length_fwd"/>
+
+
+        <constant name="EcalPlug_bwd_layers1" value="1." />
+        <constant name="EcalPlug_bwd_layers2" value="32." />
+        <constant name="EcalPlug_bwd_layers3" value="26." />
+        <constant name="EcalPlug_length_bwd1" value="EcalPlug_bwd_layers1 * 0.225*cm"/>
+        <constant name="EcalPlug_length_bwd2" value="EcalPlug_bwd_layers2 * 0.425*cm"/>
+        <constant name="EcalPlug_length_bwd3" value="EcalPlug_bwd_layers3 * 0.825*cm"/>
+        <constant name="EcalPlug_length_bwd" value="EcalPlug_length_bwd1+EcalPlug_length_bwd2+EcalPlug_length_bwd3"/>
+        <constant name="EcalPlug_zmin_bwd" value="EcalBarrel_zmin-EcalPlug_length_bwd-3.*cm"/>
+        <constant name="EcalPlug_zmax_bwd" value="EcalPlug_zmin_bwd+EcalPlug_length_bwd"/>
+
+        <constant name="tracking_region_zmax" value="EcalPlug_zmin_fwd - 1.0*cm"/>
+        <constant name="VXD_CF_sensor" value="0.026*cm"/>
+        <constant name="VXD_CF_support" value="0.05*cm"/>
+
+        <constant name="SolenoidBarrelInnerRadius1" value="EcalBarrel_rmax + 0.5*cm"/>
+        <constant name="SolenoidCoilOuterZ1" value="(EcalPlug_zmax_fwd-EcalPlug_zmin_bwd)/2."/>
+        <constant name="DipoleCoilOuterZ1" value="(EcalPlug_zmin_fwd-EcalPlug_zmax_bwd)/2."/>
+        <constant name="SolenoidBarrelInnerCryostatThickness1" value="3.0*cm"/>
+        <constant name="SolenoidBarrelInnerAirgapThickness1" value="1.5*cm"/>
+        <constant name="SolenoidBarrelAlConductorThickness1" value="6.0*cm"/>
+        <constant name="DipoleBarrelAlConductorThickness" value="1.5*cm"/>
+        <constant name="SolenoidBarrelQuenchbackThickness1" value="5.*cm"/>
+        <constant name="SolenoidBarrelOuterAirgapThickness1" value="3.*cm"/>
+        <constant name="SolenoidBarrelOuterCryostatThickness1" value="4.0*cm"/>
+        <constant name="SolenoidEndcapCryostatThickness1" value="3.0*cm"/>
+        <constant name="SolenoidEndcapAirgapThickness1" value="2.7*cm"/>
+        <constant name="SolenoidBarrelConductorInnerRadius1" value="
+        SolenoidBarrelInnerRadius1+2.*SolenoidBarrelInnerCryostatThickness1+SolenoidBarrelInnerAirgapThickness1"/>
+        <constant name="SolenoidBarrelOuterZ1" value="
+        SolenoidCoilOuterZ1+SolenoidEndcapAirgapThickness1"/>
+        <constant name="SolenoidBarrelOuterCryostatInnerRadius1" value="
+        SolenoidBarrelConductorInnerRadius1+SolenoidBarrelAlConductorThickness1+SolenoidBarrelQuenchbackThickness1
+        + DipoleBarrelAlConductorThickness+SolenoidBarrelInnerCryostatThickness1 + 4.*cm"/>
+        <constant name="SolenoidBarrelOuterRadius1" value="
+        SolenoidBarrelOuterCryostatInnerRadius1+SolenoidBarrelOuterAirgapThickness1+SolenoidBarrelOuterCryostatThickness1"/>
+        <constant name="SolenoidalFieldRadius1" value="
+        (SolenoidBarrelConductorInnerRadius1+DipoleBarrelAlConductorThickness+SolenoidBarrelAlConductorThickness1/2.0)"/>
+        <constant name="DipoleBarrelAlConductorRadius" value="
+        SolenoidBarrelOuterCryostatInnerRadius1-SolenoidBarrelOuterAirgapThickness1-SolenoidBarrelOuterCryostatThickness1"/>
+
+        <constant name="tracking_region_radius" value="Radius_SOTLayer3 + 0.8*cm"/>   
+        <constant name="SolenoidalFieldRadius"  value="100.0*cm + 0.2*m"/>
+
+          <constant name="OffsetZ" value="65.*cm"/>    <!-- from geoDisplay - tracker only -->
+
+        <constant name="HcalBarrel_rmin" value="SolenoidBarrelOuterRadius1+5.0*cm"/>
+        <constant name="HcalBarrel_layers1" value="(int) 10"/>
+        <constant name="HcalBarrel_layers2" value="(int) 24"/>
+        <constant name="HcalBarrel_layers3" value="(int) 34"/>
+        <constant name="Polystyrene_thickness" value = "0.5*cm"/>
+        <constant name="Air_thickness1" value = "0.15*cm"/>
+        <constant name="Steel235_thickness22" value = "0.22*cm"/>
+        <constant name="Steel235_thickness25" value = "0.25*cm"/>
+        <constant name="Steel235_thickness3" value = "0.3*cm"/>
+        <constant name="HcalBarrel_depth" value="
+        (Steel235_thickness22+Polystyrene_thickness+Air_thickness1)*HcalBarrel_layers1
+        + 	 (Steel235_thickness25+Polystyrene_thickness+Air_thickness1)*HcalBarrel_layers2
+        + 	 (Steel235_thickness3+Polystyrene_thickness+Air_thickness1)*HcalBarrel_layers3"/>    
+        <constant name="HcalBarrel_thickness" value="HcalBarrel_depth"/>
+<!-- 													HE-LHeC:	228,077 cm -->
+        <constant name="HcalBarrel_length" value="EcalBarrel_zmax"/>
+        <constant name="HcalBarrel_rmax" value="HcalBarrel_rmin+HcalBarrel_thickness"/>
+
+
+
+
+        <constant name="Steel235_thickness20" value = "0.2*cm"/>
+
+        <constant name="HcalEndcap_fwd_layers1" value="25"/>
+        <constant name="HcalEndcap_fwd_layers2" value="30"/>
+        <constant name="HcalEndcap_fwd_layers3" value="36"/>
+        <constant name="HcalEndcap_depth_fwd" value="
+        (Steel235_thickness20+Polystyrene_thickness+Air_thickness1)*HcalEndcap_fwd_layers1
+        + 	 (Steel235_thickness22+Polystyrene_thickness+Air_thickness1)*HcalEndcap_fwd_layers2
+        + 	 (Steel235_thickness25+Polystyrene_thickness+Air_thickness1)*HcalEndcap_fwd_layers3"/>    
+<!--        <constant name="HcalEndcap_thickness_fwd" value="172.15*cm"/> -->
+        <constant name="HcalEndcap_thickness_fwd" value="HcalEndcap_depth_fwd"/>
+<!-- 												HE-LHeC:	265,150 cm -->
+
+        <constant name="HcalEndcap_bwd_layers1" value="19"/>        
+        <constant name="HcalEndcap_bwd_layers2" value="25"/>        
+        <constant name="HcalEndcap_bwd_layers3" value="34"/>        
+        <constant name="HcalEndcap_depth_bwd" value="
+        (Steel235_thickness20+Polystyrene_thickness+Air_thickness1)*HcalEndcap_bwd_layers1
+        + 	 (Steel235_thickness22+Polystyrene_thickness+Air_thickness1)*HcalEndcap_bwd_layers2
+        + 	 (Steel235_thickness25+Polystyrene_thickness+Air_thickness1)*HcalEndcap_bwd_layers3"/>   
+<!--        <constant name="HcalEndcap_thickness_bwd" value="148.*cm"/>  -->
+<!--																LHeC:	148,000 cm -->
+        <constant name="HcalEndcap_thickness_bwd" value="HcalEndcap_depth_bwd"/>
+
+        <constant name="HcalEndcap_zmin_fwd" value="EcalBarrel_zmax + 5.0*cm"/> 
+        <constant name="HcalEndcap_zmax_fwd" value="HcalEndcap_zmin_fwd + HcalEndcap_thickness_fwd"/>
+        <constant name="HcalEndcap_zmin_bwd" value="EcalPlug_zmin_bwd-HcalEndcap_thickness_bwd-4*cm"/>
+
+        <constant name="HcalEndcap_rmin" value="VertexBarrel_r2"/>
+        <constant name="HcalEndcap_rmax" value="(HcalBarrel_rmin+HcalBarrel_thickness)/(cos(pi/CaloSides))"/>
+        <constant name="HcalEndcap_rmin2" value="(HcalBarrel_rmax)/(cos(pi/CaloSides))"/>
+
+
+        <constant name="TungstenDens25_thickness1" value = "0.7*cm"/>
+        <constant name="TungstenDens25_thickness2" value = "0.8*cm"/>
+        <constant name="TungstenDens25_thickness3" value = "1.*cm"/>
+        <constant name="Silicon_thickness" value = "0.032*cm"/>
+        <constant name="Copper_thickness" value = "0.005*cm"/>
+        <constant name="Air_thickness2" value = "0.033*cm"/>
+        <constant name="HcalPlug_fwd_layers1" value="57"/>
+        <constant name="HcalPlug_fwd_layers2" value="110"/>
+        <constant name="HcalPlug_fwd_layers3" value="129"/>
+        <constant name="HcalPlug_depth_fwd" value="
+        (TungstenDens25_thickness1+Silicon_thickness+Copper_thickness+Kapton_thickness+Air_thickness2)*HcalPlug_fwd_layers1
+        + 	 (TungstenDens25_thickness2+Silicon_thickness+Copper_thickness+Kapton_thickness+Air_thickness2)*HcalPlug_fwd_layers2
+        + 	 (TungstenDens25_thickness3+Silicon_thickness+Copper_thickness+Kapton_thickness+Air_thickness2)*HcalPlug_fwd_layers3"/>   
+<!--        <constant name="HcalPlug_thickness_fwd" value="186.*cm"/>  -->
+<!--																LHeC:	186,000 cm -->
+        <constant name="HcalPlug_thickness_fwd" value="HcalPlug_depth_fwd"/>
+
+
+        <constant name="Cu_thickness1" value = "0.8*cm"/>
+        <constant name="Cu_thickness2" value = "0.9*cm"/>
+        <constant name="Cu_thickness3" value = "1.*cm"/>
+        <constant name="HcalPlug_bwd_layers1" value="44"/>
+        <constant name="HcalPlug_bwd_layers2" value="84"/>  
+        <constant name="HcalPlug_bwd_layers3" value="110"/>
+        <constant name="HcalPlug_depth_bwd" value="
+        (Cu_thickness1+Silicon_thickness+Cu_thickness+Kapton_thickness+Air_thickness2)*HcalPlug_bwd_layers1
+        + (Cu_thickness2+Silicon_thickness+Cu_thickness+Kapton_thickness+Air_thickness2)*HcalPlug_bwd_layers2
+        + (Cu_thickness3+Silicon_thickness+Cu_thickness+Kapton_thickness+Air_thickness2)*HcalPlug_bwd_layers3"/>   
+<!--												HE-LHeC:	244,600 cm -->
+
+        <constant name="HcalPlug_thickness_bwd" value="HcalPlug_depth_bwd"/>
+
+        <constant name="HcalPlug_zmin_bwd" value="EcalBarrel_zmin-EcalPlug_length_bwd-HcalPlug_thickness_bwd"/>
+
+        <constant name="MuonBarrel_length" value="HcalBarrel_length + HcalEndcap_thickness_fwd + HcalEndcap_thickness_bwd + 200.*cm"/>
+        <constant name="MuonEndcap_layers" value="12"/>
+        <constant name="MuonEndcap_layer_thickness" value="10.0*cm + 4.0*cm"/>
+        <constant name="MuonEndcap_thickness" value="MuonEndcap_layers*MuonEndcap_layer_thickness"/>
+
+        <constant name="MuonBarrel_zmin" value="HcalEndcap_zmin_bwd-HcalEndcap_thickness_bwd"/>
+        <constant name="MuonBarrel_layers" value="8"/>
+        <constant name="MuonBarrel_layer_thickness" value="10.0*cm + 4.0*cm"/>
+        <constant name="MuonBarrel_thickness" value="MuonBarrel_layers*MuonBarrel_layer_thickness"/>
+
+        <constant name="MuonBarrel_rmin" value="HcalEndcap_rmax + 2.0*cm"/>
+        <constant name="MuonBarrel_rmax" value="MuonBarrel_rmin + MuonBarrel_thickness"/>
+
+        <constant name="MuonEndcap_zmin_fwd" value="HcalEndcap_zmax_fwd - MuonEndcap_thickness + 2.*EcalPlug_length_fwd + 25.*cm"/>
+        <constant name="MuonEndcap_rmax0" value="(HcalBarrel_rmin - 10.0*cm ) / (cos(pi/MuonSides))"/>
+        <constant name="MuonEndcap_zmin_bwd" value="HcalPlug_zmin_bwd - HcalPlug_thickness_bwd/2. - 25*cm"/> 
+        <constant name="MuonEndcap_rmax1" value="(MuonBarrel_rmax - 25.*cm)/(cos(pi/MuonSides))"/> 
+
+        <constant name="LumiCal_rmin" value="6.4*cm"/>
+        <constant name="LumiCal_rmax" value="EcalPlug_rmin + 3.0*cm"/>
+        <constant name="LumiCal_zmin" value="HcalEndcap_zmin_fwd"/>
+        <constant name="LumiCal_thickness" value="20*0.371*cm + 15*0.643*cm"/>
+        <constant name="LumiCal_zmax" value="LumiCal_zmin + LumiCal_thickness"/>
+        <constant name="LumiCalElectronics_rmax" value="LumiCal_rmax+5.0*cm"/>
+
+        <constant name="SupportTube_thickness" value="1.0*cm"/>
+        <constant name="ForwardVacuumValve_thickness" value="36.0*cm"/>
+        <constant name="ForwardShielding_thickness" value="5.0*cm"/>
+        <constant name="ForwardMask_thickness" value="10.0*cm"/>
+        <constant name="ForwardMask_zmin" value="LumiCal_zmax + ForwardShielding_thickness + ForwardVacuumValve_thickness"/>
+        <constant name="BeamCal_rmax" value="13.0*cm"/>
+        <constant name="BeamCal_zmin" value="ForwardMask_zmin + ForwardMask_thickness"/>
+
+        <constant name="VertexSupport_r1" value="Radius_SITLayer1 - 0.5*cm"/>
+        <constant name="VertexSupport_r2" value="Radius_SITLayer2 - 0.5*cm"/>
+        <constant name="VertexSupport_zmax" value="52.0*cm"/>
+
+        <constant name="VertexBarrel_zmax1" value="512.*mm"/>
+        <constant name="VertexBarrel_zmax2" value="395.*mm"/>
+        <constant name="VertexBarrel_zmax3" value="545.*mm"/>
+
+        <constant name="bp_cone_slope" value="(BeamPipe_rmax-CentralBeamPipe_rmax)/(tracking_region_zmax-CentralBeamPipe_zmax)"/>
+        <constant name="BeamPipe_zmin" value="CentralBeamPipe_zmax + (BeamPipe_thickness - CentralBeamPipe_thickness)/bp_cone_slope"/>
+        <constant name="BeamPipeLiner_thickness" value="0.0*cm"/>
+        <constant name="BeamPipeLength" value="EcalBarrel_length"/>
+
+        <constant name="VertexService_zmin" value="SiMod_z5 + 2.0*cm"/>
+        <constant name="VertexService_zmax" value="VertexService_zmin + 2.0*cm"/>
+        <constant name="VertexServiceThickness" value="0.3*cm"/>
+        <constant name="VertexCableThickness" value="0.005*cm"/>
+
+        <constant name="IncomingBP_radius" value="0.25*cm"/>
+        <constant name="IncomingBP_thickness" value="0.05*cm"/>
+        <constant name="OutgoingBP_radius" value="tan(CrossingAngle/2/rad)*BeamCal_zmin"/>
+        <constant name="OutgoingBP_thickness" value="0.1*cm"/>
+
+    </define>
+    <materials>
+        <material formula="Si" name="silicon_2.33gccm" state="solid" >
+          <RL type="X0" unit="cm" value="9.36607" />
+          <NIL type="lambda" unit="cm" value="45.7531" />
+          <D type="density" unit="g/cm3" value="2.33" />
+          <composite n="1" ref="Si" />
+        </material>
+
+        <material name="silicon_8.72gccm" state="solid" >
+          <RL type="X0" unit="cm" value="9.36607" />
+          <NIL type="lambda" unit="cm" value="45.7531" />
+          <D type="density" unit="g/cm3" value="8.72" />
+          <composite n="1" ref="Si" />
+        </material>
+
+        <material formula="W" name="tungsten_19.3gccm" state="solid" >
+          <RL type="X0" unit="cm" value="0.350418" />
+          <NIL type="lambda" unit="cm" value="10.3057" />
+          <D type="density" unit="g/cm3" value="19.3" />
+          <composite n="1" ref="W" />
+        </material>
+        <material name="TungstenDens23">
+            <D value="17.7" unit="g/cm3"/>
+            <fraction n="0.925" ref="W"/>
+            <fraction n="0.066" ref="Ni"/>
+            <fraction n="0.009" ref="Fe"/>
+        </material>
+        <material name="TungstenDens24">
+            <D value="17.8" unit="g/cm3"/>
+            <fraction n="0.93" ref="W"/>
+            <fraction n="0.061" ref="Ni"/>
+            <fraction n="0.009" ref="Fe"/>
+        </material>
+        <material name="TungstenDens25">
+            <D value="18.2" unit="g/cm3"/>
+            <fraction n="0.950" ref="W"/>
+            <fraction n="0.044" ref="Ni"/>
+            <fraction n="0.006" ref="Fe"/>
+        </material>
+        <material name="CarbonFiber_25percent">
+            <D type="density" value="0.375" unit="g/cm3"/>
+            <fraction n="1.0" ref="CarbonFiber"/>
+        </material>
+        <material name="CarbonFiber_15percent">
+            <D type="density" value="0.225" unit="g/cm3"/>
+            <fraction n="1.0" ref="CarbonFiber"/>
+        </material>
+        <material name="Rohacell31_50percent">
+            <D type="density" value="0.016" unit="g/cm3"/>
+            <fraction n="1.0" ref="Rohacell31"/>
+        </material>
+        <material name="Rohacell31_15percent">
+            <D type="density" value="0.0048" unit="g/cm3"/>
+            <fraction n="1.0" ref="Rohacell31"/>
+        </material>
+        <material name="BoratedPolyethylene5">
+            <D value="0.93" unit="g/cm3"/>
+            <fraction n="0.612" ref="C"/>
+            <fraction n="0.222" ref="O"/>
+            <fraction n="0.116" ref="H"/>
+            <fraction n="0.050" ref="B"/>
+        </material>
+        <material name="SiliconCarbide">
+            <D value="3.1" unit="g/cm3"/>
+            <composite n="1" ref="Si"/>
+            <composite n="1" ref="C"/>
+        </material>
+        <material name="SiliconCarbide_6percent">
+            <D value="0.186" unit="g/cm3"/>
+            <fraction n="1.0" ref="SiliconCarbide"/>
+        </material>
+        <material name="Graphite">
+            <D value="1.7" unit="g/cm3"/>
+            <composite n="1" ref="C"/>
+        </material>
+        <material name="Polystyrene">
+           <D value="1.032" unit="g/cm3"/>
+           <composite n="19" ref="C"/>
+           <composite n="21" ref="H"/>
+        </material>
+    </materials>
+    <limits>
+        <limitset name="cal_limits">
+            <limit name="step_length_max" particles="*" value="5.0" unit="mm" />
+        </limitset>
+    <limitset name="SiTrackerBarrelRegionLimitSet">
+      <limit name="step_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="track_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="time_max" particles="*" value="5.0" unit="ns" />
+      <limit name="ekin_min" particles="*" value="0.01" unit="MeV" />
+      <limit name="range_min" particles="*" value="5.0" unit="mm" />
+    </limitset>
+    <limitset name="SiTrackerOBarrelRegionLimitSet">
+      <limit name="step_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="track_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="time_max" particles="*" value="5.0" unit="ns" />
+      <limit name="ekin_min" particles="*" value="0.01" unit="MeV" />
+      <limit name="range_min" particles="*" value="5.0" unit="mm" />
+    </limitset>
+    <limitset name="SiVertexBarrelRegionLimitSet">
+      <limit name="step_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="track_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="time_max" particles="*" value="5.0" unit="ns" />
+      <limit name="ekin_min" particles="*" value="0.01" unit="MeV" />
+      <limit name="range_min" particles="*" value="5.0" unit="mm" />
+    </limitset>
+    <limitset name="SiVertexBarrel2RegionLimitSet">
+      <limit name="step_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="track_length_max" particles="*" value="5.0" unit="mm" />
+      <limit name="time_max" particles="*" value="5.0" unit="ns" />
+      <limit name="ekin_min" particles="*" value="0.01" unit="MeV" />
+      <limit name="range_min" particles="*" value="5.0" unit="mm" />
+    </limitset>
+
+    </limits>
+  <regions>
+    <region name="SiVertexBarrelRegion" eunit="MeV" lunit="mm" cut="0.001" threshold="0.001">
+      <limitsetref name="SiVertexBarrelRegionLimitSet"/>
+    </region>
+    <region name="SiVertexBarrel2Region" eunit="MeV" lunit="mm" cut="0.001" threshold="0.001">
+      <limitsetref name="SiVertexBarrel2RegionLimitSet"/>
+    </region>
+    <region name="SiTrackerOBarrelRegion" eunit="MeV" lunit="mm" cut="0.001" threshold="0.001">
+      <limitsetref name="SiTrackerOBarrelRegionLimitSet"/>
+    </region>
+    <region name="SiTrackerBarrelRegion" eunit="MeV" lunit="mm" cut="0.001" threshold="0.001">
+      <limitsetref name="SiTrackerBarrelRegionLimitSet"/>
+    </region>  </regions>
+
+    <display>
+        <vis name="InvisibleNoDaughters"      showDaughters="false" visible="false"/>
+        <vis name="InvisibleWithDaughters"    showDaughters="true" visible="true"/>
+
+        <vis name="SiVertexBarrelModuleVis" alpha="1" r="0.9" g="0" b="0"  showDaughters="false" visible="true"/>
+        <vis name="SiVertexBarrelModule2Vis" alpha="1." r="0.4" g="0.5" b="0"  showDaughters="false" visible="true"/>
+        <vis name="SiTrackerBarrelModuleVis" alpha="0.4" r="0.1" g="0.2" b="0.4"  showDaughters="false" visible="true"/>
+        <vis name="SiTrackerOBarrelModuleVis" alpha="0.4" r="0.3" g="0.1" b="0.6"  showDaughters="false" visible="true"/>
+        <vis name="SiVertexBarrelLayerVis" alpha="0.6" r="0.1" g="0.1" b="0.6" showDaughters="true" visible="false"/>
+        <vis name="SiVertexBarrel2LayerVis" alpha="0.6" r="0.0" g="0.5" b="0" showDaughters="true" visible="false"/>
+        <vis name="SiTrackerBarrelLayerVis" alpha="0.4" r="1" g="0.2" b="0.4" showDaughters="true" visible="false"/>
+        <vis name="SiTrackerOBarrelLayerVis" alpha="0.4" r="1" g="0.1" b="0.6" showDaughters="true" visible="false"/>
+
+        <vis name="SiVertexSensitiveVis" alpha="0.9" r="1" g="0" b="0" showDaughters="true" visible="true"/>
+        <vis name="SiVertexSensitive2Vis" alpha="0.9" r="0." g="0.9" b="0.1" showDaughters="true" visible="true"/>
+        <vis name="SiVertex2SensitiveVis" alpha="0.9" r="0.2" g="0.5" b="0" showDaughters="true" visible="true"/>
+        <vis name="SiVertexPassiveVis"   alpha="0.6" r="0.2"  g="0"  b="0.62"  showDaughters="true" visible="false"/>
+        <vis name="SiVertexCarbonVis"   alpha="0.6" r="0.1"  g="0.1"  b="0.42"  showDaughters="true" visible="false"/>
+        <vis name="SiVertexBarrelROVis" alpha="0.8" r="0.2" g="0.4" b="0.4" showDaughters="false" visible="true"/>
+
+        <vis name="SiTrackerForwardVis" alpha="1" r="1" g="0" b="0" drawingStyle="solid" showDaughters="false" visible="true"/>
+        <vis name="SiTrackerBackwardVis" alpha="1" r="1" g="0" b="0" drawingStyle="solid" showDaughters="false" visible="true"/>
+        <vis name="SiTrackerForwardModulVis" alpha="1" r="1" g="0" b="0" drawingStyle="solid" showDaughters="false" visible="true"/>
+
+        <vis name="LArCryoLayerVis"     alpha="0.8" r="0.1" g="0.4"  b="0.5" showDaughters="false" visible="true"/>
+        <vis name="EcalBarrelVis"       alpha="0.1" r="0.1"   g="0.4" b="1" showDaughters="true" visible="true"/>
+        <vis name="EcalBarrelVis1"       alpha="0.2" r="0.1"   g="0.4" b="0.6" showDaughters="true" visible="true"/>
+        <vis name="EcalBarrelVis2"       alpha="0.2" r="0.1"   g="0.4" b="0.7" showDaughters="true" visible="true"/>
+        <vis name="EcalBarrelVis3"       alpha="0.3" r="0.1"   g="0.4" b="0.8" showDaughters="true" visible="true"/>
+        <vis name="EcalLayerVis1"        alpha="0.3" r="0.3"   g="0.3" b="0.6" showDaughters="true" visible="true"/>        
+        <vis name="EcalLayerVis2"        alpha="0.2" r="0.35"   g="0.35" b="0.7" showDaughters="true" visible="true"/>        
+        <vis name="EcalLayerVis3"        alpha="0.2" r="0.5"   g="0.5" b="0.8" showDaughters="true" visible="true"/>        
+        <vis name="EcalBarrelStaveVis"  alpha="0.1" r="0.01"   g="0.1" b="0.1" showDaughters="true" visible="true"/>
+        <vis name="EcalSensitiveVis"    alpha="0.2" r="0.3"  g="0.2"  b="1"  showDaughters="true" visible="true"/>
+        <vis name="EcalAbsorberVis"     alpha="0.2" r="0.1"   g="0.1" b="0.1"  showDaughters="false" visible="false"/>
+        <vis name="EcalPlugVis"         alpha="0.6"   r="0.3" g="0.8"   b="0.2"  showDaughters="false" visible="true"/>
+        <vis name="EcalPlugSensitiveVis" alpha="0.6" r="0.5" g="1"   b="0.5" showDaughters="true" visible="true"/>
+
+        <vis name="HcalBarrelVis"          alpha="1"   r="1"    g="0.8"  b="0.6" showDaughters="false" visible="true"/>
+        <vis name="HcalSensorVis"          alpha="0.1" r="1"    g="0.8"  b="0.6" showDaughters="true" visible="true"/>
+        <vis name="HcalAbsorberVis"        alpha="0.1" r="1"    g="0.8"  b="0.6" showDaughters="false" visible="false"/>
+        <vis name="HcalBarrelStavesVis"    alpha="0.1" r="1"    g="0.8"  b="0.6" showDaughters="false" visible="false"/>
+        <vis name="HcalBarrelLayerVis"     alpha="0.1" r="1"    g="0.8"  b="0.6" showDaughters="false" visible="false"/>
+        <vis name="HcalBarrelSensorVis"    alpha="0.1" r="1"    g="0.8"  b="0.6" showDaughters="fasle" visible="true"/>
+
+        <vis name="HcalEndcapVis"           alpha="1"   r="1"    g="0.8"  b="0.6" showDaughters="false" visible="true"/>
+        <vis name="HcalEndcapLayerVis"      alpha="0.1" r="1"    g="0.8"  b="0.6" showDaughters="false" visible="false"/>
+        <vis name="HcalEndcapStavesVis"     alpha="0.1" r="1"    g="0.8"  b="0.6" showDaughters="true" visible="false"/>
+        <vis name="HcalPlugVis"             alpha="0.5"   r="1"  g="0.8"  b="0.8" showDaughters="false" visible="true"/>
+        <vis name="HcalPlugLayerVis"        alpha="0.1" r="1"  g="0.9"  b="0.8" showDaughters="false" visible="false"/>
+
+        <vis name="SolenoidBarrelLayerVis" alpha="0.8" r="0.5" g="0.6"  b="0.6" showDaughters="false" visible="true"/>
+        <vis name="SolenoidDipoleBarrelLayerVis" alpha="0.8" r="0.2" g="0.9" b="0.9" showDaughters="false" visible="true"/>
+        <vis name="SolenoidBarrelSupportLayerVis" alpha="0.8" r="0.4" g="0.4" b="0.4" showDaughters="false" visible="false"/>
+
+        <vis name="SolenoidCoilEndsVis"    alpha="0.4" r="0.4" g="0.8"  b="0.8" showDaughters="true" visible="true"/>
+        <vis name="AntiSolenoidVis"        alpha="0.4" r="0.3"  g="1"    b="1"   showDaughters="true" visible="true"/>
+
+        <vis name="MuonBarrelVis"          alpha="0.4" r="0.8"  g="0.9"  b="1"  showDaughters="false" visible="true"/>
+        <vis name="MuonBarrelStavesVis"    alpha="0.4" r="0.8"  g="0.9"  b="1"  showDaughters="fasle" visible="false"/>
+        <vis name="MuonBarrelLayerVis"     alpha="0.4" r="0.8"  g="0.9"  b="1"  showDaughters="false" visible="true"/>
+        <vis name="MuonBarrelSensorVis"    alpha="0.4" r="0.8"  g="0.9"  b="1"  showDaughters="true" visible="true"/>
+        <vis name="MuonBarrelAbsorberVis"  alpha="0.4" r="0.8"  g="0.9"  b="1"  visible="false"/>
+
+        <vis name="MuonEndcapVis"          alpha="0.4" r="0.8"  g="0.9"  b="1"  showDaughters="false" visible="true"/>
+        <vis name="MuonEndcapLayerVis"     alpha="0.4" r="0.8"  g="0.9"  b="1"  showDaughters="false" visible="true"/>
+        <vis name="MuonEndcapSensorVis"    alpha="0.4" r="0.8"  g="0.9"  b="1"  showDaughters="true"  visible="true"/>
+        <vis name="MuonEndcapAbsorberVis"  alpha="0.4" r="0.8"  g="0.9"  b="1"  visible="false"/>
+
+        <vis name="BeamPipeVis" alpha="1" r="0.9" g="0.9" b="0.9" showDaughters="true" visible="true"/> 
+        <vis name="CableVis" showDaughters="false" visible="false"/>
+
+        <vis name="SupportTubeVis" alpha="1" r="0.7" g="0.7" b="0.2" showDaughters="true" visible="true"/>
+        <vis name="TungstenShieldingVis" r="0.99" g="0.1" b="0.2" showDaughters="false" visible="true"/>
+
+        <vis name="SupportVis" alpha="0.9" r="0.01" g="0.7" b="0" showDaughters="false" visible="true"/>
+        <vis name="LumiCalVis" showDaughters="false" visible="true"/>
+        <vis name="GreenVis" r="0.5" g="1.0" b="0.0" showDaughters="true" visible="true"/>
+        <vis name="RedVis" r="1.0" g="0.0" b="0.0" showDaughters="false" visible="true"/>
+        <vis name="BlueVis" alpha="0.5" r="0.1" g="0.0" b="0.8" showDaughters="false" visible="true"/>
+        <vis name="BlueVisTrans" alpha="0.6" r="0.0" g="0.0" b="1.0" showDaughters="false" visible="true"/>
+    </display>
+
+<!-- Assembly - asymmetric definition of the SiTrackers SubdetectorAssembly does not work -> Overlaps 
+  <detectors>
+    <detector id="99" name="SiTrackers" type="Lhe_SubdetectorAssembly" vis="InvisibleWithDaughters">
+      <shape name="SiTrackersEnv" type="Tube" 
+      rmin="0.*cm" 
+      rmax="EcalBarrel_rmin1-1*cm" 
+      dz="EcalPlug_zmax_fwd" 
+      z_offset="OffsetZ" 
+      material="Air">
+      </shape>
+      <comment>Silicon Tracker Assembly</comment>
+      <composite name="SiVertexBarrel"/>
+      <composite name="SiVertexBarrel2"/>
+      <composite name="SiTrackerBarrel"/>
+      <composite name="SiTrackerOBarrel"/>
+      <composite name="SiTrackerForward"/>
+      <composite name="SiTrackerBackward"/>
+      <composite name="VertexBarrelSupports"/>
+      <composite name="VertexEndSupports"/>
+      <composite name="VertexReadout"/>
+      <composite name="TrackerBarrelSupports"/>
+      <composite name="TrackerReadout"/>
+      <composite name="EcalPlug_fwd"/>
+      <composite name="EcalPlug_bwd"/>
+    </detector>
+  </detectors>
+-->    
+
+  <detectors>
+        <comment>Trackers</comment>
+
+
+<!-- SiVertexBarrel -->
+        <comment>Vertex Detector Barrel inner pix</comment>
+        <comment>type="Lhe_ell_BP_SiVertexBarrel" </comment>
+        <detector id="1" name="SiVertexBarrel"                   
+                         type="Lhe_BP_SiVertexBarrel" 
+                         insideTrackingVolume="true" 
+                         reflect="true" 
+                         readout="SiVertexBarrelHits"
+                         region="SiVertexBarrelRegion" 
+                         limits="SiVertexBarrelRegionLimitSet">
+                        
+    		<module name="VtxBarrelModuleInner" vis="SiVertexBarrelModuleVis">
+      		<module_envelope width="5.0*mm" length="(SiMod_z0 + 0.35*cm)*2" thickness="VxBar_Env"/>
+
+     		 <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.0130*cm" material="CarbonFiber_50D" sensitive="false" vis="SiVertexCarbonVis">
+				<position z="-0.12*mm"/>
+   		     </module_component> 
+     		 <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.0038*cm" material="Kapton" sensitive="false" vis="SiVertexPassiveVis">
+				<position z="-0.12*mm"/>
+   		     </module_component>
+		     <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.005*cm" material="Silicon" sensitive="true" vis="SiVertexSensitiveVis">
+				<position z="0.225*mm"/>
+      		 </module_component> 
+             <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.0038*cm" material="Kapton" sensitive="false" vis="SiVertexPassiveVis">
+				<position z="-0.12*cm"/>
+             </module_component>
+             <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.00038*cm" material="Copper" sensitive="false" vis="SiVertexPassiveVis">
+				<position z="0.1*cm"/>
+             </module_component>
+    		</module>
+<!--
+                  inner_r="CentralEllBeamPipe_rmax + CentralBeamPipe_thickness + 0.5*cm" 
+                  outer_r="CentralEllBeamPipe_rmax + CentralBeamPipe_thickness + 8.*cm" 
+-->    		
+            <layer module="VtxBarrelModuleInner" id="1" vis="SiVertexBarrelLayerVis">
+                <barrel_envelope 
+                  inner_r="VertexBarrel_r0 + 4.7*VxBar_Env" 
+                  outer_r="VertexBarrel_r0 + 7.6*VxBar_Env" 
+                  z_length="SiMod_z0 + 0.4*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.*rad"
+                  nphi="1"
+                  phi0="4.71238898038468967e+00*rad" 
+                  rc="VertexBarrel_r0 + 17.*mm" 
+                  dr="0.0*mm"/>
+                 <z_layout dr="0.*mm" z0="0.0*mm" nz="1."/>
+            </layer>
+         </detector>
+
+<!-- SiVertexBarrel2  -->
+        <comment>Vertex Detector Barrel outer pix</comment>
+        <comment>type="Lhe_ell_BP_SiVertexBarrel"</comment>
+        <detector id="23" name="SiVertexBarrel2"                       
+                         type="Lhe_BP_SiVertexBarrel" 
+                         insideTrackingVolume="true" 
+                         reflect="true" 
+                         readout="SiVertexBarrel2Hits"
+                         region="SiVertexBarrel2Region" 
+                         limits="SiVertexBarrel2RegionLimitSet">
+                        
+    		<module name="VtxBarrelModule2Inner" vis="SiVertexBarrelModule2Vis">
+      		<module_envelope width="5.0*mm" length="(SiMod_z0 + 0.35*cm)*2" thickness="VxBar_Env"/>
+
+     		 <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.0130*cm" material="CarbonFiber_50D" sensitive="false" vis="SiVertexCarbonVis">
+				<position z="-0.12*mm"/>
+   		     </module_component> 
+     		 <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.0038*cm" material="Kapton" sensitive="false" vis="SiVertexPassiveVis">
+				<position z="-0.12*mm"/>
+   		     </module_component>
+		     <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.005*cm" material="Silicon" sensitive="true" vis="SiVertexSensitive2Vis">
+				<position z="0.225*mm"/>
+      		 </module_component> 
+             <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.0038*cm" material="Kapton" sensitive="false" vis="SiVertexPassiveVis">
+				<position z="-0.12*cm"/>
+             </module_component>
+             <module_component width="4.7*mm" length="(SiMod_z0 - 0.15*cm)*2" thickness="0.00038*cm" material="Copper" sensitive="false" vis="SiVertexPassiveVis">
+				<position z="0.1*cm"/>
+             </module_component>
+    		</module>
+    		 		
+            <layer module="VtxBarrelModule2Inner" id="2" vis="SiVertexBarrel2LayerVis">
+                <barrel_envelope 
+                  inner_r="VertexBarrel2_r0 - 1.3*VxBar_Env" 
+                  outer_r="VertexBarrel2_r0 + 1.3*VxBar_Env" 
+                  z_length="SiMod_z0 + 0.4*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.0*rad"
+                  nphi="1"
+                  phi0="4.71238898038468967e+00*rad" 
+                  rc="VertexBarrel2_r0 + 0.0*mm" 
+                  dr="0.0*mm"/>
+                 <z_layout dr="0.0*mm" z0="0.0*mm" nz="1."/>
+            </layer>
+         </detector> 
+
+<!-- -->
+       <comment>Vertex Detector Supports </comment>
+       <comment> type="Lhe_ell_BP_MultiLayerTracker" </comment>
+        <detector name="VertexBarrelSupports" 
+                  type="Lhe_BP_MultiLayerTracker" 
+                  reflect="true" 
+                  sensitive="false" 
+                  vis="SupportVis">
+            <comment>Double-walled Carbon Fiber support tube</comment>
+
+            <layer id="1" 
+              inner_r = "VertexBarrel_r0 + 3.7*VxBar_Env" 
+              outer_r = "VertexBarrel_r0 + 4.6*VxBar_Env"  
+              rmax    = "VertexBarrel_r0 + 2.*(VertexBarrel2_r0 - VertexBarrel_r0)"
+              outer_z = "SiMod_z0 + 5.*VxBar_Env">
+              <slice material = "CarbonFiber" thickness ="VXD_CF_support"/>
+            </layer>
+
+        </detector>  
+
+<!-- -->
+       <comment>Vertex Detector Supports2 </comment>
+       <comment> type="Lhe_circ_ell_BP_MultiLayerTracker" </comment>
+        <detector name="VertexBarrelSupports2" 
+                  type="Lhe_BP_MultiLayerTracker" 
+                  reflect="true" 
+                  sensitive="false" 
+                  vis="SupportVis">
+            <comment>Double-walled Carbon Fiber support tube</comment>
+
+           <layer id="2" 
+              inner_r = "VertexBarrel2_r0 - 2.2*VxBar_Env" 
+              outer_r = "VertexBarrel2_r0 - 1.6*VxBar_Env"  
+              rmax    = "VertexBarrel2_r0 + (VertexBarrel2_r0 - VertexBarrel_r0)/0.55" 
+              outer_z = "SiMod_z1 + 9.*VxBar_Env">
+             <slice material = "CarbonFiber" thickness ="VXD_CF_support"/>
+            </layer>     
+
+        </detector>  
+ 
+
+<!-- -->
+        <detector name="VertexEndSupports" 
+                  type="Lhe_BP_DiskTracker" 
+                  reflect="true" 
+                  sensitive="false" 
+                  vis="SupportVis">        
+
+            <layer id="1" 
+              inner_r = "VertexBarrel_r0 + 3.*VxBar_Env" 
+              outer_r = "VertexBarrel_r0 + 4.6*VxBar_Env" 
+              rmax    = "VertexBarrel_r0 + 2.*(VertexBarrel2_r0 - VertexBarrel_r0)" 
+              rmin    = "VertexBarrel_r0 + VxBar_Env" 
+              inner_z = "SiMod_z0 + 1.5*cm" >
+              <slice material = "CarbonFiber" thickness = "VXD_CF_support" />
+            </layer>
+        </detector>
+
+
+<!-- -->
+        <detector name="VertexEndSupports2" 
+                  type="Lhe_BP_DiskTracker" 
+                  reflect="true" 
+                  sensitive="false" 
+                  vis="SupportVis">        
+
+            <layer id="1" 
+              inner_r = "VertexBarrel2_r0 - 3.*VxBar_Env" 
+              outer_r = "VertexBarrel2_r0" 
+              rmax    = "VertexBarrel2_r0 + 2.*(VertexBarrel2_r0 - VertexBarrel_r0)"
+              rmin    = "VertexBarrel2_r0 + VxBar_Env" 
+              inner_z = "SiMod_z1 + 2.5*cm" >
+              <slice material = "CarbonFiber" thickness = "VXD_CF_support" />
+            </layer>
+
+        </detector>
+
+<!-- VertexReadout  -->
+
+        <detector name="VertexReadout" 
+                  type="Lhe_BP_DiskTracker" 
+                  reflect="true"
+                  sensitive="false" 
+                  vis="SiVertexBarrelROVis">
+            <comment>Readout and Cabling</comment>
+
+            <layer id="1" 
+              inner_r = "VertexBarrel2_r0 - 4.*VxBar_Env" 
+              outer_r= "VertexBarrel2_r0 - 2.*VxBar_Env " 
+              rmax    = "VertexBarrel2_r0 + (VertexBarrel_r1-VertexBarrel2_r0)/1.6"
+              inner_z = "SiMod_z1 + 4.5*cm">
+                <slice material="G10" thickness="G10thickness" />
+                <slice material="Copper" thickness="0.0038*cm" />
+            </layer> 
+            
+        </detector>
+
+
+<!-- SiTrackerMiddleBarrel -->
+        <detector id="2" name="SiTrackerBarrel" 
+                         type="Lhe_SiTrackerBarrel" 
+                         insideTrackingVolume="true" 
+                         readout="SiTrackerBarrelHits" 
+                         region="SiTrackerBarrelRegion" 
+                         limits="SiTrackerBarrelRegionLimitSet">
+            <comment>Middle Tracker Barrel</comment>
+
+            <module name="SiTrackerModule_Layer0"   vis="SiTrackerBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w0 + VxBar_Env" length="SiMod_l0 + VxBar_Env" thickness="1.5*VxBar_Env"/>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false">
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false">
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.0175*cm" material="Epoxy" sensitive="false" vis="false" >
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>
+                <module_component 
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.0038*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.00038*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+            
+            <module name="SiTrackerModule_Layer1" vis="SiTrackerBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.3*cm"/>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false">
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.0175*cm"  material="Epoxy" sensitive="false" vis="false">
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component                 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>                
+                <module_component 
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>                
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>                
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.0051*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>                
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.00052*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+
+            <module name="SiTrackerModule_Layer2" vis="SiTrackerBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.3*cm"/>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false" >
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.0175*cm" material="Epoxy" sensitive="false" vis="false" >
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>
+                <module_component
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.0064*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.00065*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+
+            <module name="SiTrackerModule_Layer3" vis="SiTrackerBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.3*cm"/>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false" >
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.0175*cm" material="Epoxy" sensitive="false" vis="false" >
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>
+                <module_component
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.0064*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.00065*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+            
+            <layer module="SiTrackerModule_Layer0" id="1" vis="SiTrackerBarrelLayerVis">
+                <barrel_envelope
+                  inner_r="Radius_SITLayer0 + 0.5*VxBar_Env" 
+                  outer_r="Radius_SITLayer0 + 8.*VxBar_Env" 
+                  z_length="2.*SiMod_z2 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="10" phi0="0."  rc="Radius_SITLayer0 + 4.2*mm" dr="0."/>
+                <z_layout dr="0.*mm" z0="SiMod_z2 - 4.5*cm" nz="11"/>               
+            </layer>   <comment>   </comment>
+
+            <layer module="SiTrackerModule_Layer1" id="2" vis="SiTrackerBarrelLayerVis">
+                <barrel_envelope
+                  inner_r="Radius_SITLayer1 - 0.5*VxBar_Env" 
+                  outer_r="Radius_SITLayer1 + 8.*VxBar_Env" 
+                  z_length="2.*SiMod_z3 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="14" phi0="0.*rad"  rc="Radius_SITLayer1 + 4.2*mm" dr="0."/>
+                <z_layout dr="2.5*mm" z0="SiMod_z3 - 5.*cm" nz="11"/>        
+            </layer>   <comment>   </comment>
+
+
+            <layer module="SiTrackerModule_Layer2" id="3" vis="SiTrackerBarrelLayerVis">
+                <barrel_envelope 
+                  inner_r="Radius_SITLayer2 - 0.5*VxBar_Env" 
+                  outer_r="Radius_SITLayer2 + 8.*VxBar_Env" 
+                  z_length="2.*SiMod_z4 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="18" phi0="0.*rad"  rc="Radius_SITLayer2 + 4.2*mm" dr="0."/>
+                <z_layout dr="2.5*mm" z0="SiMod_z4 - 5.*cm" nz="11"/>
+            </layer>    <comment>    </comment>
+
+            <layer module="SiTrackerModule_Layer3" id="4" vis="SiTrackerBarrelLayerVis">
+                <barrel_envelope 
+                  inner_r="Radius_SITLayer3 - 0.5*VxBar_Env" 
+                  outer_r="Radius_SITLayer3 + 8.*VxBar_Env" 
+                  z_length="2.*SiMod_z5 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="21" phi0="0.*rad"  rc="Radius_SITLayer3 + 4.2*mm" dr="0."/>
+                <z_layout dr="2.5*mm" z0="SiMod_z4 - 5.*cm" nz="11"/>
+            </layer>    <comment>    </comment>
+
+         </detector>
+
+ 
+        <comment>   Middle Barrel Tracker Supports   </comment>
+<!-- -->
+        <detector name="TrackerBarrelSupports" 
+                  type="Lhe_MultiLayerTracker" 
+                  reflect="true" 
+                  vis="SupportVis">
+            <comment>Barrels</comment>
+ 
+            <layer id="1" 
+              inner_r = "Radius_SITLayer0 - 3.4*VxBar_Env" 
+              outer_z = "SiMod_z2 + 2.*VxBar_Env">
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+                <slice material="Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+            </layer>
+
+          
+            <layer id="2" 
+              inner_r = "Radius_SITLayer1 - 6.*VxBar_Env" 
+              outer_z = "SiMod_z3 + 5.*VxBar_Env">
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+                <slice material="Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+            </layer>
+
+            <layer id="3" 
+               inner_r="Radius_SITLayer2 - 6.*VxBar_Env" 
+               outer_z="SiMod_z3 + 5.*VxBar_Env">>
+                <slice material= "CarbonFiber" thickness = "0.05*cm" />
+                <slice material= "Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material= "CarbonFiber" thickness="0.05*cm" />
+            </layer>
+ 
+            <layer id="4" 
+               inner_r="Radius_SITLayer3 - 6.*VxBar_Env" 
+               outer_z="SiMod_z3 + 5.*VxBar_Env">>
+                <slice material= "CarbonFiber" thickness = "0.05*cm" />
+                <slice material= "Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material= "CarbonFiber" thickness="0.05*cm" />
+            </layer>
+          
+        </detector>
+
+<!-- -->
+        <detector name="TrackerReadout" 
+                  type="Lhe_DiskTracker" 
+                  reflect="true" 
+                  sensitive="false"
+                  vis="SiVertexBarrelROVis"> 
+            <comment>Readouts</comment>
+
+            <layer id="1" 
+              inner_r="Radius_SITLayer0 - 4.5*VxBar_Env"
+              outer_r="Radius_SITLayer0 - VxBar_Env"
+              rmax   = "Radius_SITLayer0"
+              inner_z="SiMod_z0 + 4.5*cm">
+                <slice material="G10" thickness="0.057*cm" />
+                <slice material="Copper" thickness="0.0038*cm" />
+            </layer> 
+
+            <layer id="2" 
+              inner_r="Radius_SITLayer1 - 4.5*VxBar_Env"
+              outer_r="Radius_SITLayer1 - VxBar_Env"
+              rmax   = "Radius_SITLayer1"
+              inner_z="SiMod_z1 + 4.5*cm">
+                <slice material = "G10" thickness="0.102*cm" />
+                <slice material = "Copper" thickness="0.0068*cm" />
+            </layer>
+
+            <layer id="3" 
+              inner_r="Radius_SITLayer2 - 4.5*VxBar_Env"
+              outer_r="Radius_SITLayer2 - VxBar_Env"
+              rmax   = "Radius_SITLayer2"
+              inner_z="SiMod_z2 + 1.5*cm">
+                <slice material="G10" thickness="0.108*cm" />
+                <slice material="Copper" thickness="0.0072*cm" />
+            </layer>
+
+            <layer id="4" 
+              inner_r="Radius_SITLayer3 - 4.5*VxBar_Env"
+              outer_r="Radius_SITLayer3 - VxBar_Env"
+              rmax   = "Radius_SITLayer3"
+              inner_z="SiMod_z3 + 1.5*cm">
+                <slice material="G10" thickness="0.108*cm" />
+                <slice material="Copper" thickness="0.0072*cm" />
+            </layer>
+
+        </detector>
+
+<!-- SiTrackerOuterBarrel -->
+        <detector id="3" name="SiTrackerOBarrel" 
+                         type="Lhe_SiTrackerBarrel" 
+                         insideTrackingVolume="true" 
+                         readout="SiTrackerOBarrelHits" 
+                         region="SiTrackerOBarrelRegion" 
+                         limits="SiTrackerOBarrelRegionLimitSet">
+            <comment>Outer Tracker Barrel</comment>
+
+            <module name="SiTrackerOModule_Layer0"   vis="SiTrackerOBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.3*cm"/>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false">
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false">
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.0175*cm" material="Epoxy" sensitive="false" vis="false" >
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>
+                <module_component 
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.0038*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>
+                <module_component 
+                  width="SiMod_w0" length="SiMod_l0" thickness="0.00038*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+            
+            <module name="SiTrackerOModule_Layer1" vis="SiTrackerOBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.3*cm"/>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false">
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.0175*cm"  material="Epoxy" sensitive="false" vis="false">
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component                 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>                
+                <module_component 
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>                
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>                
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.0051*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>                
+                <module_component 
+                  width="SiMod_w1" length="SiMod_l1" thickness="0.00052*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+
+            <module name="SiTrackerOModule_Layer2" vis="SiTrackerOBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.3*cm"/>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false" >
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.0175*cm" material="Epoxy" sensitive="false" vis="false" >
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>
+                <module_component
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.0064*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w2" length="SiMod_l2" thickness="0.00065*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+
+            <module name="SiTrackerOModule_Layer3" vis="SiTrackerOBarrelModuleVis">
+                <module_envelope 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.3*cm"/>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.02*cm" material="PEEK" sensitive="false" vis="false" >
+                    <position z="-0.14*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="-0.122*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.18*cm" material="Rohacell31_50D" sensitive="false" vis="false" >
+                    <position z="-0.024*cm" />
+                </module_component>
+                <module_component 
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.0175*cm" material="Epoxy" sensitive="false" vis="false" >
+                    <position z="0.07475*cm" />
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.016*cm" material="CarbonFiber_50D" sensitive="false" vis="false" >
+                    <position z="0.0915*cm" />
+                </module_component>
+                <module_component
+                  width="SiWafer_w" length="SiWafer_l" thickness="0.03*cm" material="Silicon" sensitive="true">
+                    <position z="0.1145*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.00048*cm" material="Silicon" sensitive="false" vis="false" >
+                    <position z="0.12974*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.0064*cm" material="Kapton" sensitive="false" vis="false" >
+                    <position z="0.1375*cm"/>
+                </module_component>
+                <module_component
+                  width="SiMod_w3" length="SiMod_l3" thickness="0.00065*cm" material="Copper" sensitive="false" vis="false">
+                    <position z="0.146*cm"/>
+                </module_component>
+            </module>
+
+            <layer module="SiTrackerOModule_Layer0" id="1" vis="SiTrackerOBarrelLayerVis">
+                <barrel_envelope
+                  inner_r="Radius_SOTLayer0 + 0.5*VxBar_Env" 
+                  outer_r="Radius_SOTLayer0 + 8.*VxBar_Env" 
+                  z_length="2.*SiModO_z0 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="25" phi0="0."  rc="Radius_SOTLayer0 + 4.2*mm" dr="0."/>
+                <z_layout dr="0.*mm" z0="SiModO_z0 - 5.*cm" nz="14"/>               
+            </layer>   <comment>   </comment>
+
+            <layer module="SiTrackerOModule_Layer1" id="2" vis="SiTrackerOBarrelLayerVis">
+                <barrel_envelope
+                  inner_r="Radius_SOTLayer1 - 0.5*VxBar_Env" 
+                  outer_r="Radius_SOTLayer1 + 8.*VxBar_Env" 
+                  z_length="2.*SiModO_z1 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="33" phi0="0.087*rad"  rc="Radius_SOTLayer1 + 4.2*mm" dr="0."/>
+                <z_layout dr="0.*mm" z0="SiModO_z1 - 5.*cm" nz="18"/>        
+            </layer>   <comment>   </comment>
+           
+            <layer module="SiTrackerOModule_Layer2" id="3" vis="SiTrackerOBarrelLayerVis">
+                <barrel_envelope 
+                  inner_r="Radius_SOTLayer2 - 0.5*VxBar_Env" 
+                  outer_r="Radius_SOTLayer2 + 8.*VxBar_Env" 
+                  z_length="2.*SiModO_z2 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="43" phi0="0.058*rad"  rc="Radius_SOTLayer2 + 4.2*mm" dr="0."/>
+                <z_layout dr="0.*mm" z0="SiModO_z2 - 5.*cm" nz="22"/>
+            </layer>    <comment>    </comment>
+
+ 
+            <layer module="SiTrackerOModule_Layer3" id="4" vis="SiTrackerOBarrelLayerVis">
+                <barrel_envelope 
+                  inner_r="Radius_SOTLayer3 - 0.5*VxBar_Env" 
+                  outer_r="Radius_SOTLayer3 + 8.*VxBar_Env" 
+                  z_length="2.*SiModO_z3 + 2.*cm"/>
+                <rphi_layout 
+                  phi_tilt="0.06*rad" nphi="55" phi0="0.058*rad"  rc="Radius_SOTLayer3 + 4.2*mm" dr="0.2"/>
+                <z_layout dr="0.*mm" z0="SiModO_z3 - 5.*cm" nz="25"/>
+            </layer>    <comment>    </comment>
+
+         </detector>
+ 
+
+        <comment>   Outer Barrel Tracker Supports   </comment>
+<!--  -->
+        <detector name="TrackerOuterBarrelSupports" 
+                  type="Lhe_MultiLayerTracker" 
+                  reflect="true" 
+                  vis="SupportVis">
+            <comment>Barrels</comment>
+ 
+            <layer id="1" 
+              inner_r = "Radius_SOTLayer0 - 4.5*VxBar_Env" 
+              outer_z = "SiModO_z0  + 2.*VxBar_Env">
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+                <slice material="Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+            </layer>
+
+            <layer id="2" 
+               inner_r="Radius_SOTLayer1 - 4.5*VxBar_Env" 
+               outer_z="SiModO_z1  + 2.*VxBar_Env">
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+                <slice material="Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material="CarbonFiber" thickness="0.05*cm" />
+            </layer>
+
+            <layer id="3" 
+               inner_r="Radius_SOTLayer2 - 4.5*VxBar_Env" 
+               outer_z="SiModO_z2  + 5.*VxBar_Env">
+                <slice material= "CarbonFiber" thickness = "0.05*cm" />
+                <slice material= "Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material= "CarbonFiber" thickness="0.05*cm" />
+            </layer>
+ 
+             <layer id="4" 
+               inner_r="Radius_SOTLayer3 - 4.5*VxBar_Env" 
+               outer_z="SiModO_z3  + 5.*VxBar_Env">
+                <slice material= "CarbonFiber" thickness = "0.05*cm" />
+                <slice material= "Rohacell31_15percent" thickness="0.8075*cm" />
+                <slice material= "CarbonFiber" thickness="0.05*cm" />
+            </layer>
+            
+        </detector>
+
+<!-- -->
+        <detector name="OTrackerReadout" 
+                  type="Lhe_DiskTracker" 
+                  reflect="true" 
+                  sensitive="false" 
+                  vis="SiVertexBarrelROVis">
+            <comment>Readouts</comment>
+
+            <layer id="1" 
+              inner_r="Radius_SOTLayer0 - 4.5*VxBar_Env*2"
+              outer_r="Radius_SOTLayer0 + VxBar_Env"
+              rmax   = "Radius_SOTLayer0"
+              inner_z="SiModO_z0 + 3.*cm">
+                <slice material="G10" thickness="0.108*cm" />
+                <slice material="Copper" thickness="0.0038*cm" />
+            </layer> 
+
+            <layer id="2" 
+              inner_r="Radius_SOTLayer1 - 4.5*VxBar_Env*2"
+              outer_r="Radius_SOTLayer1 + VxBar_Env"
+              rmax   = "Radius_SOTLayer1"
+              inner_z="SiModO_z1 + 3.*cm">
+               <slice material = "G10" thickness="0.108*cm" />
+                <slice material = "Copper" thickness="0.0068*cm" />
+            </layer>
+
+            <layer id="3" 
+              inner_r="Radius_SOTLayer2 - 4.5*VxBar_Env*2"
+              outer_r="Radius_SOTLayer2 + VxBar_Env"
+              rmax   = "Radius_SOTLayer2"
+              inner_z="SiModO_z2 + 3.*cm">
+                <slice material="G10" thickness="0.108*cm" />
+                <slice material="Copper" thickness="0.0072*cm" />
+            </layer>
+
+            <layer id="4" 
+              inner_r="Radius_SOTLayer3 - 4.5*VxBar_Env*2"
+              outer_r="Radius_SOTLayer3 + VxBar_Env"
+              rmax   = "Radius_SOTLayer3"
+              inner_z="SiModO_z3 + 3.*cm">
+                <slice material="G10" thickness="0.108*cm" />
+                <slice material="Copper" thickness="0.0072*cm" />
+            </layer>
+
+        </detector>
+    
+<!-- fwd-tracker --> 
+        <detector id="4" name="SiTrackerForward" 
+                         type="Lhe_SiTrackerEndcap2" 
+                         readout="SiTrackerForwardHits" 
+                         reflect="false"
+                         r="VertexBarrel_r0 - VxBar_Env"
+                         rmax="CentralBeamPipe_rmax + 1.*cm + 7.5*cm">
+            <comment>Forward Tracker outside Barrel Support</comment>
+            <module name="Module1" vis="SiTrackerForwardModulVis">   
+                <trd x1="36.112*mm" x2="46.635*mm" z="100.114/2*mm" />
+                <module_component thickness="0.00052*cm"   material="Copper" />
+                <module_component thickness="0.0051*cm"   material="Kapton" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.18*cm" material="Rohacell31_50D" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.0175*cm" material="Epoxy" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.0051*cm"   material="Kapton" />
+                <module_component thickness="0.00052*cm"   material="Copper" />
+            </module>
+            <module name="Module2" vis="LArCryoLayerVis">   
+                <trd x1="45.245*mm" x2="54.680*mm" z="89.773/2*mm" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.18*cm" material="Rohacell31_50D" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.0175*cm" material="Epoxy" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+            </module>
+            <module name="Module3" vis="BlueVisTrans">   
+                <trd x1="45.245*mm" x2="54.680*mm" z="89.773/2*mm" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.18*cm" material="Rohacell31_50D" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.0175*cm" material="Epoxy" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+            </module>
+
+
+           <layer id="1" >
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z0 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1" phi0="pi/10"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z0 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z0 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+            </layer>    <comment>  </comment>
+
+           <layer id="2" >
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z1 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1" phi0="pi/10"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z1 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z1 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z1 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z1 + 4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+            </layer>     <comment>    </comment>
+
+           <layer id="3">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z2 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1" phi0="pi/10"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z2 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z2 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z2 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z2 + 4*mm+4*mm " nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z2 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z2 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z2 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+
+            </layer>     <comment>    </comment>
+
+           <layer id="4">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z3 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z3 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z3 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z3 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z3 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z3 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z3 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z3 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z3 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>   </comment>
+
+           <layer id="5">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z4 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z4 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z4 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z4 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z4 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z4 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z4 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z4 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z4 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>   </comment>
+
+           <layer id="6">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z5 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z5 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z5 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z5 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z5 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z5 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z5 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z5 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z5 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>    </comment>
+
+           <layer id="7">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z6 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z6 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z6 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z6 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z6 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z6 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>               
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z6 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z6 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z6 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>    </comment>
+
+           <layer id="8">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z7 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z7 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z7 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z7 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z7 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z7 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>               
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z7 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z7 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z7 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>  middle-z-pos. = +402cm; outer_radius = 46cm  </comment>
+
+           <layer id="9">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z8 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z8 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z8 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z8 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z8 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z8 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>               
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z8 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z8 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z8 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>  middle-z-pos. = +462cm; outer_radius = 46cm  </comment>
+ 
+           <layer id="10">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z9 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z9 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z9 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z9 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z9 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z9 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>               
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z9 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z9 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z9 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>  middle-z-pos. = +462cm; outer_radius = 46cm  </comment>
+ 
+           <layer id="11">
+                <ring r="Ftd_sdisk_ri0" zstart="Ftd_disk_z10 + 32*mm+5*mm" nmodules="8" dz="2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Ftd_disk_z10 + 24*mm+4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Ftd_disk_z10 + 16*mm+4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Ftd_disk_z10 + 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Ftd_disk_z10 + 4*mm+4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Ftd_disk_z10 - 4*mm+4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>               
+                <ring r="Ftd_sdisk_ri6" zstart="Ftd_disk_z10 - 8*mm+4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Ftd_disk_z10 - 16*mm+4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Ftd_disk_z10 - 24*mm+4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>  middle-z-pos. = +462cm; outer_radius = 46cm  </comment>
+            
+        </detector>
+
+<!-- bwd-tracker --> 
+        <detector id="5" name="SiTrackerBackward" 
+                         type="Lhe_BP_SiTrackerEndcap2" 
+                         readout="SiTrackerBackwardHits" 
+                         reflect="false"
+                         r="VertexBarrel_r0 - VxBar_Env"
+                         rmax="CentralBeamPipe_rmax + 1.*cm + 7.5*cm">
+            <comment>Backward Tracker outside Barrel Support</comment>
+            <module name="Module1" vis="SiTrackerForwardModulVis">   
+                <trd x1="36.112*mm" x2="46.635*mm" z="100.114/2*mm" />
+                <module_component thickness="0.00052*cm"   material="Copper" />
+                <module_component thickness="0.0051*cm"   material="Kapton" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.18*cm" material="Rohacell31_50D" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.0175*cm" material="Epoxy" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.0051*cm"   material="Kapton" />
+                <module_component thickness="0.00052*cm"   material="Copper" />
+            </module>
+            <module name="Module2" vis="LArCryoLayerVis" >   
+                <trd x1="45.245*mm" x2="54.680*mm" z="89.773/2*mm" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.18*cm" material="Rohacell31_50D" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.0175*cm" material="Epoxy" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+            </module>
+            <module name="Module3" vis="BlueVisTrans" >   
+                <trd x1="45.245*mm" x2="54.680*mm" z="89.773/2*mm" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.18*cm" material="Rohacell31_50D" />
+                <module_component thickness="0.016*cm" material="CarbonFiber_50D" />
+                <module_component thickness="0.0175*cm" material="Epoxy" />
+                <module_component thickness="0.03*cm"   material="Silicon" sensitive="true" />
+                <module_component thickness="0.00048*cm" material="Silicon" />
+                <module_component thickness="0.0078*cm"   material="Kapton" />
+                <module_component thickness="0.00079*cm"   material="Copper" />
+            </module>
+
+           <layer id="1">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z0 - 32*mm-5*mm" nmodules="8" dz="2.5*mm" module="Module1" phi0="pi/10"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z0 - 24*mm-4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z0 - 16*mm-4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+            </layer>     <comment>    </comment>
+
+           <layer id="2">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z1 - 32*mm-5*mm" nmodules="8" dz="2.5*mm" module="Module1" phi0="pi/10"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z1 - 24*mm-4*mm" nmodules="14" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z1 - 16*mm-4*mm" nmodules="20" dz="2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z1 - 8*mm+4*mm"  nmodules="22" dz="2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z1 - 4*mm" nmodules="28" dz="2*mm" module="Module2" phi0="pi/28"/>
+
+            </layer>     <comment>    </comment>
+
+           <layer id="3">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z2 - 32*mm-5*mm" nmodules="8" dz="-2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z2 - 24*mm-4*mm" nmodules="14" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z2 - 16*mm-4*mm" nmodules="20" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z2 - 8*mm-4*mm"  nmodules="22" dz="-2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z2 - 4*mm-4*mm" nmodules="28" dz="-2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Btd_disk_z2 + 4*mm-4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Btd_disk_z2 + 8*mm-4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Btd_disk_z2 + 16*mm-4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+            </layer>     <comment>   </comment>
+
+            <layer id="4">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z3 - 32*mm-5*mm" nmodules="8" dz="-2.5*mm" module="Module1" />
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z3 - 24*mm-4*mm" nmodules="14" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z3 - 16*mm-4*mm" nmodules="20" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z3 - 8*mm-4*mm"  nmodules="22" dz="-2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z3 - 4*mm-4*mm" nmodules="28" dz="-2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Btd_disk_z3 + 4*mm-4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Btd_disk_z3 + 8*mm-4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Btd_disk_z3 + 16*mm-4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Btd_disk_z3 + 24*mm-4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+           </layer>     <comment>    </comment>
+
+            <layer id="5">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z4 - 32*mm-5*mm" nmodules="8" dz="-2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z4 - 24*mm-4*mm" nmodules="14" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z4 - 16*mm-4*mm" nmodules="20" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z4 - 8*mm-4*mm"  nmodules="22" dz="-2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z4 - 4*mm-4*mm" nmodules="28" dz="-2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Btd_disk_z4 + 4*mm-4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Btd_disk_z4 + 8*mm-4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Btd_disk_z4 + 16*mm-4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Btd_disk_z4 + 24*mm-4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>   </comment>
+            
+            <layer id="6">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z5 - 32*mm-5*mm" nmodules="8" dz="-2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z5 - 24*mm-4*mm" nmodules="14" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z5 - 16*mm-4*mm" nmodules="20" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z5 - 8*mm-4*mm"  nmodules="22" dz="-2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z5 - 4*mm-4*mm" nmodules="28" dz="-2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Btd_disk_z5 + 4*mm-4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Btd_disk_z5 + 8*mm-4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Btd_disk_z5 + 16*mm-4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Btd_disk_z5 + 24*mm-4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+           </layer>     <comment>  middle-z-pos. = -332cm; outer_radius = 46cm  </comment>
+  
+              <layer id="7">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z6 - 32*mm-5*mm" nmodules="8" dz="-2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z6 - 24*mm-4*mm" nmodules="14" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z6 - 16*mm-4*mm" nmodules="20" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z6 - 8*mm-4*mm"  nmodules="22" dz="-2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z6 - 4*mm-4*mm" nmodules="28" dz="-2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Btd_disk_z6 + 4*mm-4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Btd_disk_z6 + 8*mm-4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Btd_disk_z6 + 16*mm-4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Btd_disk_z6 + 24*mm-4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>  middle-z-pos. = -392cm; outer_radius = 46cm  </comment>
+              <layer id="8">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z7 - 32*mm-5*mm" nmodules="8" dz="-2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z7 - 24*mm-4*mm" nmodules="14" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z7 - 16*mm-4*mm" nmodules="20" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z7 - 8*mm-4*mm"  nmodules="22" dz="-2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z7 - 4*mm-4*mm" nmodules="28" dz="-2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Btd_disk_z7 + 4*mm-4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Btd_disk_z7 + 8*mm-4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Btd_disk_z7 + 16*mm-4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Btd_disk_z7 + 24*mm-4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>  middle-z-pos. = -392cm; outer_radius = 46cm  </comment>
+              <layer id="9">
+                <ring r="Ftd_sdisk_ri0" zstart="Btd_disk_z8 - 32*mm-5*mm" nmodules="8" dz="-2.5*mm" module="Module1"/>
+                <ring r="Ftd_sdisk_ri1" zstart="Btd_disk_z8 - 24*mm-4*mm" nmodules="14" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri2" zstart="Btd_disk_z8 - 16*mm-4*mm" nmodules="20" dz="-2*mm" module="Module2"/>
+                <ring r="Ftd_sdisk_ri3" zstart="Btd_disk_z8 - 8*mm-4*mm"  nmodules="22" dz="-2*mm" module="Module2" phi0="pi/22"/>
+                <ring r="Ftd_sdisk_ri4" zstart="Btd_disk_z8 - 4*mm-4*mm" nmodules="28" dz="-2*mm" module="Module2" phi0="pi/28"/>
+                <ring r="Ftd_sdisk_ri5" zstart="Btd_disk_z8 + 4*mm-4*mm" nmodules="34" dz="2*mm" module="Module3" phi0="pi/34"/>
+                <ring r="Ftd_sdisk_ri6" zstart="Btd_disk_z8 + 8*mm-4*mm" nmodules="40" dz="2*mm" module="Module3" phi0="pi/40"/>
+                <ring r="Ftd_sdisk_ri7" zstart="Btd_disk_z8 + 16*mm-4*mm" nmodules="44" dz="2*mm" module="Module3" phi0="pi/44"/>
+                <ring r="Ftd_sdisk_ri8" zstart="Btd_disk_z8 + 24*mm-4*mm" nmodules="48" dz="2*mm" module="Module3" phi0="pi/48"/>
+            </layer>     <comment>  middle-z-pos. = -392cm; outer_radius = 46cm  </comment>
+
+        </detector>
+-->
+               
+<!-- ECAL-LAr Cryostat -->
+        <comment>Calorimeters</comment>
+        
+      <comment>Cryostat EMC-LAr</comment>
+
+       <detector id="6" name="EMC_LAr_Cryo" 
+                 type="Lhe_MultiLayerTracker" 
+                 insideTrackingVolume="false">
+          <layer id="1" 
+            z_offset="OffsetZ"  
+            inner_r="EcalBarrel_cryo_rmin - 3.5*cm" 
+            outer_z="EcalBarrel_zmax/2. + 2.0*cm"  
+            vis="LArCryoLayerVis">
+                <slice material="Aluminum" thickness="SolenoidBarrelInnerCryostatThickness1" />
+                <slice material="Vacuum"  thickness="SolenoidBarrelInnerAirgapThickness1" />
+                <slice material="Aluminum" thickness="e" />
+          </layer>
+        </detector>
+
+<!-- ECAL-LAr -->
+        <detector id="7" name="EcalBarreli" 
+                         type="Lhe_PolyhedraBarrelCalorimeter2" 
+                         readout="EcalBarrelHits1" 
+                         vis="EcalBarrelVis1" 
+                         reflect="false" 
+                         gap="0.*cm" 
+                         calorimeterType="EM_BARREL">
+            <comment>EM Calorimeter Barrel inner</comment>
+            <dimensions numsides="(int) CaloSides" rmin="EcalBarrel_rmin1" z_offset="OffsetZ" z="EcalBarrel_zmax" />
+            <staves vis="EcalBarrelStaveVis"/>
+
+            <layer repeat="EcalBarrel_layers1" vis="EcalLayerVis1" >
+                <slice material = "Steel235" thickness = "0.3*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Epoxy" thickness = "0.0175*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Pb" thickness = "0.22*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Epoxy" thickness = "0.0175*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Steel235" thickness = "0.3*cm" vis="EcalAbsorberVis"/>
+                <slice material = "LAr" thickness = "0.21*cm" sensitive = "yes" limits="cal_limits" vis="EcalSensitiveVis"/>
+                <slice material = "Cu" thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.03*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Cu" thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "LAr" thickness = "0.21*cm" sensitive = "yes" limits="cal_limits" vis="EcalSensitiveVis"/>
+            </layer>   <comment> 0.3+0.0175+0.22+0.0175+0.3+0.21+0.005+0.03+0.005+0.21=1.315cm </comment>
+        </detector>
+
+<!--    -->   
+        <detector id="8" name="EcalBarrelm" 
+                         type="Lhe_PolyhedraBarrelCalorimeter2" 
+                         readout="EcalBarrelHits2" 
+                         vis="EcalBarrelVis2" 
+                         reflect="false" 
+                         gap="0.*cm" 
+                         calorimeterType="EM_BARREL">
+            <comment>EM Calorimeter Barrel middle</comment>
+            <dimensions numsides="(int) CaloSides" rmin="EcalBarrel_rmin2" z_offset="OffsetZ" z="EcalBarrel_zmax" />
+            <staves vis="EcalBarrelStaveVis"/>
+            
+            <layer repeat="EcalBarrel_layers2" vis="EcalLayerVis2" >
+                <slice material = "Steel235" thickness = "0.3*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Epoxy" thickness = "0.0175*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Pb" thickness = "0.22*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Epoxy" thickness = "0.0175*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Steel235" thickness = "0.3*cm" vis="EcalAbsorberVis"/>
+                <slice material = "LAr" thickness = "0.21*cm" sensitive = "yes" limits="cal_limits" vis="EcalSensitiveVis"/>
+                <slice material = "Cu" thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.03*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Cu" thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "LAr" thickness = "0.21*cm" sensitive = "yes" limits="cal_limits" vis="EcalSensitiveVis"/>
+            </layer>   <comment> 0.3+0.0175+0.22+0.0175+0.3+0.21+0.005+0.03+0.005+0.21=1.315cm </comment>        </detector>
+ 
+<!--   -->                  
+        <detector id="9" name="EcalBarrelo" 
+                         type="Lhe_PolyhedraBarrelCalorimeter2" 
+                         readout="EcalBarrelHits3" 
+                         vis="EcalBarrelVis3" 
+                         reflect="false" 
+                         gap="0.*cm" 
+                         calorimeterType="EM_BARREL">
+            <comment>EM Calorimeter Barrel outer</comment>
+            <dimensions numsides="(int) CaloSides" rmin="EcalBarrel_rmin3" z_offset="OffsetZ" z="EcalBarrel_zmax" />
+            <staves vis="EcalBarrelStaveVis"/>
+            
+            <layer repeat="EcalBarrel_layers3" vis="EcalLayerVis3" >
+                <slice material = "Steel235" thickness = "0.3*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Epoxy" thickness = "0.0175*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Pb" thickness = "0.22*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Epoxy" thickness = "0.0175*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Steel235" thickness = "0.3*cm" vis="EcalAbsorberVis"/>
+                <slice material = "LAr" thickness = "0.21*cm" sensitive = "yes" limits="cal_limits" vis="EcalSensitiveVis"/>
+                <slice material = "Cu" thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.03*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Cu" thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "LAr" thickness = "0.21*cm" sensitive = "yes" limits="cal_limits" vis="EcalSensitiveVis"/>
+            </layer>   <comment> 0.3+0.0175+0.22+0.0175+0.3+0.21+0.005+0.03+0.005+0.21=1.315cm </comment>
+
+        </detector>
+
+<!--EcalPlug fwd/bwd -->
+        <detector id="10" name="EcalPlug_fwd" 
+                         type="Lhe_PolyhedraEndcapCalorimeter2" 
+                         reflect="false" 
+                         readout="EcalPlugHits0" 
+                         vis="EcalPlugVis"
+                         calorimeterType="EM_ENDCAP">
+        <comment> EM Calorimeter Plugs </comment>
+            <dimensions numsides="(int) CaloSides" zmin="EcalPlug_zmin_fwd+10*cm" rmin="EcalPlug_rmin" rmax="EcalBarrel_rmax" />
+
+            <layer repeat="EcalPlug_fwd_layers1">
+                 <slice material = "Silicon" thickness = "0.032*cm" sensitive="yes" limits="cal_limits" vis="EcalPlugSensitiveVis"/>
+                 <slice material = "TungstenDens25"  thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                 <slice material = "Air"     thickness = "0.025*cm" vis="InvisibleNoDaughters"/>     
+                 <slice material = "Copper"  thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                 <slice material = "Kapton"  thickness = "0.030*cm" vis="EcalAbsorberVis"/>
+                 <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>     
+            </layer>
+
+            <layer repeat="EcalPlug_fwd_layers2">
+                  <slice material = "TungstenDens25" thickness = "0.5*cm" />
+                  <slice material = "Air"     thickness = "0.025*cm" vis="InvisibleNoDaughters"/>
+                  <slice material = "Silicon" thickness = "0.032*cm" sensitive="yes" limits="cal_limits" vis="EcalPlugSensitiveVis"/>
+                  <slice material = "Copper"  thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                  <slice material = "Kapton"  thickness = "0.030*cm" vis="EcalAbsorberVis"/>
+                  <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>          
+            </layer>
+
+            <layer repeat="EcalPlug_fwd_layers3">
+                  <slice material = "TungstenDens25" thickness = "0.7*cm" />
+                  <slice material = "Air"     thickness = "0.025*cm" vis="InvisibleNoDaughters"/>
+                  <slice material = "Silicon" thickness = "0.032*cm" sensitive="yes" limits="cal_limits" vis="EcalPlugSensitiveVis"/>
+                  <slice material = "Copper"  thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                  <slice material = "Kapton"  thickness = "0.030*cm" vis="EcalAbsorberVis"/>
+                  <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            
+        </detector>
+       
+<!--EcalPlug bwd -->
+        <detector id="11" name="EcalPlug_bwd" 
+                         type="Lhe_PolyhedraEndcapCalorimeter2" 
+                         reflect="false" 
+                         readout="EcalPlugHits1" 
+                         vis="EcalPlugVis" 
+                         calorimeterType="EM_ENDCAP">
+            <comment>EM Calorimeter Plugs</comment>
+            <dimensions numsides="(int) CaloSides" zmin="EcalPlug_zmin_bwd-10.*cm" rmin="EcalPlug_rmin" rmax="EcalBarrel_rmax" />
+
+            <layer repeat="EcalPlug_bwd_layers3">     <comment>   </comment>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="EcalPlugSensitiveVis"/>
+                <slice material = "Air"     thickness = "0.025*cm" vis="InvisibleNoDaughters"/>
+                <slice material = "Pb" thickness = "0.7*cm" vis="EcalAbsorberVis"/>
+            </layer>    
+
+            <layer repeat="EcalPlug_bwd_layers2">     <comment>  </comment>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="EcalPlugSensitiveVis"/>
+                <slice material = "Air"     thickness = "0.025*cm" vis="InvisibleNoDaughters"/>
+                <slice material = "Pb" thickness = "0.3*cm" vis="EcalAbsorberVis"/>
+            </layer>
+
+            <layer repeat="EcalPlug_bwd_layers1">      <comment>   </comment>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Air"     thickness = "0.025*cm" vis="InvisibleNoDaughters"/>
+                <slice material = "Pb" thickness = "0.1*cm" vis="EcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="EcalPlugSensitiveVis"/>
+            </layer>
+        </detector>
+
+<!--HCAL -->
+        <detector id="12" name="HcalBarrel" 
+                         type="Lhe_PolyhedraBarrelCalorimeter2" 
+                         readout="HcalBarrelHits" vis="HcalBarrelVis" 
+                         calorimeterType="HAD_BARREL" 
+                         gap="0.*cm" 
+                         material="Steel235">
+            <comment>Hadron Calorimeter Barrel</comment>
+            <dimensions numsides="(int) CaloSides" rmin="HcalBarrel_rmin" z="HcalBarrel_length" z_offset="OffsetZ"/>
+            <staves vis="HcalBarrelStavesVis"/>
+            <layer repeat="(int) HcalBarrel_layers1">
+                <slice material = "Steel235" thickness = "2.20*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.60*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalBarrel_layers2">
+                <slice material = "Steel235" thickness = "2.5*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.60*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalBarrel_layers3">
+                <slice material = "Steel235" thickness = "3.00*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.60*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+        </detector>
+
+<!--HCALEndcap_fwd_bwd -->
+        <detector id="13" name="HcalEndcap_fwd" 
+                         type="Lhe_PolyhedraEndcapCalorimeter2" 
+                         readout="HcalEndcapHits0" 
+                         reflect="false" 
+                         vis="HcalEndcapVis" 
+                         calorimeterType="HAD_ENDCAP">
+            <comment>Hadron Calorimeter Endcaps</comment>
+            <staves vis="HcalEndcapStavesVis"/>
+            <dimensions numsides="(int) CaloSides" zmin="EcalPlug_zmin_fwd+15.*cm" rmin="HcalBarrel_rmin"  rmax="1.7*HcalBarrel_rmax" />
+            <layer repeat="(int) HcalEndcap_fwd_layers1">
+                <slice material = "Steel235" thickness = "2.*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.50*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalEndcap_fwd_layers2">
+                <slice material = "Steel235" thickness = "2.2*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.50*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalEndcap_fwd_layers3">
+                <slice material = "Steel235" thickness = "2.5*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.50*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+        </detector>
+
+        <detector id="14" name="HcalEndcap_bwd" 
+                           type="Lhe_PolyhedraEndcapCalorimeter2" 
+                           readout="HcalEndcapHits1" 
+                           reflect="false" 
+                           vis="HcalEndcapVis" 
+                           calorimeterType="HAD_ENDCAP">
+            <staves vis="HcalEndcapStavesVis"/>
+            <comment>Hadron Calorimeter Endcaps  - EcalPlug_zmin_bwd-15.*cm</comment>
+            <dimensions numsides="(int) CaloSides" zmin="EcalPlug_zmax_bwd - 3.5*HcalEndcap_thickness_bwd" rmin="HcalBarrel_rmin"  rmax="1.7*HcalBarrel_rmax" />
+            <layer repeat="(int) HcalEndcap_bwd_layers1">
+                <slice material = "Steel235" thickness = "2.*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.50*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalEndcap_bwd_layers2">
+                <slice material = "Steel235" thickness = "2.2*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.50*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalEndcap_bwd_layers3">
+                <slice material = "Steel235" thickness = "2.5*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Polystyrene" thickness = "0.50*cm" sensitive = "yes" limits="cal_limits" vis="HcalBarrelSensorVis"/>
+                <slice material = "Air" thickness = "0.15*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+        </detector>
+        
+<!-- -->
+        <detector id="15" name="HcalPlug_fwd" 
+                          type="Lhe_PolyhedraEndcapCalorimeter2" 
+                          readout="HcalPlugHits01" 
+                          reflect="false" 
+                          vis="HcalPlugVis">
+            <comment>Hadron Calorimeter Plug</comment>
+            <dimensions numsides="(int) CaloSides" zmin="EcalPlug_zmax_fwd+20.*cm" rmin="EcalPlug_rmin" rmax="SolenoidBarrelConductorInnerRadius1-10.*cm" />
+            <layer repeat="(int) HcalPlug_fwd_layers1">
+                <slice material = "TungstenDens24" thickness = "0.7*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="HcalSensorVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalPlug_fwd_layers2">
+                <slice material = "TungstenDens24" thickness = "0.8*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="HcalSensorVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalPlug_fwd_layers3">
+                <slice material = "TungstenDens24" thickness = "1.*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="HcalSensorVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+        </detector>
+
+        <detector id="16" name="HcalPlug_bwd" 
+                          type="Lhe_PolyhedraEndcapCalorimeter2" 
+                          readout="HcalPlugHits11" 
+                          reflect="false" 
+                          vis="HcalPlugVis">
+            <comment>Hadron Calorimeter Plug</comment>
+            <dimensions numsides="(int) CaloSides" zmin="MuonBarrel_zmin-EcalPlug_length_bwd*5.85" rmin="EcalPlug_rmin" rmax="SolenoidBarrelConductorInnerRadius1-10.*cm" />
+            <layer repeat="(int) HcalPlug_bwd_layers1">
+                <slice material = "Cu" thickness = "0.5*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="HcalSensorVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalPlug_bwd_layers2">
+                <slice material = "Cu" thickness = "0.93*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="HcalSensorVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+            <layer repeat="(int) HcalPlug_bwd_layers3">
+                <slice material = "Cu" thickness = "1.9*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Silicon" thickness = "0.032*cm" sensitive = "yes" limits="cal_limits" vis="HcalSensorVis"/>
+                <slice material = "Copper"  thickness = "0.005*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Kapton"  thickness = "0.030*cm" vis="HcalAbsorberVis"/>
+                <slice material = "Air"     thickness = "0.033*cm" vis="InvisibleNoDaughters"/>
+            </layer>
+        </detector>
+
+
+<!-- Muon -->
+         <detector id="17" name="MuonBarrel" 
+                           type="Lhe_PolyhedraBarrelCalorimeter2" 
+                           readout="MuonBarrelHits" 
+                           reflect="false" 
+                           vis="MuonBarrelVis" 
+                           calorimeterType="MUON_BARREL" 
+                           gap="0.*cm" 
+                           material="Steel235">
+            <comment>Muon Calorimeter Barrel</comment>
+            <dimensions numsides="(int) MuonSides" rmin="((HcalEndcap_rmax+165.0*cm) / ( cos(pi/CaloSides) ) )" z="MuonBarrel_length+(HcalEndcap_thickness_fwd+HcalEndcap_thickness_bwd)+20.*cm" z_offset="OffsetZ*1.2"/>
+            <staves vis="MuonBarrelStavesVis"/>
+            <comment> Start with an active layer, followed by a thin 5.0cm absorber layer. The second active layer is followed by a thick 20.0cm steel layer to take the forces. </comment>
+            <layer repeat="1" vis="MuonBarrelLayerVis">
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Iron" thickness="5.0*cm" vis="MuonBarrelAbsorberVis"/>
+           </layer>
+
+           <layer repeat="1" vis="MuonBarrelLayerVis">
+                <slice material="Aluminum" thickness="0.1*cm" />
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Iron" thickness="20.0*cm" vis="MuonBarrelAbsorberVis"/>
+            </layer>
+            <layer repeat="(int) MuonBarrel_layers" vis="MuonBarrelLayerVis">
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Iron" thickness="10.0*cm" vis="MuonBarrelAbsorberVis"/>
+            </layer>
+            <comment> The last Iron layer is again 20.0cm to take the forces. </comment>
+            <layer repeat="1" vis="MuonBarrelLayerVis">
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes" vis="MuonBarrelSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Iron" thickness="20.0*cm" vis="MuonBarrelAbsorberVis"/>
+            </layer>
+
+        </detector>
+
+<!-- Muon fwd/bwd -->
+        <detector id="18" name="MuonEndcap_fwd1" 
+                          type="Lhe_PolyhedraEndcapCalorimeter2" 
+                          readout="MuonEndcapHits01" 
+                          reflect="false" 
+                          vis="MuonEndcapVis" 
+                          calorimeterType="MUON_ENDCAP">
+            <comment>Muon Calorimeter Endcaps</comment>
+           <dimensions numsides="(int) MuonSides" zmin="MuonEndcap_zmin_fwd - 60.*cm" rmin="VertexBarrel_r3+5*cm" rmax="MuonEndcap_rmax0" />
+            <layer repeat="(int) MuonEndcap_layers" vis="MuonEndcapLayerVis">
+                <slice material="Iron" thickness="10.0*cm"  vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>
+            </layer>    <comment> layer thickness = 10+4cm </comment>
+        </detector>
+<!-- -->
+        <detector id="19" name="MuonEndcap_fwd2" 
+                          type="Lhe_PolyhedraEndcapCalorimeter2" 
+                          readout="MuonEndcapHits02" 
+                          reflect="false" 
+                          vis="MuonEndcapVis" 
+                          calorimeterType="MUON_ENDCAP">
+            <comment>Muon Calorimeter Endcaps</comment>
+            <dimensions numsides="(int) MuonSides" zmin="MuonEndcap_zmin_fwd - 60.*cm" rmin="HcalBarrel_rmin" rmax="MuonEndcap_rmax1*1.7" />
+            <layer repeat="(int) MuonEndcap_layers" vis="MuonEndcapLayerVis">
+                <slice material="Iron" thickness="10.0*cm"  vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>>
+            </layer>
+        </detector>
+
+        <detector id="20" name="MuonEndcap_bwd1" 
+                          type="Lhe_PolyhedraEndcapCalorimeter2" 
+                          readout="MuonEndcapHits11" 
+                          reflect="false" 
+                          vis="MuonEndcapVis" 
+                          calorimeterType="MUON_ENDCAP">
+            <comment>Muon Calorimeter Endcaps</comment>
+            <dimensions numsides="(int) MuonSides" zmin="MuonEndcap_zmin_bwd - HcalPlug_thickness_bwd/2. - 15.*cm" rmin="VertexBarrel_r3+5*cm" rmax="MuonEndcap_rmax0" />
+            <layer repeat="(int) MuonEndcap_layers" vis="MuonEndcapLayerVis">
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Iron" thickness="10.0*cm"  vis="MuonEndcapAbsorberVis"/>
+            </layer>
+        </detector>
+<!-- -->
+        <detector id="21" name="MuonEndcap_bwd2" 
+                          type="Lhe_PolyhedraEndcapCalorimeter2" 
+                          readout="MuonEndcapHits12" 
+                          reflect="false" 
+                          vis="MuonEndcapVis" 
+                          calorimeterType="MUON_ENDCAP">
+            <comment>Muon Calorimeter Endcaps</comment>
+            <dimensions numsides="(int) MuonSides" zmin="MuonEndcap_zmin_bwd - HcalPlug_thickness_bwd/2. - 15.*cm" rmin="HcalBarrel_rmin" rmax="MuonEndcap_rmax1*1.7" />
+            <layer repeat="(int) MuonEndcap_layers" vis="MuonEndcapLayerVis">
+                <slice material="Air" thickness="1.0*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="RPCGasDefault" thickness="0.2*cm" sensitive="yes"  vis="MuonEndcapSensorVis"/>
+                <slice material="PyrexGlass" thickness="0.2*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Air" thickness="0.35*cm" vis="InvisibleNoDaughters"/>
+                <slice material="Aluminum" thickness="0.1*cm" vis="MuonEndcapAbsorberVis"/>
+                <slice material="Iron" thickness="10.0*cm"  vis="MuonEndcapAbsorberVis"/>
+            </layer>
+        </detector>        
+
+
+<!-- Beampipe circ-elliptical / elliptical- SR fan 
+          
+       <comment> Beampipe </comment>
+       <comment> Central Be Beampipe</comment>
+       <comment> type="Lhe_ell_BeamPipe_Central" insideTrackingVolume="true" > </comment>
+       <detector name="Beampipe" type="Lhe_BeamPipe_Central" insideTrackingVolume="true"  vis="BeamPipeVis" z_offset="OffsetZ*2." >
+       <material name="Beryllium"/>
+        <zplane rmin="CentralBeamPipe_rmin" rmax="CentralEllBeamPipe_rmax" thickness="CentralBeamPipe_thickness" z="SolenoidCoilOuterZ1" />
+       </detector>
+
+   
+      <comment> Vacuum inside beampipe</comment>
+      <comment> type="Lhe_ell_BeamPipe_Central"  </comment>
+       <detector name="BeamPipeVacuum" type="Lhe_BeamPipe_Central" insideTrackingVolume="true" vis="InvisibleNoDaughters" z_offset="OffsetZ*2.">
+       <material name="Vacuum"/>
+            <zplane rmin="0.000000001*mm" rmax="CentralEllBeamPipe_rmax-21.98*mm" thickness="CentralBeamPipe_rmin-0.02*mm" z="SolenoidCoilOuterZ1" />
+       </detector>
+-->
+
+<!-- circular beam pipe  for optimal acceptance simulation  -->
+
+         <comment>Beampipe - has to be modified - this one circular</comment>
+         <detector name="Beampipe" 
+                   type="Lhe_PolyconeSupport" 
+                   insideTrackingVolume="true"  
+                   z_offset="OffsetZ" 
+                   vis="BeamPipeVis">
+           <comment>Central Be Beampipe</comment>
+            <material name="Beryllium"/>
+            <zplane rmin="CentralBeamPipe_rmin" rmax="CentralBeamPipe_rmax" z="-CentralBeamPipe_zmax"/>
+            <zplane rmin="CentralBeamPipe_rmin" rmax="CentralBeamPipe_rmax" z="CentralBeamPipe_zmax" />
+        </detector>
+
+
+        <detector name="ForwardVacuum" type="Lhe_PolyconeSupport" insideTrackingVolume="false" vis="InvisibleNoDaughters">
+            <material name="Vacuum"/>
+            <zplane rmin="0.*cm"
+                    rmax="CentralBeamPipe_rmin"  
+                    z="EcalPlug_zmin_fwd + 2.*cm" />
+            <zplane rmin="0.*cm"
+                    rmax="CentralBeamPipe_rmin"
+                    z="EcalPlug_zmin_fwd - 2.*cm" />
+        </detector>
+
+<!--
+        <detector name="BackwardVacuum" type="Lhe_PolyconeSupport" insideTrackingVolume="false" vis="InvisibleNoDaughters">
+            <material name="Vacuum"/>
+            <zplane rmin="0.*cm"
+                    rmax="CentralBeamPipe_rmax - BeamPipe_thickness"
+                    z="- (tracking_region_zmax + 0.01*cm)" />
+            <zplane rmin="0.*cm"
+                    rmax="CentralBeamPipe_rmax - BeamPipe_thickness"
+                    z="- BeamPipe_zmax" />
+            <zplane rmin="0.*cm"
+                    rmax="LumiCal_rmin - 2*BeamPipe_endThickness"
+                    z="- (LumiCal_zmin - 2*BeamPipe_endThickness)" />
+            <zplane rmin="0.*cm"
+                    rmax="LumiCal_rmin - 2*BeamPipe_endThickness"
+                    z="- (LumiCal_zmin - BeamPipe_endThickness)" />
+            <zplane rmin="0.*cm"
+                    rmax="LumiCal_rmin - 2*BeamPipe_endThickness"
+                    z="- (ForwardMask_zmin - BeamPipe_endThickness)" />
+        </detector>
+-->
+<!-- Solenoid -->
+      <comment>Solenoid/Dipole</comment>
+
+       <detector id="22" name="SolenoidCoilBarrel1" 
+                 type="Lhe_MultiLayerTracker" 
+                 insideTrackingVolume="false">
+
+<!-- -->
+          <layer id="1" 
+            z_offset="OffsetZ"  
+            inner_r="SolenoidBarrelInnerRadius1" 
+            outer_z="SolenoidCoilOuterZ1"  
+            vis="SolenoidBarrelSupportLayerVis">
+                <slice material="Aluminum" thickness="SolenoidBarrelInnerCryostatThickness1" />
+                <slice material="Vacuum"  thickness="SolenoidBarrelInnerAirgapThickness1" />
+                <slice material="Aluminum" thickness="SolenoidBarrelInnerCryostatThickness1" />
+          </layer>
+
+          <layer id="2" 
+            z_offset="OffsetZ"
+            inner_r="SolenoidBarrelConductorInnerRadius1+2*cm" 
+            outer_z="SolenoidCoilOuterZ1" 
+            vis="SolenoidBarrelLayerVis">
+                <slice material="Aluminum" thickness="SolenoidBarrelInnerCryostatThickness1" />
+                <slice material="Aluminum" thickness="SolenoidBarrelAlConductorThickness1" />
+                <slice material="Aluminum" thickness="SolenoidBarrelQuenchbackThickness1" />
+          </layer>
+
+          <layer id="3" 
+            z_offset="OffsetZ*0.7"
+            inner_r="SolenoidBarrelOuterCryostatInnerRadius1" 
+            outer_z="EcalPlug_zmax_fwd + HcalPlug_thickness_fwd - 20*cm"
+            vis="SolenoidDipoleBarrelLayerVis">
+                <slice material="Aluminum" thickness="DipoleBarrelAlConductorThickness" />
+                <slice material="Aluminum" thickness="SolenoidBarrelInnerCryostatThickness1" />
+                <slice material="Vacuum"   thickness="SolenoidBarrelOuterAirgapThickness1" />
+                <slice material="Aluminum" thickness="SolenoidBarrelOuterCryostatThickness1" />
+           </layer>
+
+        </detector>
+
+    </detectors>
+    
+<!-- -->
+    <readouts>
+        <readout name="SiVertexBarrelHits">
+            <id>system:0,barrel:3,layer:4,module:14,sensor:2,side:32:-2,strip:24</id>
+        </readout>        
+        <readout name="SiVertexBarrel2Hits">
+            <id>system:0,barrel:3,layer:4,module:14,sensor:2,side:32:-2,strip:24</id>
+        </readout>
+        <readout name="SiTrackerBarrelHits">
+            <id>system:0,barrel:3,layer:5,module:14,sensor:2,side:32:-2,strip:20</id>
+        </readout>
+        <readout name="SiTrackerOBarrelHits">
+            <id>system:0,barrel:3,layer:5,module:14,sensor:2,side:32:-2,strip:20</id>
+        </readout>
+ 
+        <readout name="SiTrackerForwardHits">
+            <id>system:0,barrel:3,layer:7,module:12,sensor:1,side:32:-2,strip:28</id>
+        </readout>        
+        <readout name="SiTrackerBackwardHits">
+            <id>system:0,barrel:3,layer:7,module:12,sensor:1,side:32:-2,strip:28</id>
+        </readout>
+
+        <readout name="EcalBarrelHits1">
+            <segmentation type="CartesianGridXY" grid_size_x="3.5*cm" grid_size_y="3.5*cm" />
+            <id>system:0,barrel:3,module:6,layer:10,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="EcalBarrelHits2">
+            <segmentation type="CartesianGridXY" grid_size_x="3.5*cm" grid_size_y="3.5*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="EcalBarrelHits3">
+            <segmentation type="CartesianGridXY" grid_size_x="3.5*cm" grid_size_y="3.5*cm" />
+            <id>system:0,barrel:3,module:4,layer:6,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="EcalPlugHits0">
+            <segmentation type="CartesianGridXY" grid_size_x="3.5*cm" grid_size_y="3.5*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="EcalPlugHits1">
+            <segmentation type="CartesianGridXY" grid_size_x="3.5*cm" grid_size_y="3.5*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="HcalBarrelHits">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:6,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="HcalEndcapHits0">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:6,layer:10,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="HcalEndcapHits1">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:6,layer:10,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="HcalPlugHits01">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:6,layer:10,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="HcalPlugHits02">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:6,layer:10,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="HcalPlugHits11">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="HcalPlugHits12">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="MuonBarrelHits">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="MuonEndcapHits01">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="MuonEndcapHits02">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="MuonEndcapHits11">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+        <readout name="MuonEndcapHits12">
+            <segmentation type="CartesianGridXY" grid_size_x="3.0*cm" grid_size_y="3.0*cm" />
+            <id>system:0,barrel:3,module:4,layer:8,slice:5,x:32:-16,y:-16</id>
+        </readout>
+     </readouts>
+
+
+<!--  
+        <plugin name="TestSurfaces"> <argument value="SiTrackerBackward"/> </plugin>
+
+        <plugins>
+
+          <plugin name="Lhe_SiTrackerBarrelSurfacePlugin"> 
+              <argument value="SiVertexBarrel"/> <argument value="dimension=1"/> 
+          </plugin>
+ 
+          <plugin name="Lhe_SurfaceExamplePlugin">
+             <argument value="SiVertexBarrel"/>
+             <argument value="aa=1*mm"/>
+             <argument value="bb=2*cm"/>
+             <argument value="cc=3*m"/>
+          </plugin>
+
+          <plugin name="Lhe_SiTrackerBarrelSurfacePlugin"> 
+              <argument value="SiTrackerBarrel"/> <argument value="dimension=1"/> </plugin>
+
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="SiTrackerForward"/> </plugin>
+          <plugin name="Lhe_SiTrackerEndcapSurfacePlugin"> <argument value="SiTrackerForward"/> </plugin>
+
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="SiTrackerBackward"/> </plugin>
+          <plugin name="Lhe_SiTrackerEndcapSurfacePlugin"> <argument value="SiTrackerBackward"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="EcalBarrel"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="EcalBarrel"/> </plugin>
+          <plugin name="Lhe_SiTrackerBarrelSurfacePlugin"> 
+              <argument value="EcalBarrel"/> <argument value="dimension=1"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="EcalPlug_fwd"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="EcalPlug_fwd"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="EcalPlug_fwd"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="EcalPlug_bwd"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin">    <argument value="EcalPlug_bwd"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="EcalPlug_bwd"/> </plugin>
+
+          <plugin name="Lhe_SiTrackerBarrelSurfacePlugin"> 
+              <argument value="HcalBarrel"/> <argument value="dimension=1"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="HcalEndcap_fwd"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="HcalEndcap_fwd"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="HcalEndcap_fwd"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="HcalEndcap_bwd"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="HcalEndcap_bwd"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="HcalEndcap_bwd"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="HcalPlug_fwd"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="HcalPlug_fwd"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="HcalPlug_fwd"/> </plugin>         
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="HcalPlug_bwd"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="HcalPlug_bwd"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="HcalPlug_bwd"/> </plugin>
+
+          <plugin name="Lhe_SiTrackerBarrelSurfacePlugin"> 
+              <argument value="MuonBarrel"/> <argument value="dimension=1"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="MuonEndcap_fwd1"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="MuonEndcap_fwd1"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="MuonEndcap_fwd1"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="MuonEndcap_fwd2"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="MuonEndcap_fwd2"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="MuonEndcap_fwd2"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="MuonEndcap_bwd1"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="MuonEndcap_bwd1"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="MuonEndcap_bwd1"/> </plugin>
+
+          <plugin name="Lhe_SubdetectorExtensionPlugin"> <argument value="MuonEndcap_bwd2"/> </plugin>
+          <plugin name="Lhe_LayeringExtensionPlugin"> <argument value="MuonEndcap_bwd2"/> </plugin>
+          <plugin name="Lhe_PolyhedraEndcapCalorimeterSurfacePlugin"> <argument value="MuonEndcap_bwd2"/> </plugin>
+
+        </plugins>
+-->
+<!-- -->
+    <fields>
+        <field name="GlobalSolenoid1" type="solenoid"
+          inner_field="3.5*tesla"
+          outer_field="-1.5*tesla"
+          zmax="SolenoidCoilOuterZ1"
+          outer_radius="world_side">
+        </field>
+       <field name="MachineDipole" type="DipoleMagnet"
+         rmax="DipoleBarrelAlConductorRadius"
+         zmin="-SolenoidCoilOuterZ1"
+         zmax="SolenoidCoilOuterZ1">
+        <dipole_coeff>0.4*tesla</dipole_coeff>
+         <dipole_coeff>0.1*tesla/pow(cm,1)</dipole_coeff>
+         <dipole_coeff>0.01*tesla/pow(cm,2)</dipole_coeff>
+       </field>
+
+<!--
+       <field name="MachineDipole+" type="DipoleMagnet"
+         rmax="DipoleBarrelAlConductorRadius"
+         zmin="1*cm"
+         zmax="SolenoidCoilOuterZ1">
+        <dipole_coeff>0.4*tesla</dipole_coeff>
+         <dipole_coeff>0.1*tesla/pow(cm,1)</dipole_coeff>
+         <dipole_coeff>0.01*tesla/pow(cm,2)</dipole_coeff>
+       </field>
+
+       <field name="MachineDipole-" type="DipoleMagnet"
+         rmax="DipoleBarrelAlConductorRadius"
+         zmin="-SolenoidCoilOuterZ1"
+         zmax="-1*cm">
+        <dipole_coeff>-0.4*tesla</dipole_coeff>
+         <dipole_coeff>0.1*tesla/pow(cm,1)</dipole_coeff>
+         <dipole_coeff>0.01*tesla/pow(cm,2)</dipole_coeff>
+       </field>
+-->
+    </fields>
+
+</lccdd>
+
